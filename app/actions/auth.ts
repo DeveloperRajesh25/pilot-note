@@ -25,9 +25,10 @@ export async function signup(formData: FormData) {
   const origin = (await headers()).get('origin')
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const full_name = (formData.get('full_name') as string) || null
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -37,6 +38,14 @@ export async function signup(formData: FormData) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Create profile row immediately (trigger also handles this, belt-and-suspenders)
+  if (data.user) {
+    await supabase.from('profiles').upsert(
+      { id: data.user.id, email, full_name },
+      { onConflict: 'id' }
+    )
   }
 
   return { message: 'Check your email to continue the sign in process.' }

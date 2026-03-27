@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { RTR_TESTS, RTR_PART1_QUESTIONS, RTR_PART2_QUESTIONSByTestId, RTR_CONFIG } from '@/app/constants/data';
+import { RTR_CONFIG } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
 
 // --- Utilities ---
@@ -72,46 +72,69 @@ function RTRExamContent() {
   const testId = searchParams.get('testId');
   const part = (searchParams.get('part') as 'part1' | 'part2') || 'part1';
 
-  const test = RTR_TESTS.find(t => t.id === testId);
-  const [view, setView] = useState<'exam' | 'results'>('exam');
-  
+  const [view, setView] = useState<'loading' | 'error' | 'exam' | 'results'>('loading');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [testTitle, setTestTitle] = useState('');
+
   // Part 1 State
-  const [p1Questions] = useState(RTR_PART1_QUESTIONS.filter(q => q.testId === testId));
-  const [p1Answers, setP1Answers] = useState<(number | null)[]>(new Array(RTR_PART1_QUESTIONS.filter(q => q.testId === testId).length).fill(null));
-  const [p1Flags, setP1Flags] = useState<boolean[]>(new Array(RTR_PART1_QUESTIONS.filter(q => q.testId === testId).length).fill(false));
+  const [p1Questions, setP1Questions] = useState<any[]>([]);
+  const [p1Answers, setP1Answers] = useState<(number | null)[]>([]);
+  const [p1Flags, setP1Flags] = useState<boolean[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Part 2 State
-  const [p2Questions] = useState(RTR_PART2_QUESTIONSByTestId[testId || ''] || []);
+  const [p2Questions, setP2Questions] = useState<any[]>([]);
   const [p2Answers, setP2Answers] = useState<Record<string, Record<number, string>>>({});
   const [p2RevealedState, setP2RevealedState] = useState<Record<string, number>>({});
 
   // Timer
   const [timeRemaining, setTimeRemaining] = useState(part === 'part1' ? RTR_CONFIG.part1.duration * 60 : RTR_CONFIG.part2.duration * 60);
 
+  // Load data from API
   useEffect(() => {
-    if (view === 'results') return;
+    if (!testId) { setErrorMsg('No test specified.'); setView('error'); return; }
+    const endpoint = part === 'part1' ? `/api/rtr/${testId}/part1` : `/api/rtr/${testId}/part2`;
+    fetch(endpoint)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error === 'Unauthorized') { router.push('/login'); return; }
+        if (data.error === 'Not purchased') { setErrorMsg('You have not purchased this test. Please go back and purchase it.'); setView('error'); return; }
+        if (data.error) { setErrorMsg(data.error); setView('error'); return; }
+        if (part === 'part1') {
+          const qs = data.questions ?? [];
+          setP1Questions(qs);
+          setP1Answers(new Array(qs.length).fill(null));
+          setP1Flags(new Array(qs.length).fill(false));
+        } else {
+          const scenarios = data.scenarios ?? [];
+          setP2Questions(scenarios);
+          const initialRevealed: Record<string, number> = {};
+          scenarios.forEach((q: any) => { initialRevealed[q.id] = 1; });
+          setP2RevealedState(initialRevealed);
+        }
+        setView('exam');
+      })
+      .catch(() => { setErrorMsg('Failed to load exam. Please try again.'); setView('error'); });
+
+    // Also fetch test title
+    fetch('/api/rtr/tests').then(r => r.json()).then(d => {
+      const t = (d.tests ?? []).find((t: any) => t.id === testId);
+      if (t) setTestTitle(t.title);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testId, part]);
+
+  useEffect(() => {
+    if (view !== 'exam') return;
     const interval = setInterval(() => {
       setTimeRemaining(prev => {
-        if (prev <= 0) {
-          clearInterval(interval);
-          finishExam();
-          return 0;
-        }
+        if (prev <= 0) { clearInterval(interval); finishExam(); return 0; }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [view, part]);
-
-  // Init P2 revealed state
-  useEffect(() => {
-    if (part === 'part2') {
-      const initialRevealed: Record<string, number> = {};
-      p2Questions.forEach(q => initialRevealed[q.id] = 1);
-      setP2RevealedState(initialRevealed);
-    }
-  }, [part, p2Questions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
 
   const speak = (text: string) => {
     if (!window.speechSynthesis) return;
@@ -133,7 +156,54 @@ function RTRExamContent() {
     if (atcEx && atcEx.role === 'atc') speak(atcEx.text);
   };
 
-  const finishExam = () => {
+  const finishExam = async () => {
+    // Save results to backend
+    try {
+      if (part === 'part1') {
+        const score = p1Questions.filter((q, i) => p1Answers[i] === q.correct).length;
+        const answersMap: Record<string, number | null> = {};
+        p1Questions.forEach((q, i) => { answersMap[q.id] = p1Answers[i]; });
+        await fetch('/api/rtr/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            part: 'part1',
+            score,
+            total: p1Questions.length,
+            answers: answersMap,
+          }),
+        });
+      } else {
+        // Part 2: calculate similarity-based score
+        let totalObtained = 0;
+        let totalPossible = 0;
+        p2Questions.forEach((q: any) => {
+          totalPossible += q.marks;
+          const pilotExchanges = q.exchanges.filter((e: any) => e.role === 'pilot');
+          const qAnswers = p2Answers[q.id] || {};
+          let qScore = 0;
+          pilotExchanges.forEach((ex: any, ei: number) => {
+            const sim = calculateSimilarity(qAnswers[ei] || '', ex.expectedAnswer);
+            qScore += (sim / 100) * (q.marks / pilotExchanges.length);
+          });
+          totalObtained += qScore;
+        });
+        await fetch('/api/rtr/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            test_id: testId,
+            part: 'part2',
+            score: Math.round(totalObtained),
+            total: totalPossible,
+            answers: p2Answers,
+          }),
+        });
+      }
+    } catch {
+      // Non-critical — don't block UX
+    }
     setView('results');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -145,7 +215,24 @@ function RTRExamContent() {
     return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
   };
 
-  if (!test) return <div className="p-24 text-center">Test not found</div>;
+  if (view === 'loading') return (
+    <><Header />
+    <main className="flex-grow pt-48 flex items-center justify-center bg-neutral-50">
+      <div className="text-center"><div className="w-12 h-12 border-4 border-violet border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-neutral-500 font-medium">Loading exam...</p></div>
+    </main><Footer /></>
+  );
+  if (view === 'error') return (
+    <><Header />
+    <main className="flex-grow pt-48 flex items-center justify-center bg-neutral-50">
+      <div className="text-center max-w-md p-12 bg-white rounded-[2.5rem] border border-neutral-100 shadow-xl">
+        <p className="text-4xl mb-6">⚠️</p>
+        <h2 className="text-2xl font-black mb-4">Cannot Load Exam</h2>
+        <p className="text-rose-500 mb-8">{errorMsg}</p>
+        <Button onClick={() => router.push('/dgca-rtr')}>Back to RTR Tests</Button>
+      </div>
+    </main><Footer /></>
+  );
+  const test = { title: testTitle };
 
   return (
     <>
@@ -195,7 +282,7 @@ function RTRExamContent() {
                       {p1Questions[currentIndex]?.question}
                     </h2>
                     <div className="grid gap-4 mb-12">
-                      {p1Questions[currentIndex]?.options.map((opt, i) => (
+                      {p1Questions[currentIndex]?.options.map((opt: string, i: number) => (
                         <button
                           key={i}
                           onClick={() => {
