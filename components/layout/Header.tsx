@@ -7,18 +7,40 @@ import { usePathname } from 'next/navigation';
 import { NAV_LINKS } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
 
+import { User as UserIcon } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { type User } from '@supabase/supabase-js';
+
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
+  const supabase = createClient();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    
+    // Check initial auth state
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      subscription.unsubscribe();
+    }
+  }, [supabase.auth]);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-5'}`}>
@@ -51,12 +73,25 @@ export const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2 md:gap-4 shrink-0">
-            <Link href="/login" className="text-white/80 text-sm font-bold hover:text-white px-3 transition-colors hidden sm:block">
-              Log In
-            </Link>
-            <Button size="sm" variant="secondary" className="bg-white text-black border-none hover:bg-accent hover:text-black font-bold h-10 px-6">
-              Get Started
-            </Button>
+            {!user && (
+              <Link href="/login" className="text-white/80 text-sm font-bold hover:text-white px-3 transition-colors hidden sm:block">
+                Log In
+              </Link>
+            )}
+            
+            {user ? (
+              <Link 
+                href="/profile" 
+                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 hover:bg-accent hover:border-accent hover:text-black text-white transition-all shadow-lg"
+                title="Profile"
+              >
+                <UserIcon size={20} />
+              </Link>
+            ) : (
+              <Button href="/signup" size="sm" variant="secondary" className="bg-white text-black border-none hover:bg-accent hover:text-black font-bold h-10 px-6">
+                Get Started
+              </Button>
+            )}
             
             {/* Mobile Toggle */}
             <button 
