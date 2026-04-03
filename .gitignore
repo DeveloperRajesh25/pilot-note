@@ -8,3 +8,4 @@
 /.next
 
 test
+.env.local
