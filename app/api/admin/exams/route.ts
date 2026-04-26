@@ -9,8 +9,10 @@ export async function GET() {
   const { data: exams } = await db.from('exams').select('*').order('exam_date', { ascending: true });
   const { data: counts } = await db.from('exam_registration_counts').select('*');
   const countMap: Record<string, number> = {};
-  (counts ?? []).forEach((c: any) => { countMap[c.exam_id] = Number(c.registration_count); });
-  const enriched = (exams ?? []).map((e: any) => ({ ...e, registrations: countMap[e.id] ?? 0 }));
+  (counts ?? []).forEach((c: { exam_id: string; registration_count: number | string }) => {
+    countMap[c.exam_id] = Number(c.registration_count);
+  });
+  const enriched = (exams ?? []).map((e: { id: string }) => ({ ...e, registrations: countMap[e.id] ?? 0 }));
   return NextResponse.json({ exams: enriched });
 }
 
@@ -21,7 +23,7 @@ export async function POST(request: NextRequest) {
   const { id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, status } = body;
   if (!title || !subject) return NextResponse.json({ error: 'title and subject required' }, { status: 400 });
   const db = createAdminClient();
-  const record: any = { title, subject, description, exam_date, exam_time, duration: duration ?? 120, total_questions: total_questions ?? 100, fee: fee ?? 499, status: status ?? 'Upcoming' };
+  const record: Record<string, unknown> = { title, subject, description, exam_date, exam_time, duration: duration ?? 120, total_questions: total_questions ?? 100, fee: fee ?? 499, status: status ?? 'Upcoming' };
   if (id) record.id = id;
   const { data, error } = await db.from('exams').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

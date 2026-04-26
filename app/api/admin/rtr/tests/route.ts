@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const { id, title, description, price, status } = body;
   if (!title) return NextResponse.json({ error: 'title required' }, { status: 400 });
   const db = createAdminClient();
-  const record: any = { title, description, price: price ?? 299, status: status ?? 'active' };
+  const record: Record<string, unknown> = { title, description, price: price ?? 299, status: status ?? 'active' };
   if (id) record.id = id;
   const { data, error } = await db.from('rtr_tests').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -14,7 +14,7 @@ export const SketchCanvas = () => {
     let W: number, H: number, dpr: number;
     let animationFrameId: number;
     let startTime: number | null = null;
-    let currentScene = 0;
+    const currentScene = 0;
 
     function resize() {
       if (!canvas) return;
@@ -29,10 +29,6 @@ export const SketchCanvas = () => {
 
     resize();
     window.addEventListener('resize', resize);
-
-    function easeOutCubic(t: number) {
-      return 1 - Math.pow(1 - t, 3);
-    }
 
     function drawPathProgressive(points: number[][], progress: number) {
       if (!ctx || progress <= 0 || points.length < 2) return;

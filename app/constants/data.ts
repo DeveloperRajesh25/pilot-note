@@ -260,7 +260,26 @@ export const RTR_PART1_QUESTIONS = [
   { id: 'rp1_14', testId: 'rtr_t1', question: 'The transponder code 7500 indicates:', options: ['Emergency', 'Radio failure', 'Unlawful interference (hijack)', 'Military operation'], correct: 2, explanation: 'Transponder code 7500 indicates unlawful interference (hijacking).' },
 ];
 
-export const RTR_PART2_QUESTIONSByTestId: Record<string, any[]> = {
+interface RTRPart2ExchangePilot {
+  role: 'pilot';
+  prompt: string;
+  expectedAnswer: string;
+}
+
+interface RTRPart2ExchangeATC {
+  role: 'atc';
+  text: string;
+}
+
+interface RTRPart2QuestionItem {
+  id: string;
+  marks: number;
+  scenario: string;
+  instruction: string;
+  exchanges: (RTRPart2ExchangePilot | RTRPart2ExchangeATC)[];
+}
+
+export const RTR_PART2_QUESTIONSByTestId: Record<string, RTRPart2QuestionItem[]> = {
   'rtr_t1': [
     {
       id: 'rp2_1',

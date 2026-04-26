@@ -2,30 +2,61 @@
 
 import { use, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import type { Exam, ExamQuestion, ExamRegistration } from '@/lib/types';
 
-const EMPTY_Q = { question: '', options: ['', '', '', ''], correct: 0, explanation: '' };
+const EMPTY_Q: QuestionForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '' };
+
+interface QuestionForm {
+  id?: string;
+  exam_id?: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string | null;
+}
+
+interface RegistrationRow extends ExamRegistration {
+  profiles?: { full_name: string | null; email: string | null } | null;
+}
+
+interface AttemptRow {
+  user_id: string;
+  exam_id: string;
+  score: number | null;
+  total: number | null;
+  submitted_at: string;
+  profiles?: { email: string | null; full_name: string | null } | null;
+}
+
+interface ExamDetailData {
+  exam: Exam | null;
+  questions: ExamQuestion[];
+  registrations: RegistrationRow[];
+  attempts: AttemptRow[];
+}
 
 export default function AdminExamDetailPage({ params }: { params: Promise<{ examId: string }> }) {
   const { examId } = use(params);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ExamDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'questions' | 'registrations' | 'results'>('questions');
   const [showModal, setShowModal] = useState(false);
-  const [editQ, setEditQ] = useState<any>({ ...EMPTY_Q, options: ['', '', '', ''] });
+  const [editQ, setEditQ] = useState<QuestionForm>({ ...EMPTY_Q });
   const [saving, setSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     const res = await fetch(`/api/admin/exams/${examId}`);
-    const d = await res.json();
+    const d: ExamDetailData = await res.json();
     setData(d);
     setLoading(false);
   }, [examId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void fetchData(); }, [fetchData]);
 
-  const openAdd = () => { setEditQ({ ...EMPTY_Q, options: ['', '', '', ''], exam_id: examId }); setShowModal(true); };
-  const openEdit = (q: any) => { setEditQ({ ...q, options: [...q.options] }); setShowModal(true); };
+  const openAdd = () => { setEditQ({ ...EMPTY_Q, exam_id: examId }); setShowModal(true); };
+  const openEdit = (q: ExamQuestion) => { setEditQ({ ...q, options: [...q.options] }); setShowModal(true); };
 
   const handleSave = async () => {
     const isEdit = !!editQ.id;
@@ -44,7 +75,13 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
     await fetchData();
   };
 
-  const updateOption = (i: number, val: string) => { setEditQ((p: any) => { const opts = [...p.options]; opts[i] = val; return { ...p, options: opts }; }); };
+  const updateOption = (i: number, val: string) => {
+    setEditQ(p => {
+      const opts = [...p.options];
+      opts[i] = val;
+      return { ...p, options: opts };
+    });
+  };
 
   if (loading) return <div className="flex items-center justify-center py-32"><div className="w-10 h-10 border-4 border-violet border-t-transparent rounded-full animate-spin" /></div>;
   if (!data?.exam) return <div className="text-rose-400 py-20 text-center">Exam not found</div>;
@@ -80,13 +117,13 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
             <button onClick={openAdd} className="px-4 py-2 bg-violet text-white text-sm font-bold rounded-xl hover:bg-violet-700">+ Add Question</button>
           </div>
           <div className="space-y-3">
-            {questions.map((q: any, idx: number) => (
+            {questions.map((q, idx) => (
               <div key={q.id} className="bg-neutral-900 rounded-xl border border-neutral-800 p-4 flex items-start gap-4">
                 <span className="text-neutral-600 font-black w-6 text-center">{idx + 1}</span>
                 <div className="flex-1">
                   <p className="text-sm text-white font-medium mb-2">{q.question}</p>
                   <div className="flex flex-wrap gap-2">
-                    {q.options.map((opt: string, i: number) => (
+                    {q.options.map((opt, i) => (
                       <span key={i} className={`text-xs px-2 py-0.5 rounded ${i === q.correct ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'bg-neutral-800 text-neutral-500'}`}>{String.fromCharCode(65 + i)}: {opt.substring(0, 30)}</span>
                     ))}
                   </div>
@@ -107,7 +144,7 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
           <table className="w-full text-left">
             <thead><tr className="border-b border-neutral-800"><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">User</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Email</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Registered</th></tr></thead>
             <tbody>
-              {registrations.map((r: any) => (
+              {registrations.map((r) => (
                 <tr key={r.id} className="border-b border-neutral-800"><td className="px-6 py-3 text-sm text-white">{r.profiles?.full_name || '—'}</td><td className="px-6 py-3 text-sm text-neutral-400">{r.profiles?.email}</td><td className="px-6 py-3 text-sm text-neutral-400">{new Date(r.registered_at).toLocaleDateString('en-IN')}</td></tr>
               ))}
               {registrations.length === 0 && <tr><td colSpan={3} className="px-6 py-12 text-center text-neutral-500">No registrations</td></tr>}
@@ -121,8 +158,8 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
           <table className="w-full text-left">
             <thead><tr className="border-b border-neutral-800"><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">User</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Score</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">%</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Submitted</th></tr></thead>
             <tbody>
-              {attempts.map((a: any) => {
-                const pct = a.total ? Math.round((a.score / a.total) * 100) : 0;
+              {attempts.map((a) => {
+                const pct = a.total ? Math.round(((a.score ?? 0) / a.total) * 100) : 0;
                 return (
                   <tr key={a.user_id} className="border-b border-neutral-800">
                     <td className="px-6 py-3 text-sm text-neutral-400">{a.profiles?.email}</td>
@@ -147,20 +184,20 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
               <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl">&times;</button>
             </div>
             <div className="space-y-4">
-              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Question *</label><textarea value={editQ.question || ''} onChange={e => setEditQ((p: any) => ({ ...p, question: e.target.value }))} rows={3} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" /></div>
+              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Question *</label><textarea value={editQ.question || ''} onChange={e => setEditQ(p => ({ ...p, question: e.target.value }))} rows={3} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" /></div>
               <div>
                 <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Options</label>
                 <div className="space-y-2">
-                  {(editQ.options ?? ['', '', '', '']).map((opt: string, i: number) => (
+                  {editQ.options.map((opt, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <input type="radio" name="correct_eq" checked={editQ.correct === i} onChange={() => setEditQ((p: any) => ({ ...p, correct: i }))} className="w-4 h-4 accent-violet" />
+                      <input type="radio" name="correct_eq" checked={editQ.correct === i} onChange={() => setEditQ(p => ({ ...p, correct: i }))} className="w-4 h-4 accent-violet" />
                       <span className="text-sm font-bold text-neutral-400 w-4">{String.fromCharCode(65 + i)}</span>
                       <input value={opt} onChange={e => updateOption(i, e.target.value)} className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-violet" />
                     </div>
                   ))}
                 </div>
               </div>
-              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Explanation</label><textarea value={editQ.explanation || ''} onChange={e => setEditQ((p: any) => ({ ...p, explanation: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" /></div>
+              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Explanation</label><textarea value={editQ.explanation || ''} onChange={e => setEditQ(p => ({ ...p, explanation: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" /></div>
             </div>
             <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
               <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-violet text-white font-bold rounded-xl hover:bg-violet-700 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>

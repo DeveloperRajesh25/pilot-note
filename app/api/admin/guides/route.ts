@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const { id, title, category, summary, content, read_time, difficulty, published } = body;
   if (!title || !category) return NextResponse.json({ error: 'title and category required' }, { status: 400 });
   const db = createAdminClient();
-  const record: any = { title, category, summary, content, read_time, difficulty, published: published ?? true };
+  const record: Record<string, unknown> = { title, category, summary, content, read_time, difficulty, published: published ?? true };
   if (id) record.id = id;
   const { data, error } = await db.from('guides').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

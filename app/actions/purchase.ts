@@ -35,7 +35,7 @@ export async function purchaseRTRTest(testId: string) {
     .insert({
       user_id: user.id,
       test_id: testId,
-      amount: (test as any).price ?? 299,
+      amount: test.price ?? 299,
       payment_id: 'simulated',
     })
 

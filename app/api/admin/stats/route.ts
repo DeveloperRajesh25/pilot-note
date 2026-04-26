@@ -28,7 +28,10 @@ export async function GET() {
     db.from('user_purchases').select('id, user_id, test_id, amount, purchased_at, rtr_tests(title)').order('purchased_at', { ascending: false }).limit(5),
   ]);
 
-  const totalRevenue = (purchasesRaw ?? []).reduce((sum: number, p: any) => sum + (p.amount ?? 0), 0);
+  const totalRevenue = ((purchasesRaw ?? []) as { amount: number | null }[]).reduce(
+    (sum, p) => sum + (p.amount ?? 0),
+    0,
+  );
 
   return NextResponse.json({
     stats: {

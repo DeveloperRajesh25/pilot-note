@@ -1,23 +1,42 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import type { UserPurchase, RTRResult, AptitudeResult, ExamAttempt } from '@/lib/types';
+
+interface UserDetailUser {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  created_at: string;
+  last_sign_in?: string | null;
+  emailConfirmed?: boolean;
+  isAdmin?: boolean;
+}
+
+interface UserDetailData {
+  user: UserDetailUser | null;
+  purchases: (UserPurchase & { rtr_tests?: { title: string } | null })[];
+  rtrResults: (RTRResult & { rtr_tests?: { title: string } | null })[];
+  aptitudeResults: AptitudeResult[];
+  examAttempts: ExamAttempt[];
+}
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<UserDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     setLoading(true);
     const res = await fetch(`/api/admin/users/${id}`);
-    const json = await res.json();
+    const json: UserDetailData = await res.json();
     setData(json);
     setLoading(false);
-  };
+  }, [id]);
 
-  useEffect(() => { fetchUser(); }, [id]);
+  useEffect(() => { void fetchUser(); }, [fetchUser]);
 
   const handleAction = async (action: 'make_admin' | 'remove_admin' | 'delete') => {
     if (action === 'delete' && !confirm('Permanently delete this user?')) return;
@@ -104,7 +123,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 mb-6">
           <h3 className="font-black text-white mb-4">Purchases</h3>
           <div className="space-y-2">
-            {purchases.map((p: any) => (
+            {purchases.map((p) => (
               <div key={p.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
                 <p className="text-sm text-white">{p.rtr_tests?.title ?? p.test_id}</p>
                 <div className="flex items-center gap-4">
@@ -122,12 +141,12 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 mb-6">
           <h3 className="font-black text-white mb-4">RTR Results</h3>
           <div className="space-y-2">
-            {rtrResults.map((r: any) => {
-              const pct = Math.round((r.score / r.total) * 100);
+            {rtrResults.map((r) => {
+              const pct = r.total ? Math.round((r.score / r.total) * 100) : 0;
               return (
                 <div key={r.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
                   <div>
-                    <p className="text-sm text-white">{r.rtr_tests?.title}</p>
+                    <p className="text-sm text-white">{r.rtr_tests?.title ?? r.test_id}</p>
                     <p className="text-xs text-neutral-500">{r.part === 'part1' ? 'Part 1 — MCQ' : 'Part 2 — RT'}</p>
                   </div>
                   <div className="text-right">
@@ -146,8 +165,8 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
           <h3 className="font-black text-white mb-4">Aptitude Results</h3>
           <div className="space-y-2">
-            {aptitudeResults.map((r: any) => {
-              const pct = Math.round((r.score / r.total) * 100);
+            {aptitudeResults.map((r) => {
+              const pct = r.total ? Math.round((r.score / r.total) * 100) : 0;
               return (
                 <div key={r.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
                   <p className="text-sm text-white">{r.category}</p>

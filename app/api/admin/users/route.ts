@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { User } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+
+interface ProfileRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
 
 export async function GET(request: NextRequest) {
   const check = await requireAdmin();
@@ -10,7 +19,6 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = 20;
-  const offset = (page - 1) * limit;
 
   const db = createAdminClient();
 
@@ -18,11 +26,13 @@ export async function GET(request: NextRequest) {
   const { data: authUsers, error: authErr } = await db.auth.admin.listUsers({ page, perPage: limit });
   if (authErr) return NextResponse.json({ error: authErr.message }, { status: 500 });
 
-  const userIds = authUsers.users.map((u: any) => u.id);
+  const userIds = authUsers.users.map((u: User) => u.id);
 
   // Get profiles
   const { data: profiles } = await db.from('profiles').select('*').in('id', userIds);
-  const profileMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]));
+  const profileMap: Record<string, ProfileRow> = Object.fromEntries(
+    ((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p]),
+  );
 
   // Get purchase counts
   const { data: purchaseCounts } = await db
@@ -30,15 +40,15 @@ export async function GET(request: NextRequest) {
     .select('user_id')
     .in('user_id', userIds);
   const purchaseMap: Record<string, number> = {};
-  (purchaseCounts ?? []).forEach((p: any) => {
+  ((purchaseCounts ?? []) as { user_id: string }[]).forEach((p) => {
     purchaseMap[p.user_id] = (purchaseMap[p.user_id] || 0) + 1;
   });
 
   // Get admin roles
   const { data: adminRoles } = await db.from('admin_roles').select('user_id');
-  const adminSet = new Set((adminRoles ?? []).map((r: any) => r.user_id));
+  const adminSet = new Set(((adminRoles ?? []) as { user_id: string }[]).map((r) => r.user_id));
 
-  let users = authUsers.users.map((u: any) => ({
+  let users = authUsers.users.map((u: User) => ({
     id: u.id,
     email: u.email,
     full_name: profileMap[u.id]?.full_name || null,
@@ -51,7 +61,7 @@ export async function GET(request: NextRequest) {
 
   if (search) {
     const q = search.toLowerCase();
-    users = users.filter((u: any) => u.email?.toLowerCase().includes(q) || u.full_name?.toLowerCase().includes(q));
+    users = users.filter((u) => u.email?.toLowerCase().includes(q) || u.full_name?.toLowerCase().includes(q));
   }
 
   return NextResponse.json({

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const db = createAdminClient();
-  const record: any = { category, question, options, correct, explanation };
+  const record: Record<string, unknown> = { category, question, options, correct, explanation };
   if (id) record.id = id;
 
   const { data, error } = await db.from('aptitude_questions').insert(record).select().single();

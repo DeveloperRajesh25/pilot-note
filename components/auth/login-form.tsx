@@ -5,7 +5,7 @@ import { login } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Link from 'next/link'
-import { Mail, Lock, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null)
@@ -57,8 +57,8 @@ export function LoginForm() {
             <input type="checkbox" className="rounded border-neutral-300 text-accent focus:ring-accent" />
             <span className="text-text-secondary">Remember me</span>
           </label>
-          <Link 
-            href="/auth/forgot-password" 
+          <Link
+            href="/forgot-password"
             className="text-accent hover:text-accent-dark font-medium transition-colors"
           >
             Forgot password?
@@ -81,7 +81,7 @@ export function LoginForm() {
 
       <div className="mt-8 text-center text-sm">
         <p className="text-text-secondary">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link 
             href="/signup" 
             className="text-accent hover:text-accent-dark font-bold transition-colors"

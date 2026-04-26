@@ -33,7 +33,7 @@ export default function AdminGuidesPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchGuides(); }, [fetchGuides]);
+  useEffect(() => { void fetchGuides(); }, [fetchGuides]);
 
   const openCreate = () => { setEditGuide(EMPTY_GUIDE); setShowModal(true); };
   const openEdit = (g: Guide) => { setEditGuide({ ...g }); setShowModal(true); };
@@ -41,9 +41,10 @@ export default function AdminGuidesPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const isEdit = !!(editGuide as Guide).id && (editGuide as Guide).id && !String((editGuide as any).id).startsWith('new');
+      const editId = editGuide.id;
+      const isEdit = !!editId && !editId.startsWith('new');
       const method = isEdit ? 'PUT' : 'POST';
-      const url = isEdit ? `/api/admin/guides/${(editGuide as Guide).id}` : '/api/admin/guides';
+      const url = isEdit ? `/api/admin/guides/${editId}` : '/api/admin/guides';
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editGuide) });
       if (res.ok) { setShowModal(false); await fetchGuides(); }
       else { const d = await res.json(); alert(d.error || 'Save failed'); }
@@ -98,7 +99,7 @@ export default function AdminGuidesPage() {
                 <p className="font-bold text-white text-sm truncate">{g.title}</p>
                 <p className="text-xs text-neutral-500 mt-1 line-clamp-1">{g.summary}</p>
               </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => togglePublish(g)}
                   className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${g.published ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'}`}
@@ -119,7 +120,7 @@ export default function AdminGuidesPage() {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
           <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-3xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{(editGuide as Guide).id ? 'Edit Guide' : 'New Guide'}</h2>
+              <h2 className="text-xl font-black text-white">{editGuide.id ? 'Edit Guide' : 'New Guide'}</h2>
               <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
 

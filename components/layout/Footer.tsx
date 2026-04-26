@@ -42,7 +42,7 @@ export const Footer = () => {
         <div className="pt-10 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-neutral-400 font-medium">
           <p>Copyright © 2024 — 2026 <span className="text-neutral-600">Pilot Note</span>. All rights reserved.</p>
           <div className="flex items-center gap-2">
-            Made with <span className="text-red-500 animate-pulse">❤️</span> for India's future pilots
+            Made with <span className="text-red-500 animate-pulse">❤️</span> for India&apos;s future pilots
           </div>
         </div>
       </div>

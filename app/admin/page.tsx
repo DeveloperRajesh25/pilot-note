@@ -1,5 +1,23 @@
-import { createClient } from '@/lib/supabase/server';
+import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+
+interface PurchaseAmount { amount: number | null }
+interface RecentPurchase {
+  id: string;
+  amount: number;
+  purchased_at: string;
+  test_id?: string;
+  rtr_tests: { title: string } | null;
+  profiles: { email: string | null } | null;
+}
+interface RecentUser {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  created_at: string;
+}
+interface ExamSummary { id: string; title: string; status: string; exam_date: string | null }
+interface RTRSummary { id: string; title: string; status: string }
 
 async function getStats() {
   const db = createAdminClient();
@@ -27,8 +45,22 @@ async function getStats() {
     db.from('exams').select('id, title, status, exam_date'),
   ]);
 
-  const totalRevenue = (purchasesRaw ?? []).reduce((s: number, p: any) => s + (p.amount ?? 0), 0);
-  return { userCount, purchaseCount, totalRevenue, aptitudeCount, rtrCount, examRegCount, recentUsers, recentPurchases, rtrTests, exams };
+  const totalRevenue = ((purchasesRaw ?? []) as PurchaseAmount[]).reduce(
+    (s, p) => s + (p.amount ?? 0),
+    0,
+  );
+  return {
+    userCount,
+    purchaseCount,
+    totalRevenue,
+    aptitudeCount,
+    rtrCount,
+    examRegCount,
+    recentUsers: (recentUsers ?? []) as RecentUser[],
+    recentPurchases: (recentPurchases ?? []) as unknown as RecentPurchase[],
+    rtrTests: (rtrTests ?? []) as RTRSummary[],
+    exams: (exams ?? []) as ExamSummary[],
+  };
 }
 
 export default async function AdminDashboard() {
@@ -40,7 +72,7 @@ export default async function AdminDashboard() {
     { label: 'Aptitude Attempts', value: stats.aptitudeCount, icon: '🧠', color: 'blue', sub: 'tests taken' },
     { label: 'RTR Attempts', value: stats.rtrCount, icon: '📡', color: 'orange', sub: 'exam submissions' },
     { label: 'Exam Registrations', value: stats.examRegCount, icon: '🎓', color: 'pink', sub: 'pariksha signups' },
-    { label: 'RTR Tests Available', value: (stats.rtrTests ?? []).length, icon: '📋', color: 'teal', sub: 'active products' },
+    { label: 'RTR Tests Available', value: stats.rtrTests.length, icon: '📋', color: 'teal', sub: 'active products' },
   ];
 
   const colorMap: Record<string, string> = {
@@ -56,7 +88,7 @@ export default async function AdminDashboard() {
     <div>
       <div className="mb-10">
         <h1 className="text-3xl font-black text-white mb-1">Dashboard Overview</h1>
-        <p className="text-neutral-400">Welcome back — here's everything happening on Pilot Note.</p>
+        <p className="text-neutral-400">Welcome back — here&apos;s everything happening on Pilot Note.</p>
       </div>
 
       {/* KPI Cards */}
@@ -78,17 +110,17 @@ export default async function AdminDashboard() {
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-black text-white text-lg">Recent Purchases</h2>
-            <a href="/admin/purchases" className="text-xs text-violet font-bold hover:underline">View all →</a>
+            <Link href="/admin/purchases" className="text-xs text-violet font-bold hover:underline">View all →</Link>
           </div>
           <div className="space-y-3">
-            {(stats.recentPurchases ?? []).length === 0 && (
+            {stats.recentPurchases.length === 0 && (
               <p className="text-neutral-500 text-sm py-4 text-center">No purchases yet</p>
             )}
-            {(stats.recentPurchases ?? []).map((p: any) => (
+            {stats.recentPurchases.map((p) => (
               <div key={p.id} className="flex items-center justify-between py-3 border-b border-neutral-800 last:border-0">
                 <div>
-                  <p className="text-sm font-semibold text-white">{(p.profiles as any)?.email ?? 'Unknown'}</p>
-                  <p className="text-xs text-neutral-500">{(p.rtr_tests as any)?.title ?? p.test_id}</p>
+                  <p className="text-sm font-semibold text-white">{p.profiles?.email ?? 'Unknown'}</p>
+                  <p className="text-xs text-neutral-500">{p.rtr_tests?.title ?? p.test_id ?? '—'}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-black text-emerald-400">₹{p.amount}</p>
@@ -103,22 +135,22 @@ export default async function AdminDashboard() {
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-black text-white text-lg">Recent Signups</h2>
-            <a href="/admin/users" className="text-xs text-violet font-bold hover:underline">View all →</a>
+            <Link href="/admin/users" className="text-xs text-violet font-bold hover:underline">View all →</Link>
           </div>
           <div className="space-y-3">
-            {(stats.recentUsers ?? []).length === 0 && (
+            {stats.recentUsers.length === 0 && (
               <p className="text-neutral-500 text-sm py-4 text-center">No users yet</p>
             )}
-            {(stats.recentUsers ?? []).map((u: any) => (
+            {stats.recentUsers.map((u) => (
               <div key={u.id} className="flex items-center gap-3 py-3 border-b border-neutral-800 last:border-0">
-                <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-300 flex-shrink-0">
-                  {(u.email as string)?.[0]?.toUpperCase() ?? '?'}
+                <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-300 shrink-0">
+                  {u.email?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{u.full_name || u.email}</p>
                   <p className="text-xs text-neutral-500">{new Date(u.created_at).toLocaleDateString('en-IN')}</p>
                 </div>
-                <a href={`/admin/users/${u.id}`} className="text-xs text-violet hover:underline flex-shrink-0">View</a>
+                <Link href={`/admin/users/${u.id}`} className="text-xs text-violet hover:underline shrink-0">View</Link>
               </div>
             ))}
           </div>
@@ -130,9 +162,9 @@ export default async function AdminDashboard() {
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-black text-white text-lg">Pariksha Exams</h2>
-            <a href="/admin/exams" className="text-xs text-violet font-bold hover:underline">Manage →</a>
+            <Link href="/admin/exams" className="text-xs text-violet font-bold hover:underline">Manage →</Link>
           </div>
-          {(stats.exams ?? []).map((e: any) => (
+          {stats.exams.map((e) => (
             <div key={e.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
               <p className="text-sm text-white font-medium">{e.title}</p>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
@@ -142,15 +174,15 @@ export default async function AdminDashboard() {
               }`}>{e.status}</span>
             </div>
           ))}
-          {(stats.exams ?? []).length === 0 && <p className="text-neutral-500 text-sm text-center py-4">No exams created</p>}
+          {stats.exams.length === 0 && <p className="text-neutral-500 text-sm text-center py-4">No exams created</p>}
         </div>
 
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-black text-white text-lg">RTR Tests</h2>
-            <a href="/admin/rtr" className="text-xs text-violet font-bold hover:underline">Manage →</a>
+            <Link href="/admin/rtr" className="text-xs text-violet font-bold hover:underline">Manage →</Link>
           </div>
-          {(stats.rtrTests ?? []).map((t: any) => (
+          {stats.rtrTests.map((t) => (
             <div key={t.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
               <p className="text-sm text-white font-medium">{t.title}</p>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
@@ -158,7 +190,7 @@ export default async function AdminDashboard() {
               }`}>{t.status}</span>
             </div>
           ))}
-          {(stats.rtrTests ?? []).length === 0 && <p className="text-neutral-500 text-sm text-center py-4">No tests created</p>}
+          {stats.rtrTests.length === 0 && <p className="text-neutral-500 text-sm text-center py-4">No tests created</p>}
         </div>
       </div>
     </div>

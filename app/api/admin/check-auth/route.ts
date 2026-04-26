@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
+import { errorMessage } from '@/lib/types';
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function GET() {
       roleError: roleError?.message || null,
       userId: user.id
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
   }
 }

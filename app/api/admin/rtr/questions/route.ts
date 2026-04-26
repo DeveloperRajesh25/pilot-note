@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
   const db = createAdminClient();
-  const record: any = { test_id, question, options, correct, explanation };
+  const record: Record<string, unknown> = { test_id, question, options, correct, explanation };
   if (id) record.id = id;
   const { data, error } = await db.from('rtr_questions_part1').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference HTML/JS implementation, not part of the Next.js app.
+    "legacy/**",
   ]),
 ]);
 

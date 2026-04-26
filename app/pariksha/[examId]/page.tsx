@@ -19,11 +19,6 @@ interface ExamMeta {
   total_questions: number;
 }
 
-interface AttemptData {
-  id: string;
-  answers: Record<string, number>;
-}
-
 interface PageParams {
   examId: string;
 }

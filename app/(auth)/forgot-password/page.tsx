@@ -5,7 +5,7 @@ import { forgotPassword } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Link from 'next/link'
-import { Loader2, Mail, ArrowLeft } from 'lucide-react'
+import { Loader2, ArrowLeft } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
           Back to Login
         </Link>
         <h1 className="text-3xl font-bold mb-2">Forgot Password?</h1>
-        <p className="text-text-secondary">No worries, we'll send you reset instructions.</p>
+        <p className="text-text-secondary">No worries, we&apos;ll send you reset instructions.</p>
       </div>
 
       {message ? (

@@ -1,11 +1,42 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { RTR_CONFIG } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
+
+interface Part1Question {
+  id: string;
+  test_id?: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation?: string | null;
+}
+
+interface PilotExchange {
+  role: 'pilot';
+  prompt: string;
+  expectedAnswer: string;
+}
+interface ATCExchange {
+  role: 'atc';
+  text: string;
+}
+type Exchange = PilotExchange | ATCExchange;
+
+interface Part2Scenario {
+  id: string;
+  test_id?: string;
+  marks: number;
+  scenario: string;
+  instruction?: string | null;
+  exchanges: Exchange[];
+}
+
+interface RTRTestSummary { id: string; title: string }
 
 // --- Utilities ---
 
@@ -77,13 +108,13 @@ function RTRExamContent() {
   const [testTitle, setTestTitle] = useState('');
 
   // Part 1 State
-  const [p1Questions, setP1Questions] = useState<any[]>([]);
+  const [p1Questions, setP1Questions] = useState<Part1Question[]>([]);
   const [p1Answers, setP1Answers] = useState<(number | null)[]>([]);
   const [p1Flags, setP1Flags] = useState<boolean[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Part 2 State
-  const [p2Questions, setP2Questions] = useState<any[]>([]);
+  const [p2Questions, setP2Questions] = useState<Part2Scenario[]>([]);
   const [p2Answers, setP2Answers] = useState<Record<string, Record<number, string>>>({});
   const [p2RevealedState, setP2RevealedState] = useState<Record<string, number>>({});
 
@@ -109,7 +140,7 @@ function RTRExamContent() {
           const scenarios = data.scenarios ?? [];
           setP2Questions(scenarios);
           const initialRevealed: Record<string, number> = {};
-          scenarios.forEach((q: any) => { initialRevealed[q.id] = 1; });
+          scenarios.forEach((q: Part2Scenario) => { initialRevealed[q.id] = 1; });
           setP2RevealedState(initialRevealed);
         }
         setView('exam');
@@ -118,7 +149,7 @@ function RTRExamContent() {
 
     // Also fetch test title
     fetch('/api/rtr/tests').then(r => r.json()).then(d => {
-      const t = (d.tests ?? []).find((t: any) => t.id === testId);
+      const t = (d.tests ?? []).find((t: RTRTestSummary) => t.id === testId);
       if (t) setTestTitle(t.title);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,12 +209,12 @@ function RTRExamContent() {
         // Part 2: calculate similarity-based score
         let totalObtained = 0;
         let totalPossible = 0;
-        p2Questions.forEach((q: any) => {
+        p2Questions.forEach((q) => {
           totalPossible += q.marks;
-          const pilotExchanges = q.exchanges.filter((e: any) => e.role === 'pilot');
+          const pilotExchanges = q.exchanges.filter((e): e is PilotExchange => e.role === 'pilot');
           const qAnswers = p2Answers[q.id] || {};
           let qScore = 0;
-          pilotExchanges.forEach((ex: any, ei: number) => {
+          pilotExchanges.forEach((ex, ei) => {
             const sim = calculateSimilarity(qAnswers[ei] || '', ex.expectedAnswer);
             qScore += (sim / 100) * (q.marks / pilotExchanges.length);
           });
@@ -328,10 +359,10 @@ function RTRExamContent() {
                         <span className="px-3 py-1 bg-violet-50 text-violet text-xs font-bold rounded-full">{p2Questions[currentIndex]?.marks} Marks</span>
                       </div>
                       <h2 className="text-2xl font-black text-neutral-900 mb-4">{p2Questions[currentIndex]?.scenario}</h2>
-                      <p className="text-neutral-500 mb-10 italic">"{p2Questions[currentIndex]?.instruction}"</p>
+                      <p className="text-neutral-500 mb-10 italic">&ldquo;{p2Questions[currentIndex]?.instruction}&rdquo;</p>
                       
                       <div className="space-y-6">
-                        {p2Questions[currentIndex]?.exchanges.map((ex: any, i: number) => {
+                        {p2Questions[currentIndex]?.exchanges.map((ex, i) => {
                           const isVisible = i < (p2RevealedState[p2Questions[currentIndex].id] || 1);
                           if (!isVisible) return null;
 
@@ -346,7 +377,7 @@ function RTRExamContent() {
                               </div>
                             );
                           } else {
-                            const pilotExIdx = p2Questions[currentIndex].exchanges.slice(0, i).filter((e: any) => e.role === 'pilot').length;
+                            const pilotExIdx = p2Questions[currentIndex].exchanges.slice(0, i).filter((e) => e.role === 'pilot').length;
                             const isLastVisible = i === (p2RevealedState[p2Questions[currentIndex].id] || 1) - 1;
                             const nextIsATC = i + 1 < p2Questions[currentIndex].exchanges.length && p2Questions[currentIndex].exchanges[i + 1].role === 'atc';
 
@@ -473,44 +504,49 @@ function RTRExamContent() {
               {/* Review Section */}
               <div className="space-y-4">
                 <h3 className="text-xl font-black px-4 uppercase tracking-wider">Detailed Review</h3>
-                {(part === 'part1' ? p1Questions : p2Questions).map((q: any, i: number) => (
-                  <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="text-xs font-black text-neutral-400">QUESTION {i + 1}</span>
-                      {part === 'part1' ? (
+                {part === 'part1' ? (
+                  p1Questions.map((q, i) => (
+                    <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-xs font-black text-neutral-400">QUESTION {i + 1}</span>
                         <span className={`text-xs font-bold ${p1Answers[i] === q.correct ? 'text-emerald-600' : 'text-rose-600'}`}>
                           {p1Answers[i] === q.correct ? '✓ CORRECT' : '✗ INCORRECT'}
                         </span>
-                      ) : (
-                        <span className="text-xs font-bold text-emerald-600 uppercase">Review Analysis →</span>
-                      )}
+                      </div>
+                      <h4 className="font-bold text-neutral-900 mb-4">{q.question}</h4>
+                      <div className="p-4 bg-neutral-50 rounded-xl text-sm">
+                        <span className="font-bold text-neutral-400 block mb-1">EXPLANATION:</span>
+                        {q.explanation}
+                      </div>
                     </div>
-                    <h4 className="font-bold text-neutral-900 mb-4">{part === 'part1' ? q.question : (q as any).scenario}</h4>
-                    {part === 'part1' ? (
-                       <div className="p-4 bg-neutral-50 rounded-xl text-sm">
-                         <span className="font-bold text-neutral-400 block mb-1">EXPLANATION:</span>
-                         {q.explanation}
-                       </div>
-                    ) : (
-                       <div className="space-y-3">
-                         {(q as any).exchanges.filter((e:any) => e.role === 'pilot').map((ex:any, ei:number) => {
-                           const similarity = calculateSimilarity(p2Answers[q.id]?.[ei] || '', ex.expectedAnswer);
-                           return (
-                             <div key={ei} className="p-4 bg-neutral-50 rounded-xl border-l-4 border-emerald-500">
-                               <div className="flex justify-between text-xs font-bold mb-2">
-                                 <span className="text-neutral-400 uppercase">{ex.prompt}</span>
-                                 <span className={similarity > 70 ? 'text-emerald-600' : 'text-rose-600'}>{Math.round(similarity)}% MATCH</span>
-                               </div>
-                               <p className="text-neutral-700 italic mb-2">"{p2Answers[q.id]?.[ei] || 'No transmission recorded.'}"</p>
-                               <p className="text-xs text-neutral-400 font-bold uppercase mt-2">Expected Phraseology:</p>
-                               <p className="text-sm font-medium text-emerald-700">{ex.expectedAnswer}</p>
-                             </div>
-                           );
-                         })}
-                       </div>
-                    )}
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  p2Questions.map((q, i) => (
+                    <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-xs font-black text-neutral-400">QUESTION {i + 1}</span>
+                        <span className="text-xs font-bold text-emerald-600 uppercase">Review Analysis →</span>
+                      </div>
+                      <h4 className="font-bold text-neutral-900 mb-4">{q.scenario}</h4>
+                      <div className="space-y-3">
+                        {q.exchanges.filter((e): e is PilotExchange => e.role === 'pilot').map((ex, ei) => {
+                          const similarity = calculateSimilarity(p2Answers[q.id]?.[ei] || '', ex.expectedAnswer);
+                          return (
+                            <div key={ei} className="p-4 bg-neutral-50 rounded-xl border-l-4 border-emerald-500">
+                              <div className="flex justify-between text-xs font-bold mb-2">
+                                <span className="text-neutral-400 uppercase">{ex.prompt}</span>
+                                <span className={similarity > 70 ? 'text-emerald-600' : 'text-rose-600'}>{Math.round(similarity)}% MATCH</span>
+                              </div>
+                              <p className="text-neutral-700 italic mb-2">&ldquo;{p2Answers[q.id]?.[ei] || 'No transmission recorded.'}&rdquo;</p>
+                              <p className="text-xs text-neutral-400 font-bold uppercase mt-2">Expected Phraseology:</p>
+                              <p className="text-sm font-medium text-emerald-700">{ex.expectedAnswer}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

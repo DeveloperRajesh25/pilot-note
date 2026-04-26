@@ -3,8 +3,16 @@
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 
+interface SetupStatus {
+  user?: { id: string; email?: string | null } | null;
+  error?: string;
+  isAdmin?: boolean;
+  hasServiceKey?: boolean;
+  roleError?: string | null;
+}
+
 export default function SetupCheckPage() {
-  const [status, setStatus] = useState<any>(null);
+  const [status, setStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,12 +36,12 @@ export default function SetupCheckPage() {
     check();
   }, []);
 
-  if (loading) return <div className="p-10 font-bold">Checking setup...</div>;
+  if (loading || !status) return <div className="p-10 font-bold">Checking setup...</div>;
 
   return (
     <div className="p-10 bg-neutral-950 text-white min-h-screen font-mono text-sm">
       <h1 className="text-2xl font-black text-violet mb-6">Setup Diagnostics</h1>
-      
+
       <div className="space-y-6">
         <section className="p-4 bg-neutral-900 rounded-xl border border-neutral-800">
           <h2 className="text-xs font-bold text-neutral-500 uppercase mb-2">Auth Status</h2>
@@ -65,10 +73,10 @@ export default function SetupCheckPage() {
             <p className="mb-2">2. Run this command (ensure you replace with your ID above):</p>
             <pre className="bg-neutral-800 p-3 rounded mt-2 text-violet font-bold">
               INSERT INTO public.admin_roles (user_id){"\n"}
-              VALUES ('{status.user?.id || 'YOUR-ID-HERE'}'){"\n"}
+              VALUES (&apos;{status.user?.id || 'YOUR-ID-HERE'}&apos;){"\n"}
               ON CONFLICT DO NOTHING;
             </pre>
-            <p className="mt-4">3. Refresh this page. If "Is Admin" turns green, try opening <a href="/admin" className="text-violet underline">/admin</a> again.</p>
+            <p className="mt-4">3. Refresh this page. If &quot;Is Admin&quot; turns green, try opening <a href="/admin" className="text-violet underline">/admin</a> again.</p>
           </div>
         </section>
       </div>

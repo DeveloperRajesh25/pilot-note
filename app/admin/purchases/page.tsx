@@ -1,9 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { UserPurchase } from '@/lib/types';
+
+type PurchaseRow = UserPurchase & {
+  profiles?: { email: string | null; full_name: string | null } | null;
+  rtr_tests?: { title: string } | null;
+};
 
 export default function AdminPurchasesPage() {
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [purchases, setPurchases] = useState<PurchaseRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
