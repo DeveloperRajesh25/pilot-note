@@ -276,9 +276,13 @@ end $$;
 -- 6. ADMIN POLICIES
 do $$
 begin
-  -- Admin Roles
+  -- Admin Roles — each user can read their own row.
+  -- A self-referential `exists (select … from admin_roles)` policy here
+  -- triggers "infinite recursion detected in policy" when the user-scoped
+  -- client checks its own admin status.
   execute 'drop policy if exists "Admins can read admin_roles" on public.admin_roles';
-  create policy "Admins can read admin_roles" on public.admin_roles for select using (exists (select 1 from public.admin_roles ar where ar.user_id = auth.uid()));
+  execute 'drop policy if exists "Users can read own admin_role" on public.admin_roles';
+  create policy "Users can read own admin_role" on public.admin_roles for select using (user_id = auth.uid());
 
   -- Profiles
   execute 'drop policy if exists "Admins can read all profiles" on public.profiles';

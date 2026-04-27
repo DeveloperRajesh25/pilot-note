@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { opaqueId } from '@/lib/admin/ids';
 
 // --- Part 1 Questions ---
 export async function GET(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
   const db = createAdminClient();
   const record: Record<string, unknown> = { test_id, question, options, correct, explanation };
-  if (id) record.id = id;
+  record.id = id || opaqueId('rq1');
   const { data, error } = await db.from('rtr_questions_part1').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ question: data }, { status: 201 });

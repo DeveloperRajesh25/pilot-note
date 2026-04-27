@@ -15,12 +15,13 @@ create table if not exists public.admin_roles (
 
 alter table public.admin_roles enable row level security;
 
--- Only admins can read admin_roles
-create policy "Admins can read admin_roles"
+-- Each authenticated user can read their own admin_roles row.
+-- (A self-referential `exists (select … from admin_roles)` here causes
+-- "infinite recursion detected in policy for relation admin_roles" and
+-- breaks every admin role check that goes through the user-scoped client.)
+create policy "Users can read own admin_role"
   on public.admin_roles for select
-  using (
-    exists (select 1 from public.admin_roles ar where ar.user_id = auth.uid())
-  );
+  using (user_id = auth.uid());
 
 -- Helper function: is current user an admin?
 create or replace function public.is_admin()

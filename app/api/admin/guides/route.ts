@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { slugId } from '@/lib/admin/ids';
 
 export async function GET() {
   const check = await requireAdmin();
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   if (!title || !category) return NextResponse.json({ error: 'title and category required' }, { status: 400 });
   const db = createAdminClient();
   const record: Record<string, unknown> = { title, category, summary, content, read_time, difficulty, published: published ?? true };
-  if (id) record.id = id;
+  record.id = id || slugId(title);
   const { data, error } = await db.from('guides').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ guide: data }, { status: 201 });

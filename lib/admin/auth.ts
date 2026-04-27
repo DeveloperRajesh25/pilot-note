@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 
 /**
@@ -19,8 +20,11 @@ export async function requireAdmin(): Promise<
     };
   }
 
-  // Check admin_roles table
-  const { data: role } = await supabase
+  // admin_roles is RLS-protected with a self-referential policy, so the
+  // user-scoped client cannot read its own row. Use the service-role client
+  // to look up the role — auth identity already came from supabase.auth.
+  const adminDb = createAdminClient();
+  const { data: role } = await adminDb
     .from('admin_roles')
     .select('id')
     .eq('user_id', user.id)
