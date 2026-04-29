@@ -58,13 +58,53 @@ export interface RTRPart2Exchange {
   hint?: string;
 }
 
+// Header block on the printed chart paper. Labels are fixed in UI; values are admin-editable.
+export interface RTRChartContext {
+  time_allowed: string;     // e.g. "25 minutes"
+  total_marks: number;      // e.g. 100
+  aircraft_id: string;      // VT ERB
+  type_aircraft: string;    // Embraier
+  flight_rules: string;     // I
+  wake_turb_cat: string;    // M
+  flight_type: string;      // N
+  equipment: string;        // S
+  departure: string;        // VOPB
+  time: string;             // 08:45
+  level: string;            // F360
+  route: string;            // P628 OPONI G450
+  destination: string;      // VANP
+  alternate: string;        // VERC
+  other_info: string;       // Only VHF on board.
+}
+
+// One fill-in blank inside a sub-part (used for question 5 with multiple labelled blanks).
+export interface RTRBlank {
+  label: string;            // e.g. "Classifications of AIRPROX are"
+  expectedAnswer: string;
+}
+
+export interface RTRSubPart {
+  label: string;            // "a", "b", "" (none)
+  prompt: string;           // What ATC / scenario tells the candidate.
+  expectedAnswer: string;   // Reference transmission for similarity scoring (ignored when blanks set).
+  marks: number;
+  blanks?: RTRBlank[];      // When present, render as labelled inputs and score per blank.
+}
+
+export interface RTRChartQuestion {
+  number: number;           // 1, 2, 3, ...
+  subParts: RTRSubPart[];
+}
+
 export interface RTRPart2Scenario {
   id: string;
   test_id: string;
   marks: number;
   scenario: string;
   instruction: string | null;
-  exchanges: RTRPart2Exchange[];
+  exchanges?: RTRPart2Exchange[] | null;       // Legacy dialogue model — retained for old data.
+  chart_context?: RTRChartContext | null;      // New chart-paper model: header.
+  questions?: RTRChartQuestion[] | null;       // New chart-paper model: numbered questions.
   created_at?: string;
 }
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const RTR_S_FIELDS = ['test_id', 'marks', 'scenario', 'instruction', 'exchanges'] as const;
+const RTR_S_FIELDS = ['test_id', 'marks', 'scenario', 'instruction', 'exchanges', 'chart_context', 'questions'] as const;
 
 export async function PUT(
   request: NextRequest,

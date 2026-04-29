@@ -2,7 +2,15 @@
 
 import { use, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import type { RTRTest, RTRPart1Question, RTRPart2Scenario } from '@/lib/types';
+import type {
+  RTRTest,
+  RTRPart1Question,
+  RTRPart2Scenario,
+  RTRChartContext,
+  RTRChartQuestion,
+  RTRSubPart,
+  RTRBlank,
+} from '@/lib/types';
 
 interface QForm {
   id?: string;
@@ -19,8 +27,8 @@ interface SForm {
   scenario: string;
   instruction: string | null;
   marks: number;
-  // String form for the JSON editor in the modal.
-  exchanges: string | RTRPart2Scenario['exchanges'];
+  chart_context: RTRChartContext;
+  questions: RTRChartQuestion[];
 }
 
 type EditItem = QForm | SForm;
@@ -32,11 +40,53 @@ interface RTRDetail {
 }
 
 const EMPTY_Q: QForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '' };
-const EMPTY_S: SForm = { scenario: '', instruction: '', marks: 15, exchanges: '[]' };
+
+const EMPTY_CHART: RTRChartContext = {
+  time_allowed: '25 minutes',
+  total_marks: 100,
+  aircraft_id: '',
+  type_aircraft: '',
+  flight_rules: '',
+  wake_turb_cat: '',
+  flight_type: '',
+  equipment: '',
+  departure: '',
+  time: '',
+  level: '',
+  route: '',
+  destination: '',
+  alternate: '',
+  other_info: '',
+};
+
+const EMPTY_S: SForm = {
+  scenario: '',
+  instruction: '',
+  marks: 100,
+  chart_context: { ...EMPTY_CHART },
+  questions: [{ number: 1, subParts: [{ label: 'a', prompt: '', expectedAnswer: '', marks: 10 }] }],
+};
 
 function isQForm(item: EditItem): item is QForm {
   return Object.prototype.hasOwnProperty.call(item, 'options');
 }
+
+// Fixed labels rendered in the same order on every chart, matching the printed paper.
+const CHART_FIELDS: { key: keyof RTRChartContext; label: string }[] = [
+  { key: 'aircraft_id', label: 'Aircraft Identification' },
+  { key: 'flight_rules', label: 'Flight Rules' },
+  { key: 'flight_type', label: 'Type of Flight' },
+  { key: 'type_aircraft', label: 'Type of Aircraft' },
+  { key: 'wake_turb_cat', label: 'Wake Turbulence CAT' },
+  { key: 'equipment', label: 'Equipment' },
+  { key: 'departure', label: 'Departure Aerodrome' },
+  { key: 'time', label: 'Time' },
+  { key: 'level', label: 'Level' },
+  { key: 'route', label: 'Route' },
+  { key: 'destination', label: 'Destination Aerodrome' },
+  { key: 'alternate', label: 'Alternate Aerodrome' },
+  { key: 'other_info', label: 'Other Information' },
+];
 
 export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ testId: string }> }) {
   const { testId } = use(params);
@@ -61,9 +111,26 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
 
   const openAddQ = () => { setEditItem({ ...EMPTY_Q, test_id: testId }); setModalType('q'); setShowModal(true); };
   const openEditQ = (q: RTRPart1Question) => { setEditItem({ ...q, options: [...q.options] }); setModalType('q'); setShowModal(true); };
-  const openAddS = () => { setEditItem({ ...EMPTY_S, test_id: testId }); setModalType('s'); setShowModal(true); };
+  const openAddS = () => {
+    setEditItem({
+      ...EMPTY_S,
+      test_id: testId,
+      chart_context: { ...EMPTY_CHART },
+      questions: [{ number: 1, subParts: [{ label: 'a', prompt: '', expectedAnswer: '', marks: 10 }] }],
+    });
+    setModalType('s');
+    setShowModal(true);
+  };
   const openEditS = (s: RTRPart2Scenario) => {
-    setEditItem({ ...s, exchanges: JSON.stringify(s.exchanges, null, 2) });
+    setEditItem({
+      id: s.id,
+      test_id: s.test_id,
+      scenario: s.scenario,
+      instruction: s.instruction,
+      marks: s.marks,
+      chart_context: { ...EMPTY_CHART, ...(s.chart_context ?? {}) },
+      questions: s.questions ?? [{ number: 1, subParts: [{ label: 'a', prompt: '', expectedAnswer: '', marks: 10 }] }],
+    });
     setModalType('s');
     setShowModal(true);
   };
@@ -81,11 +148,9 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
 
   const handleSaveS = async () => {
     if (isQForm(editItem)) return;
-    let exchanges;
-    try {
-      exchanges = typeof editItem.exchanges === 'string' ? JSON.parse(editItem.exchanges) : editItem.exchanges;
-    } catch { alert('Invalid JSON in exchanges field'); return; }
-    const payload = { ...editItem, exchanges };
+    if (!editItem.scenario.trim()) { alert('Chart title is required'); return; }
+    if (editItem.questions.length === 0) { alert('Add at least one question'); return; }
+    const payload = { ...editItem };
     const isEdit = !!editItem.id;
     const url = isEdit ? `/api/admin/rtr/scenarios/${editItem.id}` : '/api/admin/rtr/scenarios';
     setSaving(true);
@@ -102,7 +167,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
   };
 
   const deleteS = async (id: string) => {
-    if (!confirm('Delete scenario?')) return;
+    if (!confirm('Delete chart scenario?')) return;
     await fetch(`/api/admin/rtr/scenarios/${id}`, { method: 'DELETE' });
     await fetchData();
   };
@@ -113,6 +178,71 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
       const opts = [...prev.options];
       opts[i] = val;
       return { ...prev, options: opts };
+    });
+  };
+
+  // --- Scenario form helpers ---
+
+  const setChartField = (key: keyof RTRChartContext, val: string | number) => {
+    setEditItem(prev => {
+      if (isQForm(prev)) return prev;
+      return { ...prev, chart_context: { ...prev.chart_context, [key]: val } };
+    });
+  };
+
+  const updateQuestion = (qi: number, mut: (q: RTRChartQuestion) => RTRChartQuestion) => {
+    setEditItem(prev => {
+      if (isQForm(prev)) return prev;
+      const questions = prev.questions.map((q, i) => (i === qi ? mut(q) : q));
+      return { ...prev, questions };
+    });
+  };
+
+  const addQuestion = () => {
+    setEditItem(prev => {
+      if (isQForm(prev)) return prev;
+      const nextNumber = (prev.questions[prev.questions.length - 1]?.number ?? 0) + 1;
+      return {
+        ...prev,
+        questions: [...prev.questions, { number: nextNumber, subParts: [{ label: 'a', prompt: '', expectedAnswer: '', marks: 10 }] }],
+      };
+    });
+  };
+
+  const removeQuestion = (qi: number) => {
+    setEditItem(prev => {
+      if (isQForm(prev)) return prev;
+      return { ...prev, questions: prev.questions.filter((_, i) => i !== qi) };
+    });
+  };
+
+  const updateSubPart = (qi: number, si: number, mut: (s: RTRSubPart) => RTRSubPart) => {
+    updateQuestion(qi, q => ({ ...q, subParts: q.subParts.map((s, i) => (i === si ? mut(s) : s)) }));
+  };
+
+  const addSubPart = (qi: number) => {
+    updateQuestion(qi, q => {
+      const nextLabel = String.fromCharCode('a'.charCodeAt(0) + q.subParts.length);
+      return { ...q, subParts: [...q.subParts, { label: nextLabel, prompt: '', expectedAnswer: '', marks: 10 }] };
+    });
+  };
+
+  const removeSubPart = (qi: number, si: number) => {
+    updateQuestion(qi, q => ({ ...q, subParts: q.subParts.filter((_, i) => i !== si) }));
+  };
+
+  const addBlank = (qi: number, si: number) => {
+    updateSubPart(qi, si, s => ({ ...s, blanks: [...(s.blanks ?? []), { label: '', expectedAnswer: '' }] }));
+  };
+
+  const updateBlank = (qi: number, si: number, bi: number, mut: (b: RTRBlank) => RTRBlank) => {
+    updateSubPart(qi, si, s => ({ ...s, blanks: (s.blanks ?? []).map((b, i) => (i === bi ? mut(b) : b)) }));
+  };
+
+  const removeBlank = (qi: number, si: number, bi: number) => {
+    updateSubPart(qi, si, s => {
+      const blanks = (s.blanks ?? []).filter((_, i) => i !== bi);
+      return { ...s, blanks: blanks.length > 0 ? blanks : undefined };
     });
   };
 
@@ -134,14 +264,14 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">{questions.length}</p><p className="text-sm text-neutral-400">Part 1 Questions</p></div>
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">{scenarios.length}</p><p className="text-sm text-neutral-400">Part 2 Scenarios</p></div>
+        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">{scenarios.length}</p><p className="text-sm text-neutral-400">Part 2 Charts</p></div>
         <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">₹{test.price}</p><p className="text-sm text-neutral-400">Price</p></div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button onClick={() => setTab('part1')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part1' ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>Part 1 — MCQ ({questions.length})</button>
-        <button onClick={() => setTab('part2')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part2' ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>Part 2 — RT Scenarios ({scenarios.length})</button>
+        <button onClick={() => setTab('part2')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part2' ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>Part 2 — Charts ({scenarios.length})</button>
       </div>
 
       {tab === 'part1' && (
@@ -175,16 +305,24 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
       {tab === 'part2' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={openAddS} className="px-4 py-2 bg-violet text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors">+ Add Scenario</button>
+            <button onClick={openAddS} className="px-4 py-2 bg-violet text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors">+ Add Chart</button>
           </div>
           <div className="space-y-4">
             {scenarios.map((s, idx) => (
               <div key={s.id} className="bg-neutral-900 rounded-xl border border-neutral-800 p-5">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs text-violet font-black uppercase tracking-wider mb-1">Scenario {idx + 1} · {s.marks} marks</p>
+                  <div className="flex-1">
+                    <p className="text-xs text-violet font-black uppercase tracking-wider mb-1">Chart {idx + 1} · {s.marks} marks</p>
                     <p className="text-sm text-white font-bold mb-1">{s.scenario}</p>
-                    <p className="text-xs text-neutral-500">{s.instruction}</p>
+                    {s.chart_context && (
+                      <p className="text-xs text-neutral-500">
+                        {s.chart_context.aircraft_id} · {s.chart_context.departure} → {s.chart_context.destination}
+                        {s.questions ? ` · ${s.questions.length} question${s.questions.length === 1 ? '' : 's'}` : ''}
+                      </p>
+                    )}
+                    {!s.chart_context && s.exchanges && (
+                      <p className="text-xs text-amber-500">Legacy dialogue scenario — re-create as chart to upgrade.</p>
+                    )}
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button onClick={() => openEditS(s)} className="text-xs text-neutral-400 hover:text-white font-semibold">Edit</button>
@@ -193,7 +331,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                 </div>
               </div>
             ))}
-            {scenarios.length === 0 && <div className="text-center py-16 text-neutral-500">No Part 2 scenarios yet.</div>}
+            {scenarios.length === 0 && <div className="text-center py-16 text-neutral-500">No Part 2 charts yet.</div>}
           </div>
         </div>
       )}
@@ -201,9 +339,9 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-2xl my-6">
+          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-3xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{editItem.id ? 'Edit' : 'New'} {modalType === 'q' ? 'Part 1 Question' : 'Part 2 Scenario'}</h2>
+              <h2 className="text-xl font-black text-white">{editItem.id ? 'Edit' : 'New'} {modalType === 'q' ? 'Part 1 Question' : 'Part 2 Chart'}</h2>
               <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl">&times;</button>
             </div>
 
@@ -233,24 +371,144 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
             )}
 
             {modalType === 's' && !isQForm(editItem) && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Scenario Title *</label>
-                  <input value={editItem.scenario || ''} onChange={e => setEditItem(p => ({ ...(p as SForm), scenario: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Instruction</label>
-                  <textarea value={editItem.instruction || ''} onChange={e => setEditItem(p => ({ ...(p as SForm), instruction: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Marks</label>
-                  <input type="number" value={editItem.marks || 15} onChange={e => setEditItem(p => ({ ...(p as SForm), marks: Number(e.target.value) }))} className="w-32 bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Exchanges (JSON Array) *</label>
-                  <p className="text-xs text-neutral-500 mb-2">Each item: {`{"role":"pilot","prompt":"...","expectedAnswer":"..."}`} or {`{"role":"atc","text":"..."}`}</p>
-                  <textarea value={typeof editItem.exchanges === 'string' ? editItem.exchanges : JSON.stringify(editItem.exchanges, null, 2)} onChange={e => setEditItem(p => ({ ...(p as SForm), exchanges: e.target.value }))} rows={10} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-y font-mono text-xs" />
-                </div>
+              <div className="space-y-6">
+                {/* Chart meta */}
+                <section className="space-y-3">
+                  <h3 className="text-xs font-black text-violet uppercase tracking-widest">Chart Meta</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Title (e.g. Chart No 6(V2)) *</label>
+                      <input value={editItem.scenario || ''} onChange={e => setEditItem(p => ({ ...(p as SForm), scenario: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Total Marks</label>
+                      <input type="number" value={editItem.marks} onChange={e => setEditItem(p => ({ ...(p as SForm), marks: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                    </div>
+                  </div>
+                </section>
+
+                {/* Chart context — fixed labels, admin fills bold values */}
+                <section className="space-y-3">
+                  <h3 className="text-xs font-black text-violet uppercase tracking-widest">Chart Header (printed on paper)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Time Allowed</label>
+                      <input value={editItem.chart_context.time_allowed} onChange={e => setChartField('time_allowed', e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Total Marks (header)</label>
+                      <input type="number" value={editItem.chart_context.total_marks} onChange={e => setChartField('total_marks', Number(e.target.value))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet" />
+                    </div>
+                    {CHART_FIELDS.map(({ key, label }) => (
+                      <div key={key}>
+                        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">{label}</label>
+                        <input
+                          value={String(editItem.chart_context[key] ?? '')}
+                          onChange={e => setChartField(key, e.target.value)}
+                          className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Questions */}
+                <section className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black text-violet uppercase tracking-widest">Questions</h3>
+                    <button onClick={addQuestion} className="px-3 py-1.5 bg-violet/20 text-violet text-xs font-bold rounded-lg hover:bg-violet/30">+ Add Question</button>
+                  </div>
+                  {editItem.questions.map((q, qi) => (
+                    <div key={qi} className="bg-neutral-800/50 border border-neutral-700 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-neutral-400">Q#</label>
+                          <input
+                            type="number"
+                            value={q.number}
+                            onChange={e => updateQuestion(qi, qq => ({ ...qq, number: Number(e.target.value) }))}
+                            className="w-16 bg-neutral-900 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                          />
+                        </div>
+                        <button onClick={() => removeQuestion(qi)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Remove Question</button>
+                      </div>
+
+                      {q.subParts.map((s, si) => (
+                        <div key={si} className="bg-neutral-900 border border-neutral-700 rounded-xl p-3 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Sub</label>
+                              <input
+                                value={s.label}
+                                onChange={e => updateSubPart(qi, si, ss => ({ ...ss, label: e.target.value }))}
+                                placeholder="a"
+                                className="w-12 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Marks</label>
+                              <input
+                                type="number"
+                                value={s.marks}
+                                onChange={e => updateSubPart(qi, si, ss => ({ ...ss, marks: Number(e.target.value) }))}
+                                className="w-20 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                              />
+                            </div>
+                            <button onClick={() => removeSubPart(qi, si)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold ml-auto">Remove</button>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Prompt (read aloud to candidate)</label>
+                            <textarea
+                              rows={3}
+                              value={s.prompt}
+                              onChange={e => updateSubPart(qi, si, ss => ({ ...ss, prompt: e.target.value }))}
+                              className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet resize-none"
+                            />
+                          </div>
+                          {!s.blanks && (
+                            <div>
+                              <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Expected Answer</label>
+                              <textarea
+                                rows={2}
+                                value={s.expectedAnswer}
+                                onChange={e => updateSubPart(qi, si, ss => ({ ...ss, expectedAnswer: e.target.value }))}
+                                className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet resize-none"
+                              />
+                            </div>
+                          )}
+                          {/* Blanks (e.g. question 5 with multiple labelled fields) */}
+                          {s.blanks && s.blanks.length > 0 && (
+                            <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-neutral-500 uppercase block">Fill-in-the-blanks</label>
+                              {s.blanks.map((b, bi) => (
+                                <div key={bi} className="flex gap-2 items-start">
+                                  <input
+                                    placeholder="Label (e.g. Classifications of AIRPROX are)"
+                                    value={b.label}
+                                    onChange={e => updateBlank(qi, si, bi, bb => ({ ...bb, label: e.target.value }))}
+                                    className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-violet"
+                                  />
+                                  <input
+                                    placeholder="Expected answer"
+                                    value={b.expectedAnswer}
+                                    onChange={e => updateBlank(qi, si, bi, bb => ({ ...bb, expectedAnswer: e.target.value }))}
+                                    className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-violet"
+                                  />
+                                  <button onClick={() => removeBlank(qi, si, bi)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold px-2">×</button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <button onClick={() => addBlank(qi, si)} className="text-[11px] text-violet hover:text-violet-300 font-bold">+ Add blank</button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <button onClick={() => addSubPart(qi)} className="text-xs text-violet hover:text-violet-300 font-bold">+ Add sub-part</button>
+                    </div>
+                  ))}
+                </section>
               </div>
             )}
 

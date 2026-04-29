@@ -164,7 +164,8 @@ export default function DGCARTRPage() {
                       {test.isPurchased ? (
                         <>
                           <Button className="flex-1" href={`/rtr-exam?testId=${test.id}&part=part1`}>Part 1</Button>
-                          <Button variant="violet" className="flex-1" href={`/rtr-exam?testId=${test.id}&part=part2`}>Part 2</Button>
+                          <Button variant="violet" className="flex-1" href={`/rtr-exam?testId=${test.id}&part=part2&mode=practice`}>Part 2 — Practice</Button>
+                          <Button variant="primary" className="flex-1" href={`/rtr-exam?testId=${test.id}&part=part2&mode=simulate`}>Part 2 — Simulate</Button>
                         </>
                       ) : (
                         <Button

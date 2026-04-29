@@ -67,14 +67,21 @@ create table if not exists public.rtr_questions_part1 (
 alter table public.rtr_questions_part1 enable row level security;
 
 create table if not exists public.rtr_scenarios_part2 (
-  id          text primary key,
-  test_id     text not null references public.rtr_tests(id) on delete cascade,
-  marks       int  not null,
-  scenario    text not null,
-  instruction text,
-  exchanges   jsonb not null,
-  created_at  timestamptz default now()
+  id            text primary key,
+  test_id       text not null references public.rtr_tests(id) on delete cascade,
+  marks         int  not null,
+  scenario      text not null,
+  instruction   text,
+  exchanges     jsonb,
+  chart_context jsonb,
+  questions     jsonb,
+  created_at    timestamptz default now()
 );
+
+-- Backfill new columns for installs that pre-date the chart-paper redesign.
+alter table public.rtr_scenarios_part2 alter column exchanges drop not null;
+alter table public.rtr_scenarios_part2 add column if not exists chart_context jsonb;
+alter table public.rtr_scenarios_part2 add column if not exists questions jsonb;
 
 alter table public.rtr_scenarios_part2 enable row level security;
 
