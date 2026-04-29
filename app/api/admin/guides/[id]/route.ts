@@ -16,6 +16,8 @@ export async function GET(
   return NextResponse.json({ guide: data });
 }
 
+const GUIDE_FIELDS = ['title', 'category', 'summary', 'content', 'read_time', 'difficulty', 'published'] as const;
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,8 +26,13 @@ export async function PUT(
   const check = await requireAdmin();
   if (check.error) return check.error;
   const body = await request.json();
+  const update: Record<string, unknown> = {};
+  for (const k of GUIDE_FIELDS) if (k in body) update[k] = body[k];
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
   const db = createAdminClient();
-  const { data, error } = await db.from('guides').update(body).eq('id', id).select().single();
+  const { data, error } = await db.from('guides').update(update).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ guide: data });
 }

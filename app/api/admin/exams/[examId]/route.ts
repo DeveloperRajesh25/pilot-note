@@ -20,6 +20,8 @@ export async function GET(
   return NextResponse.json({ exam, questions: questions ?? [], registrations: regs ?? [], attempts: attempts ?? [] });
 }
 
+const EXAM_FIELDS = ['title', 'subject', 'description', 'exam_date', 'exam_time', 'duration', 'total_questions', 'fee', 'status'] as const;
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
@@ -28,8 +30,13 @@ export async function PUT(
   const check = await requireAdmin();
   if (check.error) return check.error;
   const body = await request.json();
+  const update: Record<string, unknown> = {};
+  for (const k of EXAM_FIELDS) if (k in body) update[k] = body[k];
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
   const db = createAdminClient();
-  const { data, error } = await db.from('exams').update(body).eq('id', examId).select().single();
+  const { data, error } = await db.from('exams').update(update).eq('id', examId).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ exam: data });
 }

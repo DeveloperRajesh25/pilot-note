@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+const APTITUDE_FIELDS = ['category', 'question', 'options', 'correct', 'explanation'] as const;
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,8 +13,13 @@ export async function PUT(
   if (check.error) return check.error;
 
   const body = await request.json();
+  const update: Record<string, unknown> = {};
+  for (const k of APTITUDE_FIELDS) if (k in body) update[k] = body[k];
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
   const db = createAdminClient();
-  const { data, error } = await db.from('aptitude_questions').update(body).eq('id', id).select().single();
+  const { data, error } = await db.from('aptitude_questions').update(update).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ question: data });
 }

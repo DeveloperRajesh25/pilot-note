@@ -1,9 +1,10 @@
-import { randomBytes } from 'crypto';
-
-const shortSuffix = () => randomBytes(3).toString('hex');
+const shortSuffix = () => {
+  // globalThis.crypto.randomUUID() is available in both Node 19+ and Edge runtimes.
+  return globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 6);
+};
 
 const slugify = (input: string) =>
-  input
+  (input ?? '')
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
@@ -24,5 +25,5 @@ export function slugId(title: string): string {
  * Generate an opaque id for rows that aren't routed by id (e.g. questions).
  */
 export function opaqueId(prefix = 'row'): string {
-  return `${prefix}-${randomBytes(6).toString('hex')}`;
+  return `${prefix}-${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
 }
