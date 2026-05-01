@@ -177,6 +177,9 @@ function RTRExamContent() {
   const [p2Answers, setP2Answers] = useState<Record<number, string | string[]>>({});
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  // Tracks user intent vs. recognizer state. Continuous recognizers auto-stop on long
+  // silence in some browsers — we restart while this stays true.
+  const wantsListeningRef = useRef(false);
 
   // Timer
   const [timeRemaining, setTimeRemaining] = useState(part === 'part1' ? RTR_CONFIG.part1.duration * 60 : RTR_CONFIG.part2.duration * 60);
@@ -245,31 +248,41 @@ function RTRExamContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIdx, view, part]);
 
-  const startListening = (onTranscript: (txt: string) => void) => {
+  const startListening = (onChunk: (txt: string) => void) => {
     const Ctor = getSpeechRecognition();
     if (!Ctor) { alert('Speech recognition is not supported in this browser. Please type your answer.'); return; }
     const rec = new Ctor();
     rec.lang = 'en-IN';
     rec.interimResults = false;
-    rec.continuous = false;
-    let finalTxt = '';
+    rec.continuous = true;
     rec.onresult = (ev) => {
       for (let i = ev.resultIndex; i < ev.results.length; i++) {
         const r = ev.results[i];
-        if (r.isFinal) finalTxt += r[0].transcript + ' ';
+        const t = r[0].transcript.trim();
+        if (r.isFinal && t) onChunk(t);
       }
     };
     rec.onend = () => {
-      setListening(false);
-      if (finalTxt.trim()) onTranscript(finalTxt.trim());
+      // Browsers (especially Chrome) will auto-end continuous sessions after a long
+      // silence window. Restart while the user still wants to dictate.
+      if (wantsListeningRef.current) {
+        try { rec.start(); } catch { /* already started or unavailable — fall through */ }
+      } else {
+        setListening(false);
+      }
     };
-    rec.onerror = () => { setListening(false); };
+    rec.onerror = () => {
+      wantsListeningRef.current = false;
+      setListening(false);
+    };
     recognitionRef.current = rec;
+    wantsListeningRef.current = true;
     setListening(true);
     rec.start();
   };
 
   const stopListening = () => {
+    wantsListeningRef.current = false;
     recognitionRef.current?.stop();
     setListening(false);
   };
@@ -289,6 +302,7 @@ function RTRExamContent() {
 
   const goNext = () => {
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    stopListening();
     if (stepIdx < steps.length - 1) setStepIdx(stepIdx + 1);
     else finishExam();
   };
@@ -296,6 +310,7 @@ function RTRExamContent() {
   const goPrev = () => {
     if (mode === 'simulate') return;
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    stopListening();
     if (stepIdx > 0) setStepIdx(stepIdx - 1);
   };
 
@@ -663,9 +678,13 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
               <button
                 onClick={() => {
                   if (listening) { stopListening(); return; }
-                  startListening(t => {
-                    const cur = typeof p2Answers[stepIdx] === 'string' ? (p2Answers[stepIdx] as string) : '';
-                    writeAnswer(cur ? `${cur} ${t}` : t);
+                  // Use functional setState so each chunk appends to the latest text
+                  // even when continuous recognition fires multiple onresult events.
+                  startListening(chunk => {
+                    setP2Answers(prev => {
+                      const cur = typeof prev[stepIdx] === 'string' ? (prev[stepIdx] as string) : '';
+                      return { ...prev, [stepIdx]: cur ? `${cur} ${chunk}` : chunk };
+                    });
                   });
                 }}
                 className={`absolute right-3 bottom-3 w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-violet text-white hover:bg-violet-700'}`}
