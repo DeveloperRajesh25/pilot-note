@@ -176,6 +176,7 @@ function RTRExamContent() {
   // Answers keyed by step index. For sub-parts with blanks, each blank is a string in the array.
   const [p2Answers, setP2Answers] = useState<Record<number, string | string[]>>({});
   const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   // Tracks user intent vs. recognizer state. Continuous recognizers auto-stop on long
   // silence in some browsers — we restart while this stays true.
@@ -230,6 +231,12 @@ function RTRExamContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view]);
 
+  const stopSpeaking = () => {
+    if (typeof window === 'undefined') return;
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  };
+
   const speak = (text: string) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
@@ -237,14 +244,22 @@ function RTRExamContent() {
     const utterance = new SpeechSynthesisUtterance(rtText);
     utterance.lang = 'en-IN';
     utterance.rate = 0.85;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleSpeak = (text: string) => {
+    if (speaking) stopSpeaking();
+    else speak(text);
   };
 
   // Auto-play prompt when active sub-question changes (Part 2 only).
   useEffect(() => {
     if (view !== 'exam' || part !== 'part2' || !currentStep) return;
     speak(currentStep.subPart.prompt);
-    return () => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); };
+    return () => stopSpeaking();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIdx, view, part]);
 
@@ -301,7 +316,7 @@ function RTRExamContent() {
   };
 
   const goNext = () => {
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    stopSpeaking();
     stopListening();
     if (stepIdx < steps.length - 1) setStepIdx(stepIdx + 1);
     else finishExam();
@@ -309,7 +324,7 @@ function RTRExamContent() {
 
   const goPrev = () => {
     if (mode === 'simulate') return;
-    if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    stopSpeaking();
     stopListening();
     if (stepIdx > 0) setStepIdx(stepIdx - 1);
   };
@@ -447,7 +462,8 @@ function RTRExamContent() {
               goNext={goNext}
               goPrev={goPrev}
               mode={mode}
-              speak={speak}
+              speaking={speaking}
+              toggleSpeak={toggleSpeak}
               listening={listening}
               startListening={startListening}
               stopListening={stopListening}
@@ -557,14 +573,15 @@ interface Part2ViewProps {
   goNext: () => void;
   goPrev: () => void;
   mode: ExamMode;
-  speak: (text: string) => void;
+  speaking: boolean;
+  toggleSpeak: (text: string) => void;
   listening: boolean;
   startListening: (onTranscript: (t: string) => void) => void;
   stopListening: () => void;
   finishExam: () => void;
 }
 
-function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, setP2Answers, isStepAnswered, goNext, goPrev, mode, speak, listening, startListening, stopListening, finishExam }: Part2ViewProps) {
+function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, setP2Answers, isStepAnswered, goNext, goPrev, mode, speaking, toggleSpeak, listening, startListening, stopListening, finishExam }: Part2ViewProps) {
   if (steps.length === 0 || !currentStep || !currentScenario) {
     return (
       <div className="bg-white rounded-3xl border-2 border-neutral-100 p-12 text-center text-neutral-500 shadow-sm">
@@ -638,8 +655,17 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
         </div>
 
         <div className="flex gap-3 items-start mb-6">
-          <button onClick={() => speak(sp.prompt)} className="shrink-0 w-12 h-12 rounded-2xl bg-violet/10 text-violet flex items-center justify-center hover:bg-violet/20 transition-colors" title="Replay audio">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" /></svg>
+          <button
+            onClick={() => toggleSpeak(sp.prompt)}
+            className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${speaking ? 'bg-violet text-white animate-pulse hover:bg-violet-700' : 'bg-violet/10 text-violet hover:bg-violet/20'}`}
+            title={speaking ? 'Stop audio' : 'Play audio'}
+            aria-label={speaking ? 'Stop audio' : 'Play audio'}
+          >
+            {speaking ? (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="4" height="12" rx="1" /><rect x="14" y="6" width="4" height="12" rx="1" /></svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" /></svg>
+            )}
           </button>
           <div className="grow p-5 bg-neutral-50 rounded-2xl border border-neutral-100">
             <p className="text-base text-neutral-800 leading-relaxed">{sp.prompt}</p>
