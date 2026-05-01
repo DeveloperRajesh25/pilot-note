@@ -390,6 +390,153 @@ insert into public.rtr_tests (id, title, description, price, status) values
 ('rtr_t2','RTR(A) Mock Test — Set 2','Second set of RTR(A) mock exam. Practice with different question sets for thorough preparation.',299,'active')
 on conflict (id) do nothing;
 
+-- RTR Part 1 sample MCQs
+insert into public.rtr_questions_part1 (id, test_id, question, options, correct, explanation) values
+('rp1_t1_1','rtr_t1','The phonetic alphabet for the letter "C" is:','["Charlie","Coca","Chris","Carol"]',0,'In ICAO phonetic alphabet, C is represented as "Charlie".'),
+('rp1_t1_2','rtr_t1','The distress signal "MAYDAY" should be transmitted:','["Once","Twice","Three times","Continuously"]',2,'MAYDAY is transmitted three times consecutively to indicate a distress situation.'),
+('rp1_t1_3','rtr_t1','The urgency signal "PAN PAN" indicates:','["Distress condition","Urgency condition","Safety message","Routine message"]',1,'PAN PAN indicates an urgency condition where the safety of the aircraft or person is concerned.'),
+('rp1_t1_4','rtr_t1','International distress voice frequency is:','["118.0 MHz","121.5 MHz","122.0 MHz","125.5 MHz"]',1,'121.5 MHz is the international aeronautical emergency frequency.'),
+('rp1_t1_5','rtr_t1','The phrase "ROGER" means:','["Yes, I agree","I have received all of your last transmission","Request approved","Stand by"]',1,'ROGER means "I have received all of your last transmission".'),
+('rp1_t1_6','rtr_t1','Transponder code 7700 indicates:','["Hijack","Radio failure","Emergency / Distress","VFR flight"]',2,'Transponder code 7700 is used to indicate an emergency or distress situation.'),
+('rp1_t1_7','rtr_t1','Transponder code 7600 indicates:','["Emergency","Radio communication failure","Hijack","Interception"]',1,'Transponder code 7600 indicates radio communication failure.'),
+('rp1_t1_8','rtr_t1','Transponder code 7500 indicates:','["Emergency","Radio failure","Unlawful interference (hijack)","Military operation"]',2,'Transponder code 7500 indicates unlawful interference (hijacking).'),
+('rp1_t2_1','rtr_t2','The phonetic alphabet for "G" is:','["Golf","Gamma","George","Green"]',0,'G in ICAO phonetic alphabet is Golf.'),
+('rp1_t2_2','rtr_t2','What does "SAY AGAIN" mean?','["Repeat your transmission","I agree","Received","Standby"]',0,'SAY AGAIN is the phraseology used to request a repetition of the previous transmission.'),
+('rp1_t2_3','rtr_t2','Standard ISA pressure setting is:','["1023 hPa","1013.25 hPa","1000 hPa","1020 hPa"]',1,'Standard ISA pressure is 1013.25 hPa (29.92 inHg).'),
+('rp1_t2_4','rtr_t2','The phrase "AFFIRM" means:','["Negative","Yes/Correct","Standby","Unable"]',1,'AFFIRM is used instead of "Yes" in aviation phraseology.')
+on conflict (id) do nothing;
+
+-- RTR Part 2 chart-paper scenarios (new format).
+insert into public.rtr_scenarios_part2 (id, test_id, marks, scenario, instruction, chart_context, questions) values
+('rp2_chart6_t1', 'rtr_t1', 100, 'Chart No 6(V2)', null,
+$json$
+{
+  "time_allowed": "25 minutes",
+  "total_marks": 100,
+  "aircraft_id": "VT ERB",
+  "type_aircraft": "Embraier",
+  "flight_rules": "I",
+  "wake_turb_cat": "M",
+  "flight_type": "N",
+  "equipment": "S",
+  "departure": "VOPB",
+  "time": "08:45",
+  "level": "F360",
+  "route": "P628 OPONI G450",
+  "destination": "VANP",
+  "alternate": "VERC",
+  "other_info": "Only VHF on board."
+}
+$json$::jsonb,
+$json$
+[
+  {
+    "number": 1,
+    "subParts": [
+      {"label": "a", "marks": 10, "prompt": "You have been cleared to line up Rwy for take-off. On taxiway C you get busy attending a technical snag that ATC calls you. Take appropriate action.", "expectedAnswer": "Tower, VT ERB, stand by, attending technical snag on taxiway Charlie."},
+      {"label": "b", "marks": 10, "prompt": "You need the above faulty system to be checked by engineer.", "expectedAnswer": "Tower, VT ERB, request hold position, technical snag, engineer assistance required."}
+    ]
+  },
+  {
+    "number": 2,
+    "subParts": [
+      {"label": "a", "marks": 10, "prompt": "You depart at 10:05. Passing F80, you decide to deviate 30 NM right of track, till past Vatila, due Wx. Seek appropriate clearance and to the ATC message, suggest appropriate action for your intended deviation.", "expectedAnswer": "Control, VT ERB, passing Flight Level 80, request deviation 30 nautical miles right of track until past Vatila due weather."},
+      {"label": "b", "marks": 10, "prompt": "You pass F150 on deviated Track at 70 NM from VOPB.", "expectedAnswer": "Control, VT ERB, Flight Level 150 on deviated track, 70 nautical miles from VOPB."}
+    ]
+  },
+  {
+    "number": 3,
+    "subParts": [
+      {"label": "", "marks": 10, "prompt": "You get clear of Wx at 90 NM to Larik. You are ready to join back the ATS route.", "expectedAnswer": "Control, VT ERB, clear of weather at 90 nautical miles to Larik, request rejoin ATS route."}
+    ]
+  },
+  {
+    "number": 4,
+    "subParts": [
+      {"label": "a", "marks": 15, "prompt": "Passing F90 during your descent to land, the A/c VOR and DME become erratic. Plan your flight to land.", "expectedAnswer": "Control, VT ERB, passing Flight Level 90, VOR and DME unreliable, request radar vectors for approach and landing."}
+    ]
+  },
+  {
+    "number": 5,
+    "subParts": [
+      {"label": "", "marks": 25, "prompt": "Complete the following and transmit.", "expectedAnswer": "",
+       "blanks": [
+         {"label": "Classifications of AIRPROX are", "expectedAnswer": "Risk of collision, Safety not assured, No risk of collision, Risk not determined"},
+         {"label": "Acft identification filed in Flt Plan is a group of", "expectedAnswer": "not more than 7 alphanumeric characters"},
+         {"label": "Acft obs. is evaluation of one or more meteorological elements, made from", "expectedAnswer": "an aircraft in flight"},
+         {"label": "Flight Plan filed by acft in air is", "expectedAnswer": "AFIL (Air Filed Flight Plan)"},
+         {"label": "An aerodrome where an aeroplane can land in case of one engine shut down during ETOPS operation is known as", "expectedAnswer": "ETOPS Alternate Aerodrome"}
+       ]
+      }
+    ]
+  }
+]
+$json$::jsonb),
+('rp2_chart7_t2', 'rtr_t2', 100, 'Chart No 7(V1)', null,
+$json$
+{
+  "time_allowed": "25 minutes",
+  "total_marks": 100,
+  "aircraft_id": "VT AKS",
+  "type_aircraft": "Cessna 172",
+  "flight_rules": "V",
+  "wake_turb_cat": "L",
+  "flight_type": "G",
+  "equipment": "S",
+  "departure": "VABB",
+  "time": "06:30",
+  "level": "F080",
+  "route": "DCT PUNE",
+  "destination": "VAPO",
+  "alternate": "VANP",
+  "other_info": "Day VFR only."
+}
+$json$::jsonb,
+$json$
+[
+  {
+    "number": 1,
+    "subParts": [
+      {"label": "a", "marks": 15, "prompt": "You are at the holding point of Runway 09 at Mumbai. Request takeoff clearance for VFR flight to Pune.", "expectedAnswer": "Mumbai Tower, VT AKS, Cessna 172, holding point Runway 09, ready for takeoff, VFR to Pune."},
+      {"label": "b", "marks": 10, "prompt": "Tower clears you for takeoff Runway 09, wind 085 degrees 12 knots. Read back.", "expectedAnswer": "Cleared for takeoff Runway 09, VT AKS."}
+    ]
+  },
+  {
+    "number": 2,
+    "subParts": [
+      {"label": "", "marks": 15, "prompt": "After takeoff, Tower asks you to contact Mumbai Departure on 119.4. Acknowledge and make initial call to Departure.", "expectedAnswer": "Contact Departure 119.4, VT AKS. Mumbai Departure, VT AKS, airborne Runway 09, climbing to 2500 feet, VFR to Pune."}
+    ]
+  },
+  {
+    "number": 3,
+    "subParts": [
+      {"label": "a", "marks": 15, "prompt": "En route to Pune at 5500 feet, your radio fails. State the squawk code and procedure.", "expectedAnswer": "Squawk 7600. Continue on flight plan route, maintain last assigned altitude or MEA, watch for light signals on approach, land at intended destination."},
+      {"label": "b", "marks": 10, "prompt": "On final approach to Pune you receive a steady green light signal. Interpret it.", "expectedAnswer": "Steady green light: cleared to land."}
+    ]
+  },
+  {
+    "number": 4,
+    "subParts": [
+      {"label": "", "marks": 15, "prompt": "You hear a MAYDAY call from another aircraft on the same frequency. State your action.", "expectedAnswer": "Maintain radio silence, listen out, do not transmit unless specifically called, note details to assist if required."}
+    ]
+  },
+  {
+    "number": 5,
+    "subParts": [
+      {"label": "", "marks": 20, "prompt": "Complete the following and transmit.", "expectedAnswer": "",
+       "blanks": [
+         {"label": "Standard atmospheric pressure (ISA) is", "expectedAnswer": "1013.25 hPa"},
+         {"label": "Transponder code for hijacking is", "expectedAnswer": "7500"},
+         {"label": "WILCO means", "expectedAnswer": "Will Comply"},
+         {"label": "ROGER means", "expectedAnswer": "I have received all of your last transmission"}
+       ]
+      }
+    ]
+  }
+]
+$json$::jsonb)
+on conflict (id) do nothing;
+
 insert into public.guides (id, title, category, summary, content, read_time, difficulty, published) values
 ('g1','How to Become a Commercial Pilot in India','Career Path','Complete step-by-step guide from zero experience to your CPL, covering eligibility, training, exams, and job placement.','...content...', '12 min read','Beginner',true)
 on conflict (id) do nothing;
