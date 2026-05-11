@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { updatePassword } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Loader2, KeyRound } from 'lucide-react'
+import { Loader2, KeyRound, ArrowRight } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
@@ -13,9 +13,7 @@ export default function ResetPasswordPage() {
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
-    
     const result = await updatePassword(formData)
-    
     if (result?.error) {
       setError(result.error)
       setLoading(false)
@@ -23,20 +21,24 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-neutral-100">
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-            <KeyRound className="w-6 h-6 text-accent" />
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold mb-2">New Password</h1>
-        <p className="text-text-secondary">Please enter your new password below.</p>
+    <div className="w-full">
+      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-neutral-900 text-white mb-7">
+        <KeyRound className="w-6 h-6" strokeWidth={1.5} />
       </div>
+      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+        <span className="w-6 h-px bg-neutral-900" />
+        Set a new password
+      </span>
+      <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
+        New <span className="italic-serif">password.</span>
+      </h1>
+      <p className="text-neutral-500 mb-10 text-[15px]">
+        Choose something memorable but secure.
+      </p>
 
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="space-y-5">
         <Input
-          label="New Password"
+          label="New password"
           name="password"
           type="password"
           placeholder="At least 6 characters"
@@ -46,21 +48,18 @@ export default function ResetPasswordPage() {
         />
 
         {error && (
-          <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100">
+          <div className="px-4 py-3 text-sm text-rose-700 bg-rose-50 rounded-xl border border-rose-200/60">
             {error}
           </div>
         )}
 
-        <Button 
-          type="submit" 
-          variant="primary" 
-          className="w-full py-4 text-base mt-2"
-          disabled={loading}
-        >
+        <Button type="submit" variant="primary" className="w-full h-12 mt-2" disabled={loading}>
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            'Update Password'
+            <>
+              Update password <ArrowRight className="w-4 h-4" />
+            </>
           )}
         </Button>
       </form>

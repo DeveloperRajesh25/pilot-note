@@ -4,12 +4,13 @@ import Link from 'next/link';
 interface ButtonProps {
   children: React.ReactNode;
   href?: string;
-  variant?: 'primary' | 'secondary' | 'dark' | 'violet' | 'outline';
+  variant?: 'primary' | 'secondary' | 'dark' | 'violet' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   onClick?: () => void;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  title?: string;
 }
 
 export const Button = ({
@@ -20,41 +21,56 @@ export const Button = ({
   className = '',
   onClick,
   disabled,
-  type = 'button'
+  type = 'button',
+  title,
 }: ButtonProps) => {
-  const baseStyles = "inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:pointer-events-none";
-  
+  const base =
+    'relative inline-flex items-center justify-center gap-2 font-medium rounded-full overflow-hidden transition-[transform,background-color,color,border-color,box-shadow] duration-300 ease-out active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap select-none';
+
   const variants = {
-    primary: "bg-accent text-black border-2 border-accent hover:bg-accent-dark hover:border-accent-dark hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(0,230,118,0.5)] active:scale-95",
-    secondary: "bg-transparent text-foreground border-2 border-neutral-200 hover:border-neutral-900 hover:bg-neutral-50 hover:-translate-y-0.5 active:scale-95",
-    dark: "bg-black text-white border-2 border-black hover:bg-neutral-800 hover:-translate-y-0.5 hover:shadow-xl active:scale-95",
-    violet: "bg-violet text-white border-2 border-violet hover:bg-violet-700 hover:-translate-y-0.5 hover:shadow-[0_10px_20px_-10px_rgba(124,58,237,0.5)] active:scale-95",
-    outline: "bg-transparent text-neutral-600 border-2 border-neutral-100 hover:border-neutral-300 hover:text-neutral-900 active:scale-95"
-  };
+    // Default — solid black, white text. Hover: emerald glow ring + slight lift.
+    primary:
+      'bg-neutral-900 text-white border border-neutral-900 hover:bg-black hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-12px_rgba(16,185,129,0.45),0_8px_20px_-8px_rgba(10,10,10,0.35)] hover:ring-1 hover:ring-emerald-400/40',
+
+    // Light outlined — white bg, black border. Hover: invert to black bg.
+    secondary:
+      'bg-white text-neutral-900 border border-neutral-300 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white hover:-translate-y-0.5',
+
+    // Alias for primary
+    dark:
+      'bg-neutral-900 text-white border border-neutral-900 hover:bg-black hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-12px_rgba(10,10,10,0.4)]',
+
+    // Highlight / "go" variant — emerald
+    violet:
+      'bg-emerald-500 text-white border border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-12px_rgba(16,185,129,0.6)]',
+
+    // Subtle outline
+    outline:
+      'bg-transparent text-neutral-700 border border-neutral-200 hover:border-neutral-900 hover:text-neutral-900',
+
+    // Ghost text-only
+    ghost:
+      'bg-transparent text-neutral-700 border border-transparent hover:text-neutral-900 hover:bg-neutral-100',
+  } as const;
 
   const sizes = {
-    sm: "px-5 py-2 text-xs",
-    md: "px-7 py-3 text-sm",
-    lg: "px-9 py-4 text-base"
-  };
+    sm: 'px-4 py-2 text-xs tracking-wide',
+    md: 'px-6 py-3 text-sm tracking-wide',
+    lg: 'px-8 py-4 text-[15px] tracking-wide',
+  } as const;
 
-  const combinedClasses = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
+  const combined = `${base} ${variants[variant]} ${sizes[size]} ${className}`;
 
   if (href) {
     return (
-      <Link href={href} className={combinedClasses}>
+      <Link href={href} className={combined} title={title}>
         {children}
       </Link>
     );
   }
 
   return (
-    <button 
-      type={type}
-      className={combinedClasses} 
-      onClick={onClick} 
-      disabled={disabled}
-    >
+    <button type={type} className={combined} onClick={onClick} disabled={disabled} title={title}>
       {children}
     </button>
   );

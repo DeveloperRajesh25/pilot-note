@@ -393,18 +393,20 @@ function RTRExamContent() {
 
   if (view === 'loading') return (
     <><Header />
-    <main className="grow pt-48 flex items-center justify-center bg-neutral-50">
-      <div className="text-center"><div className="w-12 h-12 border-4 border-violet border-t-transparent rounded-full animate-spin mx-auto mb-4" /><p className="text-neutral-500 font-medium">Loading exam...</p></div>
+    <main className="grow pt-48 flex items-center justify-center bg-white">
+      <div className="text-center">
+        <div className="w-10 h-10 border-2 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-neutral-500 text-sm uppercase tracking-[0.18em]">Loading exam…</p>
+      </div>
     </main><Footer /></>
   );
   if (view === 'error') return (
     <><Header />
-    <main className="grow pt-48 flex items-center justify-center bg-neutral-50">
-      <div className="text-center max-w-md p-12 bg-white rounded-[2.5rem] border border-neutral-100 shadow-xl">
-        <p className="text-4xl mb-6">⚠️</p>
-        <h2 className="text-2xl font-black mb-4">Cannot Load Exam</h2>
-        <p className="text-rose-500 mb-8">{errorMsg}</p>
-        <Button onClick={() => router.push('/dgca-rtr')}>Back to RTR Tests</Button>
+    <main className="grow pt-48 flex items-center justify-center bg-white">
+      <div className="text-center max-w-md p-12 border border-neutral-200 rounded-3xl">
+        <h2 className="font-display text-4xl text-neutral-900 mb-4">Cannot load exam</h2>
+        <p className="text-rose-500 mb-8 text-sm">{errorMsg}</p>
+        <Button onClick={() => router.push('/dgca-rtr')}>Back to RTR tests</Button>
       </div>
     </main><Footer /></>
   );
@@ -412,25 +414,25 @@ function RTRExamContent() {
   return (
     <>
       <Header />
-      <main className="grow pt-24 bg-neutral-50 min-h-screen">
+      <main className="grow pt-24 bg-white min-h-screen">
         {/* Top Bar */}
-        <div className="sticky top-20 bg-white border-b border-neutral-100 z-40 px-6 py-4">
+        <div className="sticky top-20 bg-white/90 backdrop-blur-xl border-b border-neutral-200 z-40 px-6 py-4">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <button onClick={() => router.back()} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors" aria-label="Back">
-                <svg className="w-5 h-5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors" aria-label="Back">
+                <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <div>
-                <h1 className="text-lg font-black text-neutral-900">{testTitle}</h1>
-                <span className="text-xs font-bold text-violet uppercase tracking-widest">
+                <h1 className="font-display text-xl text-neutral-900 tracking-tight">{testTitle}</h1>
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
                   {part === 'part1'
                     ? 'Part 1 — Written MCQ'
-                    : `Part 2 — RT Transmission · ${mode === 'simulate' ? 'Simulate Mode' : 'Practice Mode'}`}
+                    : `Part 2 — RT · ${mode === 'simulate' ? 'Simulate' : 'Practice'}`}
                 </span>
               </div>
             </div>
-            <div className={`flex items-center gap-2 font-mono text-xl ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-500'}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path d="M12 6v6l4 2" strokeWidth="2" strokeLinecap="round" /></svg>
+            <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>
               {formatTime(timeRemaining)}
             </div>
           </div>
@@ -510,50 +512,66 @@ function Part1View({ p1Questions, currentIndex, setCurrentIndex, p1Answers, setP
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="grow">
-        <div className="bg-white rounded-3xl border-2 border-neutral-100 p-8 md:p-12 shadow-sm">
+        <div className="border border-neutral-200 rounded-3xl p-8 md:p-12">
           <div className="flex justify-between items-center mb-8">
-            <span className="text-sm font-bold text-neutral-400">Question {currentIndex + 1} of {p1Questions.length}</span>
-            <span className="px-3 py-1 bg-neutral-100 text-neutral-500 text-xs font-bold rounded-full">2 Marks</span>
+            <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
+              Question {currentIndex + 1} of {p1Questions.length}
+            </span>
+            <span className="px-3 py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">2 Marks</span>
           </div>
-          <h2 className="text-2xl font-bold text-neutral-900 mb-8 leading-tight">{q.question}</h2>
-          <div className="grid gap-4 mb-12">
-            {q.options.map((opt, i) => (
-              <button
-                key={i}
-                onClick={() => { const next = [...p1Answers]; next[currentIndex] = i; setP1Answers(next); }}
-                className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${p1Answers[currentIndex] === i ? 'border-violet bg-violet/5' : 'border-neutral-50 bg-neutral-50 hover:bg-neutral-100'}`}
-              >
-                <span className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-xl font-bold ${p1Answers[currentIndex] === i ? 'bg-violet text-white' : 'bg-white text-neutral-400'}`}>{String.fromCharCode(65 + i)}</span>
-                <span className={`font-semibold ${p1Answers[currentIndex] === i ? 'text-violet' : 'text-neutral-700'}`}>{opt}</span>
-              </button>
-            ))}
+          <h2 className="font-display text-3xl md:text-4xl text-neutral-900 mb-10 leading-tight tracking-tight">{q.question}</h2>
+          <div className="space-y-3 mb-12">
+            {q.options.map((opt, i) => {
+              const selected = p1Answers[currentIndex] === i;
+              return (
+                <button
+                  key={i}
+                  onClick={() => { const next = [...p1Answers]; next[currentIndex] = i; setP1Answers(next); }}
+                  className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${
+                    selected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 bg-white hover:border-neutral-900'
+                  }`}
+                >
+                  <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${
+                    selected ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500'
+                  }`}>{String.fromCharCode(65 + i)}</span>
+                  <span className={`text-[15px] font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>{opt}</span>
+                </button>
+              );
+            })}
           </div>
-          <div className="flex justify-between items-center pt-8 border-t border-neutral-100">
+          <div className="flex justify-between items-center pt-8 border-t border-neutral-200 gap-3 flex-wrap">
             <Button variant="secondary" onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))} disabled={currentIndex === 0}>← Previous</Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { const next = [...p1Flags]; next[currentIndex] = !next[currentIndex]; setP1Flags(next); }}>{p1Flags[currentIndex] ? '🚩 Flagged' : '🏳️ Flag'}</Button>
-              <Button variant="secondary" onClick={() => { const next = [...p1Answers]; next[currentIndex] = null; setP1Answers(next); }}>Clear</Button>
+              <Button variant="outline" onClick={() => { const next = [...p1Flags]; next[currentIndex] = !next[currentIndex]; setP1Flags(next); }}>{p1Flags[currentIndex] ? 'Unflag' : 'Flag'}</Button>
+              <Button variant="ghost" onClick={() => { const next = [...p1Answers]; next[currentIndex] = null; setP1Answers(next); }}>Clear</Button>
             </div>
-            <Button variant="primary" onClick={() => { if (currentIndex < p1Questions.length - 1) setCurrentIndex(prev => prev + 1); else finishExam(); }}>{currentIndex === p1Questions.length - 1 ? 'Review & Submit' : 'Next →'}</Button>
+            <Button variant="primary" onClick={() => { if (currentIndex < p1Questions.length - 1) setCurrentIndex(prev => prev + 1); else finishExam(); }}>{currentIndex === p1Questions.length - 1 ? 'Review & submit' : 'Next →'}</Button>
           </div>
         </div>
       </div>
 
       <aside className="w-full lg:w-80 shrink-0">
-        <div className="bg-white rounded-3xl border-2 border-neutral-100 p-6 sticky top-44">
-          <h3 className="text-sm font-black text-neutral-900 uppercase tracking-widest mb-6">Question Palette</h3>
-          <div className="grid grid-cols-5 gap-3 mb-8">
+        <div className="border border-neutral-200 rounded-3xl p-6 sticky top-44">
+          <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+            <span className="w-6 h-px bg-neutral-900" /> Palette
+          </h3>
+          <div className="grid grid-cols-5 gap-2 mb-6">
             {p1Questions.map((_, i) => {
-              let bg = 'bg-neutral-50 text-neutral-400 border-neutral-50';
-              if (i === currentIndex) bg = 'bg-white border-violet text-violet font-bold ring-2 ring-violet/20';
+              let bg = 'bg-neutral-50 text-neutral-400 border-neutral-200';
+              if (i === currentIndex) bg = 'bg-neutral-900 border-neutral-900 text-white';
               else if (p1Flags[i]) bg = 'bg-rose-500 border-rose-500 text-white';
               else if (p1Answers[i] !== null) bg = 'bg-emerald-500 border-emerald-500 text-white';
               return (
-                <button key={i} onClick={() => setCurrentIndex(i)} className={`w-10 h-10 rounded-xl border-2 text-xs flex items-center justify-center transition-all ${bg}`}>{i + 1}</button>
+                <button key={i} onClick={() => setCurrentIndex(i)} className={`w-10 h-10 rounded-lg border text-xs font-medium flex items-center justify-center transition-all hover:scale-105 ${bg}`}>{i + 1}</button>
               );
             })}
           </div>
-          <Button variant="violet" className="w-full mt-8" onClick={finishExam}>Submit Exam</Button>
+          <div className="space-y-2 mb-6 text-[10px] uppercase tracking-[0.18em] text-neutral-500">
+            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Answered</div>
+            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-rose-500" /> Flagged</div>
+            <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-neutral-900" /> Current</div>
+          </div>
+          <Button variant="violet" className="w-full" onClick={finishExam}>Submit exam</Button>
         </div>
       </aside>
     </div>
@@ -584,8 +602,8 @@ interface Part2ViewProps {
 function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, setP2Answers, isStepAnswered, goNext, goPrev, mode, speaking, toggleSpeak, listening, startListening, stopListening, finishExam }: Part2ViewProps) {
   if (steps.length === 0 || !currentStep || !currentScenario) {
     return (
-      <div className="bg-white rounded-3xl border-2 border-neutral-100 p-12 text-center text-neutral-500 shadow-sm">
-        <p className="text-lg font-bold mb-2">No chart questions configured</p>
+      <div className="border border-neutral-200 rounded-3xl p-12 text-center text-neutral-500">
+        <p className="font-display text-2xl text-neutral-900 mb-2">No chart questions configured</p>
         <p className="text-sm">An admin needs to add a chart with questions to this test before it can be attempted.</p>
       </div>
     );
@@ -612,9 +630,9 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
   return (
     <div className="space-y-8">
       {/* Chart paper card */}
-      <div className="bg-white rounded-3xl border-2 border-neutral-200 p-8 shadow-sm">
+      <div className="border border-neutral-200 rounded-3xl p-8 bg-neutral-50/40">
         <div className="flex items-baseline justify-between flex-wrap gap-y-2 mb-5 pb-3 border-b border-neutral-200">
-          <h2 className="text-xl font-black text-neutral-900">{currentScenario.scenario}</h2>
+          <h2 className="font-display text-2xl text-neutral-900 tracking-tight">{currentScenario.scenario}</h2>
           <div className="flex items-center gap-6 text-sm text-neutral-700">
             <span><span className="font-bold">Time allowed:</span> {ctx?.time_allowed || '25 minutes'}</span>
             <span><span className="font-bold">Total Marks:</span> {ctx?.total_marks ?? 100}</span>
@@ -645,19 +663,19 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
       </div>
 
       {/* Active sub-question */}
-      <div className="bg-white rounded-3xl border-2 border-neutral-100 p-8 md:p-10 shadow-sm">
+      <div className="border border-neutral-200 rounded-3xl p-8 md:p-10">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest">Question {currentStep.numberLabel}</span>
-            <span className="text-xs text-neutral-400">({stepIdx + 1} of {steps.length})</span>
+            <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">Question {currentStep.numberLabel}</span>
+            <span className="text-xs text-neutral-400 font-mono">({stepIdx + 1} / {steps.length})</span>
           </div>
-          <span className="px-3 py-1 bg-violet/10 text-violet text-xs font-bold rounded-full">{sp.marks} Marks</span>
+          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">{sp.marks} Marks</span>
         </div>
 
         <div className="flex gap-3 items-start mb-6">
           <button
             onClick={() => toggleSpeak(sp.prompt)}
-            className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${speaking ? 'bg-violet text-white animate-pulse hover:bg-violet-700' : 'bg-violet/10 text-violet hover:bg-violet/20'}`}
+            className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${speaking ? 'bg-neutral-900 text-white animate-pulse' : 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200'}`}
             title={speaking ? 'Stop audio' : 'Play audio'}
             aria-label={speaking ? 'Stop audio' : 'Play audio'}
           >
@@ -667,7 +685,7 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" /></svg>
             )}
           </button>
-          <div className="grow p-5 bg-neutral-50 rounded-2xl border border-neutral-100">
+          <div className="grow p-5 bg-neutral-50 rounded-2xl border border-neutral-200/60">
             <p className="text-base text-neutral-800 leading-relaxed">{sp.prompt}</p>
           </div>
         </div>
@@ -683,7 +701,7 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
                   <input
                     value={arr[bi] ?? ''}
                     onChange={e => writeBlank(bi, e.target.value)}
-                    className="flex-1 bg-neutral-50 border-b-2 border-neutral-300 px-2 py-2 text-sm focus:border-violet focus:outline-none"
+                    className="flex-1 bg-neutral-50 border-b border-neutral-300 px-2 py-2 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
                     placeholder="Your answer"
                   />
                 </div>
@@ -692,14 +710,14 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
           </div>
         ) : (
           <div className="space-y-3">
-            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Your transmission</label>
+            <label className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">Your transmission</label>
             <div className="relative">
               <textarea
                 value={typeof p2Answers[stepIdx] === 'string' ? (p2Answers[stepIdx] as string) : ''}
                 onChange={e => writeAnswer(e.target.value)}
                 rows={5}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-2xl p-4 pr-16 text-sm focus:ring-2 focus:ring-violet/20 focus:border-violet outline-none"
-                placeholder="Type or use the mic to dictate your answer..."
+                className="w-full bg-white border border-neutral-200 rounded-2xl p-4 pr-16 text-sm focus:ring-2 focus:ring-neutral-100 focus:border-neutral-900 outline-none transition-all"
+                placeholder="Type or use the mic to dictate your answer…"
               />
               <button
                 onClick={() => {
@@ -713,7 +731,7 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
                     });
                   });
                 }}
-                className={`absolute right-3 bottom-3 w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-violet text-white hover:bg-violet-700'}`}
+                className={`absolute right-3 bottom-3 w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${listening ? 'bg-rose-500 text-white animate-pulse' : 'bg-neutral-900 text-white hover:bg-emerald-500'}`}
                 title={listening ? 'Stop dictation' : 'Dictate'}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" /></svg>
@@ -793,32 +811,39 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <div className="bg-white rounded-[2.5rem] border-2 border-neutral-100 p-12 text-center shadow-sm">
-        <h2 className="text-3xl font-black mb-8">Mock Exam Results</h2>
-        <div className="flex justify-center gap-12 items-center mb-10">
-          <div className="relative w-32 h-32">
+      <div className="border border-neutral-200 rounded-3xl p-10 md:p-14 text-center">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-5">
+          <span className="w-6 h-px bg-neutral-900" /> Mock exam complete
+        </span>
+        <h2 className="font-display text-5xl md:text-6xl text-neutral-900 mb-10 tracking-tight">
+          Your <span className="italic-serif">result.</span>
+        </h2>
+        <div className="flex justify-center gap-12 items-center mb-10 flex-wrap">
+          <div className="relative w-36 h-36">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-neutral-100" />
-              <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={2 * Math.PI * 56} strokeDashoffset={(2 * Math.PI * 56) * (1 - pct / 100)} className="text-violet" />
+              <circle cx="72" cy="72" r="62" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-neutral-100" />
+              <circle cx="72" cy="72" r="62" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={2 * Math.PI * 62} strokeDashoffset={(2 * Math.PI * 62) * (1 - pct / 100)} strokeLinecap="round" className={passed ? 'text-emerald-500' : 'text-rose-500'} />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center font-black text-2xl">{pct}%</div>
+            <div className="absolute inset-0 flex items-center justify-center font-display text-3xl text-neutral-900">{pct}%</div>
           </div>
           <div className="text-left">
-            <div className={`text-3xl font-black ${passed ? 'text-emerald-600' : 'text-rose-600'}`}>{passed ? 'PASSED' : 'NOT PASSED'}</div>
-            <div className="text-neutral-500 font-bold">Passing: {passingMarks} Marks</div>
+            <div className={`font-display text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>{passed ? 'Passed' : 'Try again'}</div>
+            <div className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">Passing: {passingMarks} marks</div>
           </div>
         </div>
-        <div className="flex justify-center gap-4">
-          <Button variant="primary" onClick={() => window.location.reload()}>Retry Test</Button>
-          <Button variant="secondary" onClick={() => router.push('/dgca-rtr')}>Back to Dashboard</Button>
+        <div className="flex justify-center gap-3 flex-wrap">
+          <Button variant="primary" onClick={() => window.location.reload()}>Retry test</Button>
+          <Button variant="secondary" onClick={() => router.push('/dgca-rtr')}>Back to RTR</Button>
         </div>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl font-black px-4 uppercase tracking-wider">Detailed Review</h3>
+        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 px-1">
+          <span className="w-6 h-px bg-neutral-900" /> Detailed review
+        </h3>
         {part === 'part1' ? (
           p1Questions.map((q, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6">
+            <div key={i} className="rounded-2xl border border-neutral-200 p-6">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-xs font-black text-neutral-400">QUESTION {i + 1}</span>
                 <span className={`text-xs font-bold ${p1Answers[i] === q.correct ? 'text-emerald-600' : 'text-rose-600'}`}>{p1Answers[i] === q.correct ? '✓ CORRECT' : '✗ INCORRECT'}</span>
@@ -838,7 +863,7 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
             const ans = p2Answers[i];
             const sc = p2Scenarios[step.scenarioIdx];
             return (
-              <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6">
+              <div key={i} className="rounded-2xl border border-neutral-200 p-6">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs font-black text-neutral-400 uppercase">{sc.scenario} · Q{step.numberLabel}</span>
                   <span className="text-xs font-bold text-violet">{sp.marks} marks</span>

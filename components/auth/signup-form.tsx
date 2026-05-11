@@ -5,7 +5,7 @@ import { signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Link from 'next/link'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Loader2, CheckCircle2, ArrowRight, Mail } from 'lucide-react'
 
 export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
@@ -16,9 +16,7 @@ export function SignupForm() {
     setLoading(true)
     setError(null)
     setMessage(null)
-    
     const result = await signup(formData)
-    
     if (result?.error) {
       setError(result.error)
       setLoading(false)
@@ -30,36 +28,40 @@ export function SignupForm() {
 
   if (message) {
     return (
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-neutral-100 text-center">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-accent-glow rounded-full flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-accent" />
-          </div>
+      <div className="w-full text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/60 mb-7">
+          <Mail className="w-7 h-7 text-emerald-600" strokeWidth={1.5} />
         </div>
-        <h1 className="text-2xl font-bold mb-4">Check your email</h1>
-        <p className="text-text-secondary leading-relaxed mb-8">
-          {message}
-        </p>
-        <Button href="/login" variant="secondary" className="w-full">
-          Back to Login
+        <h1 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-4">
+          Check your <span className="italic-serif">inbox.</span>
+        </h1>
+        <p className="text-neutral-500 leading-relaxed mb-10 text-[15px]">{message}</p>
+        <Button href="/login" variant="secondary" className="w-full h-12">
+          Back to sign in
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-neutral-100">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-        <p className="text-text-secondary">Start managing your pilot notes today</p>
-      </div>
+    <div className="w-full">
+      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+        <span className="w-6 h-px bg-neutral-900" />
+        Get started
+      </span>
+      <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
+        Create <span className="italic-serif">account.</span>
+      </h1>
+      <p className="text-neutral-500 mb-10 text-[15px]">
+        Free forever. No credit card. India&apos;s #1 CPL platform.
+      </p>
 
-      <form action={handleSubmit} className="space-y-4">
+      <form action={handleSubmit} className="space-y-5">
         <Input
-          label="Email Address"
+          label="Email"
           name="email"
           type="email"
-          placeholder="name@example.com"
+          placeholder="you@example.com"
           required
           autoComplete="email"
         />
@@ -74,39 +76,57 @@ export function SignupForm() {
         />
 
         {error && (
-          <div className="p-3 text-sm text-red-500 bg-red-50 rounded-lg border border-red-100">
+          <div className="px-4 py-3 text-sm text-rose-700 bg-rose-50 rounded-xl border border-rose-200/60">
             {error}
           </div>
         )}
 
-        <p className="text-xs text-text-light text-center px-4">
-          By signing up, you agree to our{' '}
-          <Link href="/terms" className="underline hover:text-text-secondary">Terms</Link> and{' '}
-          <Link href="/privacy" className="underline hover:text-text-secondary">Privacy Policy</Link>
-        </p>
+        <div className="pt-2">
+          <Button type="submit" variant="primary" className="w-full h-12" disabled={loading}>
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                Create account <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </Button>
+        </div>
 
-        <Button 
-          type="submit" 
-          variant="primary" 
-          className="w-full py-4 text-base mt-2"
-          disabled={loading}
-        >
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            'Create Account'
-          )}
-        </Button>
+        <p className="text-xs text-neutral-400 text-center pt-1">
+          By signing up, you agree to our{' '}
+          <Link href="/terms" className="text-neutral-700 hover:text-neutral-900 underline underline-offset-2">
+            Terms
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" className="text-neutral-700 hover:text-neutral-900 underline underline-offset-2">
+            Privacy Policy
+          </Link>
+        </p>
       </form>
 
+      {/* Feature checklist */}
+      <ul className="mt-10 pt-8 border-t border-neutral-200 space-y-2.5">
+        {[
+          'DGCA RTR(A) mock exam suite',
+          'COMPASS aptitude tests',
+          'All-India Pariksha mock exams',
+        ].map((item) => (
+          <li key={item} className="flex items-center gap-2.5 text-sm text-neutral-600">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+
       <div className="mt-8 text-center text-sm">
-        <p className="text-text-secondary">
-          Already have an account?{' '}
-          <Link 
-            href="/login" 
-            className="text-accent hover:text-accent-dark font-bold transition-colors"
+        <p className="text-neutral-500">
+          Have an account?{' '}
+          <Link
+            href="/login"
+            className="text-neutral-900 font-medium hover:text-emerald-600 transition-colors link-underline"
           >
-            Sign In
+            Sign in
           </Link>
         </p>
       </div>

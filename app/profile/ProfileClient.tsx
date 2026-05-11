@@ -11,7 +11,6 @@ import {
   Target,
   Trophy,
   Calendar,
-  TrendingUp,
   Clock,
   Award,
   CheckCircle2,
@@ -25,6 +24,7 @@ import {
   ArrowRight,
   AlertCircle,
   ShieldCheck,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -34,12 +34,7 @@ import { updatePassword } from '@/app/actions/auth';
 
 type Tab = 'overview' | 'tests' | 'results' | 'settings';
 
-interface UserSummary {
-  id: string;
-  email: string;
-  created_at: string;
-}
-
+interface UserSummary { id: string; email: string; created_at: string }
 interface Profile {
   id: string;
   email: string | null;
@@ -47,7 +42,6 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
 }
-
 interface RTRResult {
   id: string;
   test_id: string;
@@ -57,7 +51,6 @@ interface RTRResult {
   created_at: string;
   rtr_tests?: { title: string } | null;
 }
-
 interface AptitudeResult {
   id: string;
   category: string;
@@ -66,7 +59,6 @@ interface AptitudeResult {
   time_taken: number;
   created_at: string;
 }
-
 interface Purchase {
   id: string;
   test_id: string;
@@ -74,7 +66,6 @@ interface Purchase {
   purchased_at: string;
   rtr_tests?: { title: string; description: string; price: number; status: string } | null;
 }
-
 interface ExamAttempt {
   id: string;
   exam_id: string;
@@ -84,7 +75,6 @@ interface ExamAttempt {
   submitted_at: string | null;
   exams?: { title: string; subject: string } | null;
 }
-
 interface ExamRegistration {
   id: string;
   exam_id: string;
@@ -107,13 +97,6 @@ const formatDate = (iso: string, opts?: Intl.DateTimeFormatOptions) =>
 
 const pctColor = (pct: number) =>
   pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600';
-
-const pctBadge = (pct: number) =>
-  pct >= 70
-    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    : pct >= 50
-    ? 'bg-amber-50 text-amber-700 border-amber-200'
-    : 'bg-rose-50 text-rose-700 border-rose-200';
 
 const initialsFrom = (name: string, email: string) => {
   const source = name.trim() || email;
@@ -175,165 +158,148 @@ export default function ProfileClient({
   }, [rtrResults, aptitudeResults, examAttempts, purchases.length]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'tests', label: 'My Tests', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'results', label: 'Results', icon: <Award className="w-4 h-4" /> },
-    { id: 'settings', label: 'Settings', icon: <ShieldCheck className="w-4 h-4" /> },
+    { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-4 h-4" strokeWidth={1.5} /> },
+    { id: 'tests', label: 'Tests', icon: <BookOpen className="w-4 h-4" strokeWidth={1.5} /> },
+    { id: 'results', label: 'Results', icon: <Award className="w-4 h-4" strokeWidth={1.5} /> },
+    { id: 'settings', label: 'Settings', icon: <ShieldCheck className="w-4 h-4" strokeWidth={1.5} /> },
   ];
 
   return (
     <div className="container mx-auto px-6">
-      <div className="space-y-8">
+      {/* Back link */}
+      <button
+        onClick={() => router.back()}
+        className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-10 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Back
+      </button>
 
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all text-sm font-semibold shadow-sm"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-
-        {/* Hero Card */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 rounded-[2.5rem] p-8 md:p-12 shadow-xl">
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-violet/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8">
-            <div className="relative">
-              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-accent to-emerald-300 flex items-center justify-center text-neutral-900 font-black text-4xl shadow-lg shadow-accent/30">
-                {initials}
-              </div>
-              <span className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-emerald-500 border-4 border-neutral-900 flex items-center justify-center" title="Verified">
-                <CheckCircle2 className="w-4 h-4 text-white" />
-              </span>
+      {/* ───── Hero ───── */}
+      <div className="grid lg:grid-cols-12 gap-8 mb-14 items-end">
+        <div className="lg:col-span-8">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+            <span className="w-6 h-px bg-neutral-900" />
+            Pilot · {joinDate}
+          </span>
+          <div className="flex items-center gap-6 mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-neutral-900 text-white font-display text-3xl flex items-center justify-center tracking-tight">
+              {initials}
             </div>
-
-            <div className="text-center md:text-left flex-1">
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tight">{displayName}</h1>
-              <p className="text-white/60 mb-5 flex items-center gap-2 justify-center md:justify-start">
-                <Mail className="w-4 h-4" /> {user.email}
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                <span className="px-3 py-1.5 bg-accent/15 text-accent text-xs font-bold rounded-full border border-accent/30">
-                  ✈️ CPL Aspirant
-                </span>
-                <span className="px-3 py-1.5 bg-white/10 text-white/80 text-xs font-bold rounded-full border border-white/20 flex items-center gap-1.5">
-                  <Calendar className="w-3 h-3" /> Member since {joinDate}
-                </span>
-                {stats.totalTestsTaken > 0 && (
-                  <span className="px-3 py-1.5 bg-violet/15 text-violet text-xs font-bold rounded-full border border-violet/30">
-                    🎯 {stats.totalTestsTaken} test{stats.totalTestsTaken === 1 ? '' : 's'} taken
-                  </span>
+            <div>
+              <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+                {displayName.split(' ')[0]}
+                {displayName.split(' ').length > 1 && (
+                  <span className="italic-serif text-neutral-400"> {displayName.split(' ').slice(1).join(' ')}</span>
                 )}
-              </div>
+              </h1>
+              <p className="text-neutral-500 text-sm mt-2 flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5" /> {user.email}
+              </p>
             </div>
+          </div>
 
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 text-white border border-white/20 hover:bg-rose-500 hover:border-rose-500 hover:text-white transition-all text-sm font-semibold backdrop-blur-md"
-              >
-                <LogOut className="w-4 h-4" /> Sign Out
-              </button>
-            </form>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-medium">
+              CPL Aspirant
+            </span>
+            {stats.totalTestsTaken > 0 && (
+              <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
+                {stats.totalTestsTaken} tests taken
+              </span>
+            )}
+            <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-900 text-white font-medium flex items-center gap-1.5">
+              <CheckCircle2 className="w-3 h-3" /> Verified
+            </span>
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            icon={<BookOpen className="w-5 h-5" />}
-            label="Tests Purchased"
-            value={String(stats.totalPurchases)}
-            tint="text-emerald-700 bg-emerald-50"
-          />
-          <StatCard
-            icon={<Target className="w-5 h-5" />}
-            label="Avg. RTR Score"
-            value={stats.avgRtr === null ? '—' : `${stats.avgRtr}%`}
-            tint="text-blue-700 bg-blue-50"
-          />
-          <StatCard
-            icon={<Trophy className="w-5 h-5" />}
-            label="Avg. Aptitude"
-            value={stats.avgAptitude === null ? '—' : `${stats.avgAptitude}%`}
-            tint="text-violet bg-violet/10"
-          />
-          <StatCard
-            icon={<Clock className="w-5 h-5" />}
-            label="Practice Time"
-            value={stats.totalMinutes > 0 ? `${stats.totalMinutes} min` : '—'}
-            tint="text-orange-700 bg-orange-50"
-          />
+        <div className="lg:col-span-4 flex justify-start lg:justify-end">
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all text-sm font-medium"
+            >
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
+          </form>
         </div>
+      </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white border border-neutral-100 rounded-2xl p-2 shadow-sm sticky top-24 z-10 backdrop-blur-md bg-white/95">
-          <div className="flex gap-1 overflow-x-auto">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex-1 justify-center ${
-                  tab === t.id
-                    ? 'bg-neutral-900 text-white shadow-md'
-                    : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* ───── Stats row ───── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden mb-12">
+        <StatCard label="Tests Purchased" value={String(stats.totalPurchases)} icon={<BookOpen className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard label="Avg. RTR" value={stats.avgRtr === null ? '—' : `${stats.avgRtr}%`} icon={<Target className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard label="Avg. Aptitude" value={stats.avgAptitude === null ? '—' : `${stats.avgAptitude}%`} icon={<Trophy className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard label="Practice Time" value={stats.totalMinutes > 0 ? `${stats.totalMinutes}m` : '—'} icon={<Clock className="w-4 h-4" strokeWidth={1.5} />} />
+      </div>
 
-        {/* Tab Content */}
-        <div className="animate-in fade-in duration-300">
-          {tab === 'overview' && (
-            <OverviewTab
-              displayName={displayName}
-              rtrResults={rtrResults}
-              aptitudeResults={aptitudeResults}
-              examAttempts={examAttempts}
-              purchases={purchases}
-              examRegistrations={examRegistrations}
-              avgExam={stats.avgExam}
-              onJump={(t) => setTab(t)}
-            />
-          )}
-          {tab === 'tests' && (
-            <TestsTab purchases={purchases} examRegistrations={examRegistrations} />
-          )}
-          {tab === 'results' && (
-            <ResultsTab
-              rtrResults={rtrResults}
-              aptitudeResults={aptitudeResults}
-              examAttempts={examAttempts}
-            />
-          )}
-          {tab === 'settings' && (
-            <SettingsTab user={user} profile={profile} />
-          )}
+      {/* ───── Tabs ───── */}
+      <div className="border-b border-neutral-200 mb-10 sticky top-24 bg-white/85 backdrop-blur-xl z-30">
+        <div className="flex gap-1 overflow-x-auto -mb-px">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-5 py-4 text-sm font-medium whitespace-nowrap border-b transition-colors ${
+                tab === t.id
+                  ? 'text-neutral-900 border-neutral-900'
+                  : 'text-neutral-500 border-transparent hover:text-neutral-900'
+              }`}
+            >
+              {t.icon}
+              {t.label}
+            </button>
+          ))}
         </div>
+      </div>
+
+      {/* ───── Tab content ───── */}
+      <div className="animate-fade-in pb-16">
+        {tab === 'overview' && (
+          <OverviewTab
+            displayName={displayName}
+            rtrResults={rtrResults}
+            aptitudeResults={aptitudeResults}
+            examAttempts={examAttempts}
+            purchases={purchases}
+            examRegistrations={examRegistrations}
+            avgExam={stats.avgExam}
+            onJump={(t) => setTab(t)}
+          />
+        )}
+        {tab === 'tests' && (
+          <TestsTab purchases={purchases} examRegistrations={examRegistrations} />
+        )}
+        {tab === 'results' && (
+          <ResultsTab
+            rtrResults={rtrResults}
+            aptitudeResults={aptitudeResults}
+            examAttempts={examAttempts}
+          />
+        )}
+        {tab === 'settings' && <SettingsTab user={user} profile={profile} />}
       </div>
     </div>
   );
 }
 
-/* ---------- Stat card ---------- */
-
-function StatCard({ icon, label, value, tint }: { icon: React.ReactNode; label: string; value: string; tint: string }) {
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${tint}`}>
-        {icon}
+    <div className="bg-white p-6 flex flex-col gap-3 hover:bg-neutral-50 transition-colors">
+      <div className="flex items-center justify-between">
+        <span className="w-9 h-9 rounded-lg bg-neutral-100 text-neutral-900 flex items-center justify-center">
+          {icon}
+        </span>
       </div>
-      <p className="text-2xl md:text-3xl font-black text-neutral-900 leading-none mb-2 truncate">{value}</p>
-      <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">{label}</p>
+      <p className="font-display text-3xl md:text-4xl text-neutral-900 leading-none tracking-tight">
+        {value}
+      </p>
+      <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">{label}</p>
     </div>
   );
 }
 
-/* ---------- Overview ---------- */
+/* ────────── Overview ────────── */
 
 function OverviewTab({
   displayName,
@@ -360,30 +326,24 @@ function OverviewTab({
     subtitle: string;
     date: string;
     iso: string;
-    icon: React.ReactNode;
-    accent: string;
     pct?: number;
     score?: string;
   };
 
   const activity: ActivityItem[] = useMemo(() => {
     const items: ActivityItem[] = [];
-
     rtrResults.forEach((r) => {
       const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
       items.push({
         id: `rtr-${r.id}`,
         title: r.rtr_tests?.title ?? 'RTR Test',
-        subtitle: r.part === 'part1' ? 'DGCA RTR · Part 1 (MCQ)' : 'DGCA RTR · Part 2 (RT)',
+        subtitle: r.part === 'part1' ? 'DGCA RTR · Part 1' : 'DGCA RTR · Part 2',
         date: formatDate(r.created_at),
         iso: r.created_at,
-        icon: <Target className="w-4 h-4" />,
-        accent: 'bg-blue-50 text-blue-600',
         pct,
         score: `${r.score}/${r.total}`,
       });
     });
-
     aptitudeResults.forEach((r) => {
       const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
       items.push({
@@ -392,13 +352,10 @@ function OverviewTab({
         subtitle: 'Pilot Aptitude',
         date: formatDate(r.created_at),
         iso: r.created_at,
-        icon: <Trophy className="w-4 h-4" />,
-        accent: 'bg-violet/10 text-violet',
         pct,
         score: `${r.score}/${r.total}`,
       });
     });
-
     examAttempts
       .filter((a) => a.submitted_at && a.total && a.score !== null)
       .forEach((a) => {
@@ -411,13 +368,10 @@ function OverviewTab({
           subtitle: a.exams?.subject ? `Pariksha · ${a.exams.subject}` : 'Pariksha',
           date: formatDate(a.submitted_at!),
           iso: a.submitted_at!,
-          icon: <GraduationCap className="w-4 h-4" />,
-          accent: 'bg-emerald-50 text-emerald-600',
           pct,
           score: `${score}/${total}`,
         });
       });
-
     items.sort((a, b) => +new Date(b.iso) - +new Date(a.iso));
     return items.slice(0, 8);
   }, [rtrResults, aptitudeResults, examAttempts]);
@@ -437,36 +391,35 @@ function OverviewTab({
 
   if (isEmpty) {
     return (
-      <div className="bg-white border border-neutral-100 rounded-[2rem] p-12 md:p-16 shadow-sm text-center">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-accent/20 to-violet/20 flex items-center justify-center text-4xl">
-          🚀
-        </div>
-        <h3 className="text-2xl font-black text-neutral-900 mb-3">Welcome aboard, {displayName}!</h3>
-        <p className="text-neutral-500 mb-8 max-w-md mx-auto">
+      <div className="border border-neutral-200 rounded-3xl p-12 md:p-16 text-center">
+        <h3 className="font-display text-4xl text-neutral-900 mb-3">
+          Welcome aboard, <span className="italic-serif">{displayName}.</span>
+        </h3>
+        <p className="text-neutral-500 mb-10 max-w-md mx-auto">
           Your training journey starts here. Take a free aptitude test, study from our guides, or unlock the DGCA RTR mock tests.
         </p>
         <div className="flex gap-3 justify-center flex-wrap">
-          <Button href="/pilot-aptitude">Take Aptitude Test</Button>
-          <Button variant="violet" href="/dgca-rtr">Browse RTR Tests</Button>
-          <Button variant="secondary" href="/guides">Read Guides</Button>
+          <Button href="/pilot-aptitude">Take aptitude test</Button>
+          <Button variant="secondary" href="/dgca-rtr">Browse RTR</Button>
+          <Button variant="secondary" href="/guides">Read guides</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Recent Activity */}
-      <div className="lg:col-span-2 bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
+      <div className="lg:col-span-2">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-black text-neutral-900 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-accent" /> Recent Activity
+          <h2 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2">
+            <span className="w-6 h-px bg-neutral-900" />
+            Recent activity
           </h2>
           {activity.length > 0 && (
             <button
               onClick={() => onJump('results')}
-              className="text-xs font-bold text-neutral-500 hover:text-neutral-900 flex items-center gap-1"
+              className="text-xs font-medium text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight className="w-3 h-3" />
             </button>
@@ -474,25 +427,22 @@ function OverviewTab({
         </div>
 
         {activity.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="border border-neutral-200 rounded-2xl py-12 text-center">
             <p className="text-neutral-400 text-sm mb-4">No test activity yet.</p>
             <Button size="sm" href="/pilot-aptitude">Start practicing</Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
             {activity.map((a) => (
-              <div key={a.id} className="flex items-center gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-100 hover:border-neutral-200 transition-colors">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${a.accent}`}>
-                  {a.icon}
-                </div>
+              <div key={a.id} className="flex items-center gap-5 p-5 hover:bg-neutral-50 transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-neutral-900 truncate">{a.title}</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">{a.subtitle} · {a.date}</p>
+                  <p className="font-medium text-neutral-900 truncate">{a.title}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5">{a.subtitle} · {a.date}</p>
                 </div>
                 {a.pct !== undefined && (
                   <div className="text-right">
-                    <p className={`text-lg font-black ${pctColor(a.pct)}`}>{a.pct}%</p>
-                    <p className="text-[10px] text-neutral-400 font-medium">{a.score}</p>
+                    <p className={`font-display text-2xl leading-none ${pctColor(a.pct)}`}>{a.pct}%</p>
+                    <p className="text-[10px] text-neutral-400 mt-1 font-mono">{a.score}</p>
                   </div>
                 )}
               </div>
@@ -501,21 +451,20 @@ function OverviewTab({
         )}
       </div>
 
-      {/* Side column */}
+      {/* Side */}
       <div className="space-y-6">
-
-        {/* Upcoming exams */}
-        <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 shadow-sm">
-          <h3 className="text-base font-black text-neutral-900 mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-violet" /> Upcoming
+        {/* Upcoming */}
+        <div className="border border-neutral-200 rounded-2xl p-6">
+          <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+            <Calendar className="w-3.5 h-3.5" /> Upcoming
           </h3>
           {upcoming.length === 0 ? (
             <p className="text-neutral-400 text-sm">No upcoming exam registrations.</p>
           ) : (
             <div className="space-y-3">
               {upcoming.slice(0, 3).map((reg) => (
-                <div key={reg.id} className="p-3 rounded-xl bg-violet/5 border border-violet/10">
-                  <p className="font-bold text-sm text-neutral-900 truncate">{reg.exams?.title}</p>
+                <div key={reg.id} className="border-l-2 border-emerald-500 pl-3">
+                  <p className="font-medium text-sm text-neutral-900 truncate">{reg.exams?.title}</p>
                   <p className="text-xs text-neutral-500 mt-1">
                     {reg.exams?.exam_date ? formatDate(reg.exams.exam_date) : 'TBA'}
                     {reg.exams?.exam_time ? ` · ${reg.exams.exam_time}` : ''}
@@ -526,35 +475,41 @@ function OverviewTab({
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 shadow-sm">
-          <h3 className="text-base font-black text-neutral-900 mb-4">Quick Actions</h3>
-          <div className="space-y-2">
-            <Link href="/pilot-aptitude" className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group">
-              <span className="text-sm font-bold text-neutral-700 group-hover:text-neutral-900">Take aptitude test</span>
-              <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-accent transition-colors" />
-            </Link>
-            <Link href="/dgca-rtr" className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group">
-              <span className="text-sm font-bold text-neutral-700 group-hover:text-neutral-900">Browse RTR tests</span>
-              <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-accent transition-colors" />
-            </Link>
-            <Link href="/pariksha" className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group">
-              <span className="text-sm font-bold text-neutral-700 group-hover:text-neutral-900">View Pariksha exams</span>
-              <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-accent transition-colors" />
-            </Link>
-            <Link href="/guides" className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 transition-colors group">
-              <span className="text-sm font-bold text-neutral-700 group-hover:text-neutral-900">Read study guides</span>
-              <ArrowRight className="w-4 h-4 text-neutral-400 group-hover:text-accent transition-colors" />
-            </Link>
+        {/* Quick actions */}
+        <div className="border border-neutral-200 rounded-2xl p-6">
+          <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">
+            Quick actions
+          </h3>
+          <div className="space-y-1">
+            {[
+              ['/pilot-aptitude', 'Take aptitude test'],
+              ['/dgca-rtr', 'Browse RTR tests'],
+              ['/pariksha', 'View Pariksha exams'],
+              ['/guides', 'Read study guides'],
+            ].map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between py-2.5 group"
+              >
+                <span className="text-sm text-neutral-700 group-hover:text-neutral-900 link-underline">
+                  {label}
+                </span>
+                <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Pariksha summary */}
+        {/* Pariksha avg */}
         {avgExam !== null && (
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-[2rem] p-6 shadow-sm">
-            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2">Pariksha Average</p>
-            <p className={`text-4xl font-black ${pctColor(avgExam)}`}>{avgExam}%</p>
-            <p className="text-xs text-emerald-700/70 mt-2">Across all submitted exams</p>
+          <div className="bg-neutral-950 text-white rounded-2xl p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_60%)]" />
+            <p className="relative text-[10px] uppercase tracking-[0.22em] text-emerald-400 font-medium mb-3">
+              Pariksha avg.
+            </p>
+            <p className="relative font-display text-5xl text-white leading-none mb-2">{avgExam}%</p>
+            <p className="relative text-xs text-white/60">Across all submitted exams</p>
           </div>
         )}
       </div>
@@ -562,56 +517,55 @@ function OverviewTab({
   );
 }
 
-/* ---------- My Tests ---------- */
+/* ────────── My Tests ────────── */
 
 function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; examRegistrations: ExamRegistration[] }) {
   return (
-    <div className="space-y-6">
-
-      {/* RTR Purchases */}
-      <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
+    <div className="space-y-12">
+      {/* RTR */}
+      <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-black text-neutral-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-accent" /> Purchased RTR Tests
+          <h2 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2">
+            <span className="w-6 h-px bg-neutral-900" /> Purchased RTR tests
           </h2>
-          <span className="text-xs font-bold text-neutral-400">{purchases.length} test{purchases.length === 1 ? '' : 's'}</span>
+          <span className="text-xs text-neutral-400 font-mono">{purchases.length}</span>
         </div>
 
         {purchases.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-neutral-200 rounded-2xl">
-            <Receipt className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-500 mb-5">You haven&apos;t purchased any RTR tests yet.</p>
-            <Button size="sm" href="/dgca-rtr">Browse RTR Tests</Button>
+          <div className="border border-dashed border-neutral-200 rounded-2xl py-12 text-center">
+            <Receipt className="w-8 h-8 text-neutral-300 mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-neutral-500 mb-5 text-sm">You haven&apos;t purchased any RTR tests yet.</p>
+            <Button size="sm" href="/dgca-rtr">Browse RTR tests</Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
             {purchases.map((p) => (
-              <div key={p.id} className="p-5 bg-neutral-50 rounded-2xl border border-neutral-100">
-                <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
+              <div key={p.id} className="p-6">
+                <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <p className="font-black text-neutral-900">{p.rtr_tests?.title ?? p.test_id}</p>
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-200">
-                        OWNED
+                      <p className="font-medium text-neutral-900">{p.rtr_tests?.title ?? p.test_id}</p>
+                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-medium uppercase tracking-[0.14em] rounded-full border border-emerald-200/60">
+                        Owned
                       </span>
                     </div>
                     {p.rtr_tests?.description && (
                       <p className="text-xs text-neutral-500 mt-1">{p.rtr_tests.description}</p>
                     )}
-                    <p className="text-[11px] text-neutral-400 mt-2">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 mt-2 font-mono">
                       Purchased {formatDate(p.purchased_at)} · ₹{p.amount}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" href={`/rtr-exam?testId=${p.test_id}&part=part1`}>
-                    <PlayCircle className="w-4 h-4" /> Part 1 — MCQ
+                  <Button size="sm" variant="primary" href={`/rtr-exam?testId=${p.test_id}&part=part1`}>
+                    <PlayCircle className="w-3.5 h-3.5" /> Part 1
                   </Button>
-                  <Button size="sm" variant="violet" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=practice`}>
-                    Part 2 — Practice
+                  <Button size="sm" variant="secondary" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=practice`}>
+                    Practice
                   </Button>
-                  <Button size="sm" variant="dark" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=simulate`}>
-                    Part 2 — Simulate
+                  <Button size="sm" variant="violet" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=simulate`}>
+                    Simulate
                   </Button>
                 </div>
               </div>
@@ -620,43 +574,49 @@ function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; exa
         )}
       </div>
 
-      {/* Exam Registrations */}
-      <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
+      {/* Pariksha */}
+      <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-black text-neutral-900 flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-violet" /> Pariksha Registrations
+          <h2 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2">
+            <span className="w-6 h-px bg-neutral-900" /> Pariksha registrations
           </h2>
-          <span className="text-xs font-bold text-neutral-400">{examRegistrations.length} exam{examRegistrations.length === 1 ? '' : 's'}</span>
+          <span className="text-xs text-neutral-400 font-mono">{examRegistrations.length}</span>
         </div>
 
         {examRegistrations.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-neutral-200 rounded-2xl">
-            <GraduationCap className="w-10 h-10 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-500 mb-5">No Pariksha exam registrations yet.</p>
+          <div className="border border-dashed border-neutral-200 rounded-2xl py-12 text-center">
+            <GraduationCap className="w-8 h-8 text-neutral-300 mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-neutral-500 mb-5 text-sm">No Pariksha exam registrations yet.</p>
             <Button size="sm" variant="violet" href="/pariksha">View Pariksha</Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
             {examRegistrations.map((reg) => {
               const examDate = reg.exams?.exam_date ? new Date(reg.exams.exam_date) : null;
               const isPast = examDate ? examDate < new Date(new Date().toDateString()) : false;
               return (
-                <div key={reg.id} className="flex items-center justify-between gap-4 p-5 bg-neutral-50 rounded-2xl border border-neutral-100 flex-wrap">
+                <div key={reg.id} className="flex items-center justify-between gap-4 p-5 flex-wrap">
                   <div className="flex-1 min-w-[200px]">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="font-bold text-neutral-900">{reg.exams?.title ?? reg.exam_id}</p>
-                      {isPast ? (
-                        <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold rounded-full">PAST</span>
-                      ) : (
-                        <span className="px-2 py-0.5 bg-violet/10 text-violet text-[10px] font-bold rounded-full border border-violet/20">UPCOMING</span>
-                      )}
+                      <p className="font-medium text-neutral-900">{reg.exams?.title ?? reg.exam_id}</p>
+                      <span
+                        className={`px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.14em] rounded-full border ${
+                          isPast
+                            ? 'bg-neutral-100 text-neutral-500 border-neutral-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                        }`}
+                      >
+                        {isPast ? 'Past' : 'Upcoming'}
+                      </span>
                     </div>
                     <p className="text-xs text-neutral-500">
                       {reg.exams?.subject}
                       {examDate ? ` · ${formatDate(examDate.toISOString())}` : ''}
                       {reg.exams?.exam_time ? ` · ${reg.exams.exam_time}` : ''}
                     </p>
-                    <p className="text-[11px] text-neutral-400 mt-1">Registered {formatDate(reg.registered_at)}</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 mt-1 font-mono">
+                      Registered {formatDate(reg.registered_at)}
+                    </p>
                   </div>
                   <Button size="sm" variant="secondary" href={`/pariksha/${reg.exam_id}`}>
                     Open <ArrowRight className="w-3 h-3" />
@@ -671,7 +631,7 @@ function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; exa
   );
 }
 
-/* ---------- Results ---------- */
+/* ────────── Results ────────── */
 
 function ResultsTab({
   rtrResults,
@@ -683,7 +643,6 @@ function ResultsTab({
   examAttempts: ExamAttempt[];
 }) {
   const [filter, setFilter] = useState<'all' | 'rtr' | 'aptitude' | 'pariksha'>('all');
-
   const submittedExams = examAttempts.filter((a) => a.submitted_at && a.total && a.score !== null);
 
   const filters = [
@@ -694,23 +653,25 @@ function ResultsTab({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Filters */}
-      <div className="bg-white border border-neutral-100 rounded-2xl p-2 shadow-sm flex gap-1 overflow-x-auto">
+      <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all ${
               filter === f.id
-                ? 'bg-accent text-black'
-                : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                ? 'bg-neutral-900 text-white border border-neutral-900'
+                : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-900 hover:text-neutral-900'
             }`}
           >
             {f.label}
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-              filter === f.id ? 'bg-black/10 text-black' : 'bg-neutral-100 text-neutral-500'
-            }`}>
+            <span
+              className={`text-[10px] font-mono ${
+                filter === f.id ? 'text-white/70' : 'text-neutral-400'
+              }`}
+            >
               {f.count}
             </span>
           </button>
@@ -718,7 +679,7 @@ function ResultsTab({
       </div>
 
       {(filter === 'all' || filter === 'rtr') && rtrResults.length > 0 && (
-        <ResultGroup title="DGCA RTR Results" icon={<Target className="w-5 h-5 text-blue-600" />} count={rtrResults.length}>
+        <ResultGroup title="DGCA RTR" count={rtrResults.length}>
           {rtrResults.map((r) => {
             const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
             return (
@@ -735,7 +696,7 @@ function ResultsTab({
       )}
 
       {(filter === 'all' || filter === 'aptitude') && aptitudeResults.length > 0 && (
-        <ResultGroup title="Aptitude Results" icon={<Trophy className="w-5 h-5 text-violet" />} count={aptitudeResults.length}>
+        <ResultGroup title="Aptitude" count={aptitudeResults.length}>
           {aptitudeResults.map((r) => {
             const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
             const m = Math.floor(r.time_taken / 60);
@@ -754,7 +715,7 @@ function ResultsTab({
       )}
 
       {(filter === 'all' || filter === 'pariksha') && submittedExams.length > 0 && (
-        <ResultGroup title="Pariksha Results" icon={<GraduationCap className="w-5 h-5 text-emerald-600" />} count={submittedExams.length}>
+        <ResultGroup title="Pariksha" count={submittedExams.length}>
           {submittedExams.map((a) => {
             const total = a.total ?? 1;
             const score = a.score ?? 0;
@@ -772,7 +733,6 @@ function ResultsTab({
         </ResultGroup>
       )}
 
-      {/* Empty state for current filter */}
       {((filter === 'rtr' && rtrResults.length === 0) ||
         (filter === 'aptitude' && aptitudeResults.length === 0) ||
         (filter === 'pariksha' && submittedExams.length === 0) ||
@@ -780,12 +740,12 @@ function ResultsTab({
           rtrResults.length === 0 &&
           aptitudeResults.length === 0 &&
           submittedExams.length === 0)) && (
-        <div className="bg-white border border-neutral-100 rounded-[2rem] p-12 shadow-sm text-center">
-          <Award className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-          <p className="text-neutral-500 mb-6">No results to show for this category yet.</p>
+        <div className="border border-neutral-200 rounded-2xl py-16 text-center">
+          <Award className="w-10 h-10 text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-neutral-500 mb-6 text-sm">No results to show for this category yet.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button size="sm" href="/pilot-aptitude">Take Aptitude</Button>
-            <Button size="sm" variant="violet" href="/dgca-rtr">RTR Tests</Button>
+            <Button size="sm" href="/pilot-aptitude">Take aptitude</Button>
+            <Button size="sm" variant="secondary" href="/dgca-rtr">RTR tests</Button>
           </div>
         </div>
       )}
@@ -793,74 +753,79 @@ function ResultsTab({
   );
 }
 
-function ResultGroup({ title, icon, count, children }: { title: string; icon: React.ReactNode; count: number; children: React.ReactNode }) {
+function ResultGroup({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
-    <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-black text-neutral-900 flex items-center gap-2">
-          {icon} {title}
-        </h2>
-        <span className="text-xs font-bold text-neutral-400">{count} attempt{count === 1 ? '' : 's'}</span>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2">
+          <span className="w-6 h-px bg-neutral-900" /> {title}
+        </h3>
+        <span className="text-xs text-neutral-400 font-mono">{count}</span>
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
+        {children}
+      </div>
     </div>
   );
 }
 
 function ResultRow({ title, subtitle, pct, score }: { title: string; subtitle: string; pct: number; score: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+    <div className="flex items-center justify-between gap-4 p-5 hover:bg-neutral-50 transition-colors">
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-neutral-900 truncate">{title}</p>
-        <p className="text-xs text-neutral-400 mt-0.5 truncate">{subtitle}</p>
+        <p className="font-medium text-neutral-900 truncate">{title}</p>
+        <p className="text-xs text-neutral-500 mt-0.5 truncate">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <div className="hidden sm:block w-24 h-2 bg-neutral-200 rounded-full overflow-hidden">
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="hidden sm:block w-24 h-px bg-neutral-200 relative">
           <div
-            className={`h-full rounded-full ${pct >= 70 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`}
-            style={{ width: `${pct}%` }}
+            className={`absolute inset-y-0 left-0 ${
+              pct >= 70 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+            }`}
+            style={{ width: `${pct}%`, top: '-0.5px', bottom: '-0.5px' }}
           />
         </div>
-        <div className={`px-3 py-1 rounded-full text-xs font-black border ${pctBadge(pct)}`}>{pct}%</div>
-        <span className="hidden md:inline text-[11px] text-neutral-400 font-medium tabular-nums w-12 text-right">{score}</span>
+        <p className={`font-display text-2xl leading-none ${pctColor(pct)}`}>{pct}%</p>
+        <span className="hidden md:inline text-[10px] text-neutral-400 font-mono tabular-nums w-12 text-right">
+          {score}
+        </span>
       </div>
     </div>
   );
 }
 
-/* ---------- Settings ---------- */
+/* ────────── Settings ────────── */
 
 function SettingsTab({ user, profile }: { user: UserSummary; profile: Profile | null }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <EditProfileForm user={user} profile={profile} />
       <ChangePasswordForm />
 
-      {/* Account info */}
-      <div className="lg:col-span-2 bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
-        <h2 className="text-lg font-black text-neutral-900 mb-6 flex items-center gap-2">
-          <UserIcon className="w-5 h-5 text-neutral-500" /> Account Information
-        </h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <InfoRow icon={<Mail className="w-5 h-5 text-blue-500" />} tint="bg-blue-50" label="Email Address" value={user.email} />
-          <InfoRow icon={<Calendar className="w-5 h-5 text-emerald-500" />} tint="bg-emerald-50" label="Member Since" value={formatDate(user.created_at, { day: 'numeric', month: 'long', year: 'numeric' })} />
-          <InfoRow icon={<ShieldCheck className="w-5 h-5 text-violet" />} tint="bg-violet/10" label="User ID" value={user.id} mono />
-          <InfoRow icon={<CheckCircle2 className="w-5 h-5 text-emerald-500" />} tint="bg-emerald-50" label="Account Status" value="Verified · Active" />
+      <div className="lg:col-span-2">
+        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+          <span className="w-6 h-px bg-neutral-900" /> Account information
+        </h3>
+        <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
+          <InfoRow icon={<Mail className="w-4 h-4" strokeWidth={1.5} />} label="Email Address" value={user.email} />
+          <InfoRow icon={<Calendar className="w-4 h-4" strokeWidth={1.5} />} label="Member Since" value={formatDate(user.created_at, { day: 'numeric', month: 'long', year: 'numeric' })} />
+          <InfoRow icon={<UserIcon className="w-4 h-4" strokeWidth={1.5} />} label="User ID" value={user.id} mono />
+          <InfoRow icon={<CheckCircle2 className="w-4 h-4" strokeWidth={1.5} />} label="Account Status" value="Verified · Active" />
         </div>
       </div>
     </div>
   );
 }
 
-function InfoRow({ icon, tint, label, value, mono = false }: { icon: React.ReactNode; tint: string; label: string; value: string; mono?: boolean }) {
+function InfoRow({ icon, label, value, mono = false }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tint}`}>
+    <div className="flex items-center gap-5 p-5">
+      <div className="w-9 h-9 rounded-lg bg-neutral-100 text-neutral-900 flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider mb-0.5">{label}</p>
-        <p className={`text-neutral-900 font-semibold truncate ${mono ? 'font-mono text-xs' : 'text-sm'}`}>{value}</p>
+        <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-500 font-medium mb-0.5">{label}</p>
+        <p className={`text-neutral-900 truncate ${mono ? 'font-mono text-xs' : 'text-sm font-medium'}`}>{value}</p>
       </div>
     </div>
   );
@@ -883,15 +848,15 @@ function EditProfileForm({ user, profile }: { user: UserSummary; profile: Profil
   }
 
   return (
-    <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
-      <h2 className="text-lg font-black text-neutral-900 mb-1 flex items-center gap-2">
-        <Pencil className="w-5 h-5 text-accent" /> Profile Details
-      </h2>
+    <div>
+      <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+        <Pencil className="w-3.5 h-3.5" /> Profile details
+      </h3>
       <p className="text-sm text-neutral-500 mb-6">Update how your name appears on the platform.</p>
 
-      <form action={action} className="space-y-4">
+      <form action={action} className="space-y-5">
         <Input
-          label="Full Name"
+          label="Full name"
           name="full_name"
           type="text"
           placeholder="Capt. R. Sharma"
@@ -900,30 +865,32 @@ function EditProfileForm({ user, profile }: { user: UserSummary; profile: Profil
           required
           minLength={2}
         />
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-text-secondary">Email</label>
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-[0.14em]">
+            Email
+          </label>
           <input
             type="email"
             value={user.email}
             disabled
-            className="px-4 py-3 rounded-xl border-2 border-neutral-100 bg-neutral-50 text-neutral-400 text-sm cursor-not-allowed"
+            className="px-4 py-3.5 rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-400 text-sm cursor-not-allowed"
           />
           <p className="text-[11px] text-neutral-400">Contact support to change your email.</p>
         </div>
 
         {error && (
-          <div className="flex items-start gap-2 p-3 text-sm text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {error}
+          <div className="flex items-start gap-2 p-3 text-sm text-rose-700 bg-rose-50 rounded-xl border border-rose-200/60">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {error}
           </div>
         )}
         {message && (
-          <div className="flex items-start gap-2 p-3 text-sm text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-100">
-            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> {message}
+          <div className="flex items-start gap-2 p-3 text-sm text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-200/60">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" /> {message}
           </div>
         )}
 
         <Button type="submit" disabled={loading} className="w-full">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save changes'}
         </Button>
       </form>
     </div>
@@ -938,7 +905,6 @@ function ChangePasswordForm() {
     setLoading(true);
     setError(null);
     const result = await updatePassword(formData);
-    // On success the action redirects to /login — only error returns here
     if (result?.error) {
       setError(result.error);
       setLoading(false);
@@ -946,15 +912,15 @@ function ChangePasswordForm() {
   }
 
   return (
-    <div className="bg-white border border-neutral-100 rounded-[2rem] p-6 md:p-8 shadow-sm">
-      <h2 className="text-lg font-black text-neutral-900 mb-1 flex items-center gap-2">
-        <KeyRound className="w-5 h-5 text-violet" /> Change Password
-      </h2>
+    <div>
+      <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+        <KeyRound className="w-3.5 h-3.5" /> Change password
+      </h3>
       <p className="text-sm text-neutral-500 mb-6">You&apos;ll be signed out and asked to log in again.</p>
 
-      <form action={action} className="space-y-4">
+      <form action={action} className="space-y-5">
         <Input
-          label="New Password"
+          label="New password"
           name="password"
           type="password"
           placeholder="At least 6 characters"
@@ -964,13 +930,13 @@ function ChangePasswordForm() {
         />
 
         {error && (
-          <div className="flex items-start gap-2 p-3 text-sm text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {error}
+          <div className="flex items-start gap-2 p-3 text-sm text-rose-700 bg-rose-50 rounded-xl border border-rose-200/60">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {error}
           </div>
         )}
 
         <Button type="submit" variant="violet" disabled={loading} className="w-full">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update Password'}
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update password'}
         </Button>
       </form>
     </div>

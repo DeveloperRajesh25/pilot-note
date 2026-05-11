@@ -53,7 +53,7 @@ export default async function ProfilePage() {
   return (
     <>
       <Header />
-      <main className="flex-grow bg-neutral-50 pt-32 pb-24 min-h-screen">
+      <main className="grow bg-white pt-36 pb-24 min-h-screen">
         <ProfileClient
           user={{
             id: user.id,

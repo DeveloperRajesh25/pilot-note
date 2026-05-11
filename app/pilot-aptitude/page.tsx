@@ -5,6 +5,18 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { APTITUDE_CATEGORIES } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
+import {
+  Box,
+  Hash,
+  MessageSquare,
+  Gauge,
+  Clock,
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 
 interface Question {
   id: string;
@@ -26,6 +38,20 @@ interface AptitudeResult {
 
 type ViewType = 'selection' | 'test' | 'results' | 'history';
 
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'Spatial Reasoning': <Box className="w-5 h-5" strokeWidth={1.5} />,
+  'Numerical Ability': <Hash className="w-5 h-5" strokeWidth={1.5} />,
+  'Verbal Reasoning': <MessageSquare className="w-5 h-5" strokeWidth={1.5} />,
+  'Instrument Comprehension': <Gauge className="w-5 h-5" strokeWidth={1.5} />,
+};
+
+const CATEGORY_DESCS: Record<string, string> = {
+  'Spatial Reasoning': 'Mental rotation, spatial relationships, and 3D visualization.',
+  'Numerical Ability': 'Aviation calculations — fuel, time, distance, and weight.',
+  'Verbal Reasoning': 'Communication, vocabulary, analogies, and comprehension.',
+  'Instrument Comprehension': 'Read and interpret cockpit instruments accurately.',
+};
+
 export default function PilotAptitudePage() {
   const [view, setView] = useState<ViewType>('selection');
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
@@ -39,7 +65,6 @@ export default function PilotAptitudePage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Timer
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (view === 'test') {
@@ -84,9 +109,9 @@ export default function PilotAptitudePage() {
 
   const handleAnswer = (optionIndex: number) => {
     if (answers[currentIndex] !== null) return;
-    const newAnswers = [...answers];
-    newAnswers[currentIndex] = optionIndex;
-    setAnswers(newAnswers);
+    const next = [...answers];
+    next[currentIndex] = optionIndex;
+    setAnswers(next);
   };
 
   const finishTest = async () => {
@@ -123,7 +148,7 @@ export default function PilotAptitudePage() {
   return (
     <>
       <Header />
-      <main className="flex-grow pt-32 pb-24 bg-neutral-50 min-h-screen">
+      <main className="grow pt-36 pb-32 bg-white min-h-screen">
         <div className="container mx-auto px-6">
           {view === 'selection' && (
             <SelectionView
@@ -136,81 +161,113 @@ export default function PilotAptitudePage() {
             <HistoryView history={history} loading={historyLoading} onBack={() => setView('selection')} />
           )}
           {view === 'test' && (
-            <div className="max-w-3xl mx-auto bg-white rounded-[2rem] border-2 border-neutral-100 shadow-xl p-8 md:p-12">
-              <div className="flex justify-between items-center mb-8">
-                <span className="px-4 py-1.5 bg-violet-50 text-violet text-xs font-bold rounded-full uppercase tracking-wider">
+            <div className="max-w-3xl mx-auto">
+              {/* Top bar */}
+              <div className="flex justify-between items-center mb-10">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full font-medium">
                   {currentCategory}
                 </span>
-                <div className="flex items-center gap-2 text-gray-500 font-mono text-lg">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path d="M12 6v6l4 2" strokeWidth="2" /></svg>
+                <div className="flex items-center gap-2 font-mono text-base text-neutral-700">
+                  <Clock className="w-4 h-4" strokeWidth={1.5} />
                   {formatTime(elapsedSeconds)}
                 </div>
               </div>
 
               {/* Progress */}
               <div className="mb-10">
-                <div className="flex justify-between text-sm font-bold text-gray-400 mb-3">
+                <div className="flex justify-between text-xs font-medium text-neutral-500 mb-3 tracking-wide">
                   <span>Question {currentIndex + 1} of {questions.length}</span>
                   <span>{Math.round(((currentIndex + 1) / questions.length) * 100)}%</span>
                 </div>
-                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-violet transition-all duration-500" style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} />
+                <div className="h-px bg-neutral-200 overflow-hidden">
+                  <div
+                    className="h-full bg-neutral-900 transition-all duration-500"
+                    style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                  />
                 </div>
               </div>
 
               {/* Question */}
-              <div className="mb-10">
-                <h3 className="text-2xl font-bold text-neutral-900 mb-8 leading-tight">{questions[currentIndex]?.question}</h3>
-                <div className="grid gap-4">
-                  {questions[currentIndex]?.options.map((opt, i) => {
-                    const isSelected = answers[currentIndex] === i;
-                    const isCorrect = questions[currentIndex].correct === i;
-                    const hasAnswered = answers[currentIndex] !== null;
+              <h2 className="font-display text-3xl md:text-4xl text-neutral-900 leading-tight tracking-tight mb-10">
+                {questions[currentIndex]?.question}
+              </h2>
 
-                    let bgClass = 'bg-neutral-50 border-neutral-100 hover:bg-neutral-100';
-                    let textClass = 'text-neutral-700';
-                    let letterClass = 'bg-white text-neutral-400';
+              <div className="space-y-3 mb-8">
+                {questions[currentIndex]?.options.map((opt, i) => {
+                  const isSelected = answers[currentIndex] === i;
+                  const isCorrect = questions[currentIndex].correct === i;
+                  const hasAnswered = answers[currentIndex] !== null;
 
-                    if (hasAnswered) {
-                      if (isCorrect) { bgClass = 'bg-emerald-50 border-emerald-200'; textClass = 'text-emerald-700'; letterClass = 'bg-emerald-500 text-white'; }
-                      else if (isSelected) { bgClass = 'bg-rose-50 border-rose-200'; textClass = 'text-rose-700'; letterClass = 'bg-rose-500 text-white'; }
+                  let cls = 'border-neutral-200 hover:border-neutral-900 bg-white';
+                  let textCls = 'text-neutral-700';
+                  let letterCls = 'bg-neutral-100 text-neutral-500';
+
+                  if (hasAnswered) {
+                    if (isCorrect) {
+                      cls = 'border-emerald-500 bg-emerald-50/50';
+                      textCls = 'text-neutral-900';
+                      letterCls = 'bg-emerald-500 text-white';
                     } else if (isSelected) {
-                      bgClass = 'bg-violet-50 border-violet-200'; textClass = 'text-violet-700'; letterClass = 'bg-violet-500 text-white';
+                      cls = 'border-rose-400 bg-rose-50/50';
+                      textCls = 'text-neutral-900';
+                      letterCls = 'bg-rose-500 text-white';
                     }
+                  } else if (isSelected) {
+                    cls = 'border-neutral-900 bg-neutral-50';
+                    textCls = 'text-neutral-900';
+                    letterCls = 'bg-neutral-900 text-white';
+                  }
 
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => handleAnswer(i)}
-                        disabled={hasAnswered}
-                        className={`flex items-center gap-5 p-5 rounded-2xl border-2 transition-all text-left group ${bgClass}`}
-                      >
-                        <span className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-colors ${letterClass}`}>{String.fromCharCode(65 + i)}</span>
-                        <span className={`font-semibold ${textClass}`}>{opt}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleAnswer(i)}
+                      disabled={hasAnswered}
+                      className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${cls}`}
+                    >
+                      <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${letterCls}`}>
+                        {String.fromCharCode(65 + i)}
+                      </span>
+                      <span className={`text-[15px] font-medium ${textCls}`}>{opt}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Explanation */}
               {answers[currentIndex] !== null && (
-                <div className="mb-10 p-6 bg-accent-glow rounded-2xl border-l-4 border-accent">
-                  <h4 className="font-bold text-accent-dark mb-2">Explanation:</h4>
-                  <p className="text-neutral-600 leading-relaxed">{questions[currentIndex]?.explanation}</p>
+                <div className="mb-8 p-5 border-l-2 border-emerald-500 bg-emerald-50/40 rounded-r-xl">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 font-medium mb-2">
+                    Explanation
+                  </p>
+                  <p className="text-neutral-700 text-[15px] leading-relaxed">{questions[currentIndex]?.explanation}</p>
                 </div>
               )}
 
               {/* Actions */}
-              <div className="flex justify-between items-center pt-8 border-t border-neutral-100">
-                <Button variant="secondary" onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))} disabled={currentIndex === 0}>← Previous</Button>
+              <div className="flex justify-between items-center pt-8 border-t border-neutral-200">
+                <Button
+                  variant="secondary"
+                  onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+                  disabled={currentIndex === 0}
+                >
+                  <ArrowLeft className="w-4 h-4" /> Previous
+                </Button>
                 {currentIndex === questions.length - 1 ? (
-                  <Button variant="violet" onClick={finishTest} disabled={answers[currentIndex] === null || saving}>
-                    {saving ? 'Saving...' : 'Finish Test'}
+                  <Button
+                    variant="violet"
+                    onClick={finishTest}
+                    disabled={answers[currentIndex] === null || saving}
+                  >
+                    {saving ? 'Saving…' : 'Finish test'}
                   </Button>
                 ) : (
-                  <Button variant="primary" onClick={() => { setCurrentIndex(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} disabled={answers[currentIndex] === null}>
-                    Next →
+                  <Button
+                    variant="primary"
+                    onClick={() => { setCurrentIndex(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    disabled={answers[currentIndex] === null}
+                  >
+                    Next <ArrowRight className="w-4 h-4" />
                   </Button>
                 )}
               </div>
@@ -234,78 +291,136 @@ export default function PilotAptitudePage() {
   );
 }
 
-function SelectionView({ onStart, loading, onHistory }: { onStart: (cat: string | null) => void; loading: boolean; onHistory: () => void }) {
-  const categoryMeta: Record<string, { icon: string; color: string; desc: string }> = {
-    'Spatial Reasoning': { icon: '📐', color: 'bg-emerald-50 text-emerald-600', desc: 'Test your ability to mentally rotate objects, understand spatial relationships, and visualize 3D concepts.' },
-    'Numerical Ability': { icon: '🔢', color: 'bg-violet-50 text-violet', desc: 'Assess your speed and accuracy with aviation-related calculations — fuel, time, distance, and more.' },
-    'Verbal Reasoning': { icon: '💬', color: 'bg-blue-50 text-blue-600', desc: 'Evaluate your communication skills, vocabulary, analogies, and comprehension abilities.' },
-    'Instrument Comprehension': { icon: '✈️', color: 'bg-orange-50 text-orange-600', desc: 'Test your ability to read and interpret cockpit instruments and flight displays accurately.' },
-  };
-
+function SelectionView({
+  onStart,
+  loading,
+  onHistory,
+}: {
+  onStart: (cat: string | null) => void;
+  loading: boolean;
+  onHistory: () => void;
+}) {
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="text-center mb-16">
-        <span className="px-4 py-1.5 bg-accent-glow text-accent-dark text-xs font-bold rounded-full uppercase tracking-wider mb-4 inline-block">COMPASS Test</span>
-        <h2 className="text-4xl md:text-5xl font-black mb-6">Choose Your Test Category</h2>
-        <p className="text-gray-500 text-lg max-w-2xl mx-auto">Assess your skills across all four COMPASS aptitude domains. Take individual tests or attempt the full assessment.</p>
+    <div>
+      {/* Header */}
+      <div className="grid lg:grid-cols-12 gap-10 mb-16 items-end">
+        <div className="lg:col-span-8">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+            <span className="w-6 h-px bg-neutral-900" />
+            COMPASS Aptitude
+          </span>
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+            Test your <span className="italic-serif">aptitude.</span>
+          </h1>
+        </div>
+        <div className="lg:col-span-4">
+          <p className="text-neutral-600 text-lg leading-relaxed">
+            Assess your skills across the four COMPASS aptitude domains used by airline selection.
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-4 mb-16">
+      {/* CTAs */}
+      <div className="flex flex-wrap items-center gap-3 mb-16 pb-12 border-b border-neutral-200">
         <Button variant="violet" size="lg" onClick={() => onStart(null)} disabled={loading}>
-          {loading ? 'Loading...' : 'Take Full COMPASS Test →'}
+          {loading ? 'Loading…' : 'Take full COMPASS test'}
+          {!loading && <ArrowRight className="w-4 h-4" />}
         </Button>
-        <Button variant="secondary" size="lg" onClick={onHistory}>My History</Button>
+        <Button variant="secondary" size="lg" onClick={onHistory}>
+          <BarChart3 className="w-4 h-4" /> My history
+        </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {APTITUDE_CATEGORIES.map(cat => {
-          const meta = categoryMeta[cat];
-          return (
-            <div key={cat} onClick={() => !loading && onStart(cat)} className="bg-white p-8 rounded-[2rem] border-2 border-neutral-100 hover:border-violet/20 hover:shadow-xl transition-all cursor-pointer group">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-6 transition-transform group-hover:scale-110 ${meta.color}`}>{meta.icon}</div>
-              <h3 className="text-xl font-bold mb-3">{cat}</h3>
-              <p className="text-gray-500 leading-relaxed mb-6">{meta.desc}</p>
-              <div className="flex justify-between items-center text-sm font-bold">
-                <span className="text-neutral-400">6 questions per session</span>
-                <span className="text-violet group-hover:translate-x-1 transition-transform">Start Test →</span>
+      {/* Categories */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+        {APTITUDE_CATEGORIES.map((cat, idx) => (
+          <button
+            key={cat}
+            onClick={() => !loading && onStart(cat)}
+            className="group bg-white p-8 lg:p-10 text-left transition-colors hover:bg-neutral-50 flex flex-col"
+          >
+            <div className="flex items-center justify-between mb-10">
+              <div className="w-12 h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center transition-colors">
+                {CATEGORY_ICONS[cat]}
               </div>
+              <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
+                Module {String(idx + 1).padStart(2, '0')}
+              </span>
             </div>
-          );
-        })}
+
+            <h3 className="font-display text-3xl text-neutral-900 mb-3 leading-tight">{cat}</h3>
+            <p className="text-neutral-600 text-[15px] leading-relaxed mb-8">
+              {CATEGORY_DESCS[cat]}
+            </p>
+
+            <div className="mt-auto flex items-center justify-between pt-6 border-t border-neutral-100">
+              <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-medium">
+                6 questions
+              </span>
+              <span className="text-sm font-medium text-neutral-900 flex items-center gap-2 link-underline">
+                Start test <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-function HistoryView({ history, loading, onBack }: { history: AptitudeResult[]; loading: boolean; onBack: () => void }) {
+function HistoryView({
+  history,
+  loading,
+  onBack,
+}: {
+  history: AptitudeResult[];
+  loading: boolean;
+  onBack: () => void;
+}) {
   return (
     <div className="max-w-3xl mx-auto">
-      <button onClick={onBack} className="group flex items-center gap-2 text-gray-500 font-bold mb-10 hover:text-black transition-colors">
-        <span className="transition-transform group-hover:-translate-x-1">←</span> Back to Categories
+      <button
+        onClick={onBack}
+        className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-10 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+        Back to categories
       </button>
-      <h2 className="text-3xl font-black mb-8">Your Test History</h2>
+
+      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+        <span className="w-6 h-px bg-neutral-900" />
+        Activity
+      </span>
+      <h2 className="font-display text-4xl md:text-5xl text-neutral-900 mb-12 tracking-tight">
+        Your <span className="italic-serif">history.</span>
+      </h2>
+
       {loading ? (
-        <div className="space-y-4">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-white rounded-2xl border border-neutral-100 animate-pulse" />)}
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-20 skeleton rounded-2xl" />)}
         </div>
       ) : history.length === 0 ? (
-        <div className="bg-white rounded-[2rem] border border-neutral-100 p-16 text-center">
-          <p className="text-5xl mb-4">📊</p>
-          <p className="text-gray-500 font-medium">No tests taken yet. Start your first test!</p>
+        <div className="border border-neutral-200 rounded-3xl py-24 text-center">
+          <BarChart3 className="w-10 h-10 text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-neutral-500">No tests taken yet. Start your first test.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="border border-neutral-200 rounded-3xl divide-y divide-neutral-200 overflow-hidden">
           {history.map(r => {
             const pct = Math.round((r.score / r.total) * 100);
+            const colorClass =
+              pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600';
             return (
-              <div key={r.id} className="bg-white rounded-2xl border border-neutral-100 p-6 flex items-center justify-between">
+              <div key={r.id} className="px-6 py-5 flex items-center justify-between hover:bg-neutral-50 transition-colors">
                 <div>
-                  <p className="font-bold text-neutral-900">{r.category}</p>
-                  <p className="text-xs text-neutral-400 mt-1">{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} · {Math.floor(r.time_taken / 60)}m {r.time_taken % 60}s</p>
+                  <p className="font-medium text-neutral-900 mb-1">{r.category}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-mono">
+                    {new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} · {Math.floor(r.time_taken / 60)}m {r.time_taken % 60}s
+                  </p>
                 </div>
                 <div className="text-right">
-                  <p className={`text-2xl font-black ${pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>{pct}%</p>
-                  <p className="text-xs text-neutral-400">{r.score}/{r.total} correct</p>
+                  <p className={`font-display text-3xl tracking-tight leading-none ${colorClass}`}>{pct}%</p>
+                  <p className="text-[11px] text-neutral-400 mt-1">{r.score}/{r.total}</p>
                 </div>
               </div>
             );
@@ -316,7 +431,14 @@ function HistoryView({ history, loading, onBack }: { history: AptitudeResult[]; 
   );
 }
 
-function ResultsView({ questions, answers, elapsedSeconds, onRetry, onBack, category }: {
+function ResultsView({
+  questions,
+  answers,
+  elapsedSeconds,
+  onRetry,
+  onBack,
+  category,
+}: {
   questions: Question[];
   answers: (number | null)[];
   elapsedSeconds: number;
@@ -335,52 +457,117 @@ function ResultsView({ questions, answers, elapsedSeconds, onRetry, onBack, cate
   });
 
   const timeTaken = `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`;
+  const passed = percentage >= 70;
+  const pctColor = passed ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-rose-500';
 
   return (
-    <div className="max-w-3xl mx-auto bg-white rounded-[2.5rem] border-2 border-neutral-100 shadow-2xl p-10 md:p-16 text-center">
-      <span className="px-4 py-1.5 bg-accent-glow text-accent-dark text-xs font-bold rounded-full uppercase tracking-wider mb-6 inline-block">Test Result</span>
-      <h2 className="text-3xl md:text-4xl font-black mb-10">{category} Analysis</h2>
+    <div className="max-w-3xl mx-auto">
+      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+        <span className="w-6 h-px bg-neutral-900" />
+        Test complete
+      </span>
+      <h2 className="font-display text-5xl md:text-6xl text-neutral-900 mb-3 tracking-tight">
+        Your <span className="italic-serif">result.</span>
+      </h2>
+      <p className="text-neutral-500 mb-12">{category}</p>
 
-      {/* Score Circle */}
-      <div className="relative w-48 h-48 mx-auto mb-4">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-neutral-100" />
-          <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="12" fill="transparent"
-            strokeDasharray={2 * Math.PI * 80}
-            strokeDashoffset={(2 * Math.PI * 80) * (1 - percentage / 100)}
-            strokeLinecap="round"
-            className={`transition-all duration-1000 ${percentage >= 70 ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-rose-500'}`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-5xl font-black text-neutral-900">{percentage}%</span>
-          <span className="text-sm font-bold text-neutral-400 uppercase tracking-widest">{correctCount}/{questions.length} Correct</span>
+      <div className="grid md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden mb-12">
+        {/* Score circle */}
+        <div className="bg-white p-10 flex flex-col items-center justify-center">
+          <div className="relative w-44 h-44 mb-4">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle cx="88" cy="88" r="76" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-neutral-100" />
+              <circle
+                cx="88"
+                cy="88"
+                r="76"
+                stroke="currentColor"
+                strokeWidth="6"
+                fill="transparent"
+                strokeDasharray={2 * Math.PI * 76}
+                strokeDashoffset={2 * Math.PI * 76 * (1 - percentage / 100)}
+                strokeLinecap="round"
+                className={`transition-all duration-1000 ${pctColor}`}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="font-display text-5xl text-neutral-900 leading-none">{percentage}%</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-400 mt-2">{correctCount}/{questions.length}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-mono">
+            <Clock className="w-3 h-3" /> {timeTaken}
+          </div>
+        </div>
+
+        {/* Pass/fail summary */}
+        <div className="bg-white p-10 flex flex-col justify-center">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium mb-3">
+            Outcome
+          </span>
+          <p className={`font-display text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>
+            {passed ? 'Passed' : 'Try again'}
+          </p>
+          <p className="text-neutral-500 text-sm">
+            {passed
+              ? "Strong showing. You're tracking well for COMPASS-style assessments."
+              : 'Practice individual modules and retry the full test to improve.'}
+          </p>
         </div>
       </div>
-      <p className="text-sm text-neutral-400 font-medium mb-12">Time taken: {timeTaken}</p>
 
-      {/* Category Breakdown */}
-      <div className="text-left mb-12 space-y-4">
-        <h3 className="text-lg font-black text-neutral-900 mb-6 uppercase tracking-wider">Performance Breakdown</h3>
-        {Object.entries(categoryScores).map(([cat, score]) => {
-          const catPct = Math.round((score.correct / score.total) * 100);
-          return (
-            <div key={cat} className="p-5 rounded-2xl border border-neutral-100 bg-neutral-50">
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-bold text-neutral-800">{cat}</span>
-                <span className={`text-sm font-black ${catPct >= 70 ? 'text-emerald-600' : catPct >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>{catPct}%</span>
+      {/* Category breakdown */}
+      <div className="mb-12">
+        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">
+          Performance breakdown
+        </h3>
+        <div className="space-y-4">
+          {Object.entries(categoryScores).map(([cat, score]) => {
+            const catPct = Math.round((score.correct / score.total) * 100);
+            const barColor = catPct >= 70 ? 'bg-emerald-500' : catPct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+            return (
+              <div key={cat}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-neutral-900">{cat}</span>
+                  <span className="text-sm font-medium text-neutral-700 font-mono">{catPct}%</span>
+                </div>
+                <div className="h-px bg-neutral-200 overflow-hidden">
+                  <div className={`h-full ${barColor} transition-all duration-700`} style={{ width: `${catPct}%` }} />
+                </div>
               </div>
-              <div className="h-2 bg-white rounded-full overflow-hidden">
-                <div className={`h-full ${catPct >= 70 ? 'bg-emerald-500' : catPct >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${catPct}%` }} />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 justify-center">
-        <Button variant="primary" size="lg" onClick={onRetry}>Retry Test</Button>
-        <Button variant="secondary" size="lg" onClick={onBack}>Back to Categories</Button>
+      {/* Detailed review */}
+      <div className="mb-12">
+        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">
+          Question review
+        </h3>
+        <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
+          {questions.map((q, i) => {
+            const ok = answers[i] === q.correct;
+            return (
+              <div key={q.id} className="px-5 py-4 flex items-start gap-4">
+                {ok ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-neutral-900 mb-1">Q{i + 1}. {q.question}</p>
+                  <p className="text-xs text-neutral-500 line-clamp-2">{q.explanation}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <Button variant="primary" size="lg" onClick={onRetry}>Retry test</Button>
+        <Button variant="secondary" size="lg" onClick={onBack}>Back to categories</Button>
       </div>
     </div>
   );

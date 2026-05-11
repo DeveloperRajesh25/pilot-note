@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 import { NAV_LINKS } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
 
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, Menu, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { type User } from '@supabase/supabase-js';
 
@@ -19,19 +19,15 @@ export const Header = () => {
   const supabase = createClient();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 16);
     window.addEventListener('scroll', handleScroll);
-    
-    // Check initial auth state
+
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
     };
     checkUser();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -39,89 +35,134 @@ export const Header = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       subscription.unsubscribe();
-    }
+    };
   }, [supabase.auth]);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-5'}`}>
-      <div className="container mx-auto px-6">
-        <div className={`flex items-center justify-between bg-neutral-900/90 rounded-full py-2.5 px-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-neutral-800/50 backdrop-blur-xl transition-all duration-300`}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled ? 'pt-3' : 'pt-5'
+      }`}
+    >
+      <div className="container mx-auto px-4 sm:px-6">
+        <div
+          className={`relative flex items-center justify-between rounded-full transition-all duration-500 ${
+            isScrolled
+              ? 'bg-white/85 border border-neutral-200/70 shadow-[0_8px_30px_-12px_rgba(10,10,10,0.12)] backdrop-blur-xl py-2 px-3 sm:px-4'
+              : 'bg-white/60 border border-neutral-200/50 backdrop-blur-md py-2.5 px-3 sm:px-5'
+          }`}
+        >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center p-2 transition-all hover:scale-105 hover:rotate-3 shadow-lg shadow-accent/20">
-              <Image src="/assets/logo.svg" alt="Pilot Note Logo" width={28} height={28} className="brightness-0" />
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 pl-1 group">
+            <div className="relative">
+              <Image
+                src="/logo.png"
+                alt="Pilot Note"
+                width={120}
+                height={28}
+                priority
+                className="h-7 w-auto object-contain transition-transform duration-500 group-hover:-translate-y-0.5"
+              />
             </div>
-            <span className="text-white font-heading font-extrabold text-xl hidden lg:block tracking-tight text-white leading-none">Pilot Note</span>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-2 lg:gap-4">
-            {NAV_LINKS.map((link) => (
-              <Link 
-                key={link.id} 
-                href={link.url}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
-                  pathname === link.url || (link.url === '/' && pathname === '/')
-                    ? 'text-accent bg-accent/10 border border-accent/20' 
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 absolute left-1/2 -translate-x-1/2">
+            {NAV_LINKS.map((link) => {
+              const active = pathname === link.url || (link.url === '/' && pathname === '/');
+              return (
+                <Link
+                  key={link.id}
+                  href={link.url}
+                  className={`relative px-3 lg:px-4 py-2 rounded-full text-[13px] font-medium transition-colors duration-300 ${
+                    active ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute inset-0 rounded-full bg-neutral-100" aria-hidden />
+                  )}
+                  <span className="relative">{link.label}</span>
+                  {active && (
+                    <span className="absolute left-1/2 -translate-x-1/2 -bottom-0.5 w-1 h-1 rounded-full bg-emerald-500" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 md:gap-4 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {!user && (
-              <Link href="/login" className="text-white/80 text-sm font-bold hover:text-white px-3 transition-colors hidden sm:block">
-                Log In
+              <Link
+                href="/login"
+                className="hidden sm:inline-block text-neutral-700 text-[13px] font-medium hover:text-neutral-900 px-3 py-2 transition-colors"
+              >
+                Log in
               </Link>
             )}
-            
+
             {user ? (
-              <Link 
-                href="/profile" 
-                className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 hover:bg-accent hover:border-accent hover:text-black text-white transition-all shadow-lg"
+              <Link
+                href="/profile"
+                className="group w-10 h-10 rounded-full bg-neutral-900 text-white hover:bg-emerald-500 transition-all duration-300 flex items-center justify-center"
                 title="Profile"
               >
-                <UserIcon size={20} />
+                <UserIcon size={16} className="transition-transform group-hover:scale-110" />
               </Link>
             ) : (
-              <Button href="/signup" size="sm" variant="secondary" className="bg-white text-black border-none hover:bg-accent hover:text-black font-bold h-10 px-6">
-                Get Started
+              <Button href="/signup" size="sm" variant="primary" className="hidden sm:inline-flex">
+                Get started
               </Button>
             )}
-            
+
             {/* Mobile Toggle */}
-            <button 
-              className="md:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+            <button
+              className="md:hidden w-10 h-10 flex items-center justify-center text-neutral-700 hover:bg-neutral-100 rounded-full transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
             >
-              <span className="text-2xl leading-none">{mobileMenuOpen ? '✕' : '☰'}</span>
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3 bg-neutral-900 rounded-2xl p-4 shadow-2xl border border-neutral-800 border-t-0 animate-in fade-in slide-in-from-top-4">
-            <div className="flex flex-col gap-2">
-              {NAV_LINKS.map((link) => (
-                <Link 
-                  key={link.id} 
-                  href={link.url}
-                  className={`px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                    pathname === link.url 
-                      ? 'text-accent bg-white/10' 
-                      : 'text-white/70 hover:text-white hover:bg-white/5'
-                  }`}
+          <div className="md:hidden mt-2 bg-white/95 backdrop-blur-xl rounded-3xl p-3 border border-neutral-200/70 shadow-xl animate-fade-in">
+            <div className="flex flex-col gap-1 mb-3">
+              {NAV_LINKS.map((link) => {
+                const active = pathname === link.url;
+                return (
+                  <Link
+                    key={link.id}
+                    href={link.url}
+                    className={`flex items-center justify-between px-4 py-3 rounded-2xl text-sm transition-colors ${
+                      active
+                        ? 'bg-neutral-900 text-white font-medium'
+                        : 'text-neutral-700 hover:bg-neutral-100'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>{link.label}</span>
+                    {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                  </Link>
+                );
+              })}
+            </div>
+            {!user && (
+              <div className="flex gap-2 pt-3 border-t border-neutral-100">
+                <Link
+                  href="/login"
+                  className="flex-1 text-center py-2.5 rounded-2xl text-sm font-medium text-neutral-700 hover:bg-neutral-100"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {link.label}
+                  Log in
                 </Link>
-              ))}
-            </div>
+                <Button href="/signup" size="sm" className="flex-1">
+                  Get started
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

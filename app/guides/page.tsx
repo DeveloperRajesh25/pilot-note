@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { ArrowLeft, ArrowUpRight, Clock, BookOpen } from 'lucide-react';
 
 interface Guide {
   id: string;
@@ -67,61 +68,89 @@ export default function GuidesPage() {
   return (
     <>
       <Header />
-      <main className="flex-grow pt-32 pb-24 bg-neutral-50">
+      <main className="grow pt-36 pb-32 bg-white">
         <div className="container mx-auto px-6">
           {guideLoading ? (
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white p-8 md:p-16 rounded-[3rem] border animate-pulse">
-                <div className="h-6 bg-neutral-100 rounded w-32 mb-8" />
-                <div className="h-10 bg-neutral-100 rounded w-3/4 mb-12" />
-                <div className="space-y-4">
-                  {[1,2,3,4,5].map(i => <div key={i} className="h-4 bg-neutral-100 rounded" style={{width: `${70 + Math.random()*30}%`}} />)}
+            <div className="max-w-3xl mx-auto">
+              <div className="space-y-5">
+                <div className="h-8 skeleton rounded w-40" />
+                <div className="h-14 skeleton rounded w-3/4" />
+                <div className="space-y-3 pt-6">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="h-4 skeleton rounded" style={{ width: `${70 + Math.random() * 30}%` }} />
+                  ))}
                 </div>
               </div>
             </div>
           ) : activeGuide ? (
-            <>
-              {/* Guide Detail */}
-              <div className="max-w-4xl mx-auto">
-                <button onClick={backToGuides} className="group flex items-center gap-2 text-gray-500 font-bold mb-10 hover:text-black transition-colors">
-                  <span className="transition-transform group-hover:-translate-x-1">←</span> Back to Guides
-                </button>
-                <article className="bg-white p-8 md:p-16 rounded-[3rem] shadow-xl border border-gray-100">
-                  <div className="flex items-center gap-3 mb-8">
-                    <span className="px-4 py-1.5 rounded-full bg-violet/10 text-violet text-[10px] font-black uppercase tracking-widest">{activeGuide.category}</span>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-xs text-gray-400 font-medium">{activeGuide.read_time}</span>
-                    <span className="text-gray-300">•</span>
-                    <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold rounded uppercase">{activeGuide.difficulty}</span>
-                  </div>
-                  <h1 className="text-3xl md:text-5xl font-black mb-10 leading-tight">{activeGuide.title}</h1>
-                  <div
-                    className="prose prose-neutral max-w-none text-gray-600 leading-relaxed
-                      prose-h2:text-2xl prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6 prose-h2:text-gray-900
-                      prose-p:mb-6 prose-ul:mb-8 prose-li:mb-2 prose-strong:text-gray-900"
-                    dangerouslySetInnerHTML={{ __html: activeGuide.content || '' }}
-                  />
-                </article>
-              </div>
-            </>
+            // ───── Article view ─────
+            <div className="max-w-3xl mx-auto">
+              <button
+                onClick={backToGuides}
+                className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-10 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                Back to guides
+              </button>
+
+              <article>
+                <div className="flex items-center gap-3 mb-8 flex-wrap text-[11px] uppercase tracking-[0.18em] font-medium">
+                  <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    {activeGuide.category}
+                  </span>
+                  <span className="text-neutral-400 flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" /> {activeGuide.read_time}
+                  </span>
+                  <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded">
+                    {activeGuide.difficulty}
+                  </span>
+                </div>
+
+                <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-12">
+                  {activeGuide.title}
+                </h1>
+
+                <div
+                  className="prose prose-lg max-w-none text-neutral-700 leading-relaxed
+                    prose-h2:font-display prose-h2:text-3xl prose-h2:tracking-tight prose-h2:mt-14 prose-h2:mb-6 prose-h2:text-neutral-900
+                    prose-h3:font-display prose-h3:text-2xl prose-h3:tracking-tight prose-h3:mt-10 prose-h3:mb-4 prose-h3:text-neutral-900
+                    prose-p:mb-6 prose-p:text-[17px] prose-p:leading-[1.75]
+                    prose-ul:mb-8 prose-ul:space-y-2 prose-li:text-[17px] prose-li:leading-relaxed
+                    prose-strong:text-neutral-900 prose-strong:font-medium"
+                  dangerouslySetInnerHTML={{ __html: activeGuide.content || '' }}
+                />
+              </article>
+            </div>
           ) : (
             <>
-              {/* Listing */}
-              <div className="max-w-3xl mb-16">
-                <h1 className="text-4xl md:text-6xl font-black mb-6">Pilot Guides</h1>
-                <p className="text-gray-500 text-lg">Comprehensive guides covering every aspect of your journey to becoming a commercial pilot in India.</p>
+              {/* ───── Listing header ───── */}
+              <div className="grid lg:grid-cols-12 gap-10 mb-16 items-end">
+                <div className="lg:col-span-7">
+                  <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+                    <span className="w-6 h-px bg-neutral-900" />
+                    Pilot Guides
+                  </span>
+                  <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+                    Read your way to <span className="italic-serif">the cockpit.</span>
+                  </h1>
+                </div>
+                <div className="lg:col-span-4 lg:col-start-9">
+                  <p className="text-neutral-600 text-lg leading-relaxed">
+                    Comprehensive guides covering every aspect of your journey to becoming a commercial pilot in India.
+                  </p>
+                </div>
               </div>
 
-              {/* Filters */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+              {/* ───── Filters ───── */}
+              <div className="flex flex-wrap items-center gap-2 mb-16 pb-8 border-b border-neutral-200">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => handleFilterChange(cat)}
-                    className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+                    className={`px-4 py-2 rounded-full text-xs font-medium transition-all uppercase tracking-[0.14em] ${
                       currentFilter === cat
-                        ? 'bg-violet text-white shadow-lg shadow-violet-glow'
-                        : 'bg-white text-gray-500 border border-gray-100 hover:border-violet/30'
+                        ? 'bg-neutral-900 text-white border border-neutral-900'
+                        : 'bg-white text-neutral-600 border border-neutral-200 hover:border-neutral-900 hover:text-neutral-900'
                     }`}
                   >
                     {cat === 'all' ? 'All Guides' : cat}
@@ -129,52 +158,64 @@ export default function GuidesPage() {
                 ))}
               </div>
 
-              {/* Grid */}
+              {/* ───── Grid ───── */}
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[1,2,3,4,5].map(i => (
-                    <div key={i} className="bg-white p-8 rounded-3xl border border-neutral-100 animate-pulse">
-                      <div className="h-11 w-11 rounded-xl bg-neutral-100 mb-6" />
-                      <div className="h-6 bg-neutral-100 rounded mb-4 w-4/5" />
-                      <div className="space-y-2 mb-6">
-                        <div className="h-3 bg-neutral-100 rounded" />
-                        <div className="h-3 bg-neutral-100 rounded w-5/6" />
-                        <div className="h-3 bg-neutral-100 rounded w-3/4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="bg-white p-8">
+                      <div className="h-8 skeleton rounded w-24 mb-8" />
+                      <div className="h-6 skeleton rounded w-4/5 mb-3" />
+                      <div className="space-y-2 mb-8">
+                        <div className="h-3 skeleton rounded" />
+                        <div className="h-3 skeleton rounded w-5/6" />
                       </div>
-                      <div className="h-4 bg-neutral-100 rounded w-1/2" />
+                      <div className="h-4 skeleton rounded w-1/2" />
                     </div>
                   ))}
                 </div>
+              ) : guides.length === 0 ? (
+                <div className="border border-neutral-200 rounded-3xl py-24 text-center">
+                  <BookOpen className="w-10 h-10 text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
+                  <p className="text-neutral-500">No guides in this category yet. Check back soon.</p>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {guides.map((guide) => (
-                    <div
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+                  {guides.map((guide, idx) => (
+                    <button
                       key={guide.id}
                       onClick={() => openGuide(guide.id)}
-                      className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group"
+                      className="group bg-white p-8 lg:p-10 text-left transition-colors hover:bg-neutral-50 flex flex-col h-full"
                     >
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-11 h-11 rounded-xl bg-violet/10 text-violet flex items-center justify-center">
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-violet">{guide.category}</span>
+                      <div className="flex items-center justify-between mb-10">
+                        <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full font-medium">
+                          {guide.category}
+                        </span>
+                        <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
                       </div>
-                      <h3 className="text-xl font-bold mb-4 group-hover:text-violet transition-colors">{guide.title}</h3>
-                      <p className="text-gray-500 text-sm mb-6 leading-relaxed line-clamp-3">{guide.summary}</p>
-                      <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-50">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400 font-medium">{guide.read_time}</span>
-                          <span className="px-2 py-0.5 bg-neutral-100 text-neutral-500 text-[10px] font-bold rounded uppercase">{guide.difficulty}</span>
+
+                      <h3 className="font-display text-2xl md:text-3xl text-neutral-900 mb-4 leading-tight">
+                        {guide.title}
+                      </h3>
+                      <p className="text-neutral-600 text-sm leading-relaxed mb-8 line-clamp-3">
+                        {guide.summary}
+                      </p>
+
+                      <div className="mt-auto flex items-center justify-between pt-6 border-t border-neutral-100">
+                        <div className="flex items-center gap-3 text-[11px] text-neutral-500 uppercase tracking-[0.14em]">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {guide.read_time}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-neutral-300" />
+                          <span>{guide.difficulty}</span>
                         </div>
-                        <span className="text-gray-900 font-bold text-sm group-hover:text-violet">Read Guide →</span>
+                        <ArrowUpRight
+                          className="w-5 h-5 text-neutral-400 group-hover:text-emerald-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"
+                        />
                       </div>
-                    </div>
+                    </button>
                   ))}
-                  {guides.length === 0 && (
-                    <div className="col-span-full py-20 text-center">
-                      <p className="text-gray-400 text-lg">No guides in this category yet. Check back soon!</p>
-                    </div>
-                  )}
                 </div>
               )}
             </>
