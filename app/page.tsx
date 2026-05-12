@@ -156,12 +156,12 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               {FEATURES.map((feature, idx) => (
                 <Link
                   key={feature.id}
                   href={feature.linkUrl}
-                  className="group relative bg-white p-8 lg:p-10 transition-colors hover:bg-neutral-50 flex flex-col"
+                  className="group relative bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
                 >
                   {/* Index */}
                   <div className="flex items-center justify-between mb-12">

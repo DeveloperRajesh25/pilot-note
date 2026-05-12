@@ -104,9 +104,9 @@ export default function DGCARTRPage() {
         {/* ───── Tests ───── */}
         <section className="container mx-auto px-6">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {[1, 2].map(i => (
-                <div key={i} className="bg-white p-10">
+                <div key={i} className="bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10">
                   <div className="h-6 skeleton rounded mb-4 w-3/4" />
                   <div className="h-4 skeleton rounded mb-10 w-full" />
                   <div className="h-32 skeleton rounded-xl mb-4" />
@@ -120,11 +120,11 @@ export default function DGCARTRPage() {
               <p className="text-rose-500 font-medium">{error}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {tests.map((test, idx) => (
                 <div
                   key={test.id}
-                  className="bg-white p-8 lg:p-10 flex flex-col"
+                  className="group bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 flex flex-col hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
                 >
                   {/* Number + status */}
                   <div className="flex items-center justify-between mb-8">

@@ -332,12 +332,12 @@ function SelectionView({
       </div>
 
       {/* Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {APTITUDE_CATEGORIES.map((cat, idx) => (
           <button
             key={cat}
             onClick={() => !loading && onStart(cat)}
-            className="group bg-white p-8 lg:p-10 text-left transition-colors hover:bg-neutral-50 flex flex-col"
+            className="group bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
           >
             <div className="flex items-center justify-between mb-10">
               <div className="w-12 h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center transition-colors">

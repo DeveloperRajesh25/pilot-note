@@ -110,9 +110,9 @@ export default function ParikshaPage() {
         {/* ───── Exams list ───── */}
         <section className="container mx-auto px-6">
           {loading ? (
-            <div className="space-y-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+            <div className="space-y-6 lg:space-y-8">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white p-8 flex gap-6">
+                <div key={i} className="bg-white border border-neutral-200 rounded-3xl p-8 flex gap-6">
                   <div className="w-14 h-14 skeleton rounded-2xl shrink-0" />
                   <div className="flex-1 space-y-3">
                     <div className="h-6 skeleton rounded w-2/3" />
@@ -132,13 +132,13 @@ export default function ParikshaPage() {
               <p className="text-neutral-500">No exams scheduled yet. Check back soon.</p>
             </div>
           ) : (
-            <div className="space-y-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+            <div className="space-y-6 lg:space-y-8">
               {exams.map((exam, idx) => {
                 const statusClass = STATUS_BADGE[exam.status] || STATUS_BADGE.Upcoming;
                 return (
                   <div
                     key={exam.id}
-                    className="bg-white p-8 lg:p-10 group hover:bg-neutral-50 transition-colors"
+                    className="bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 group hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
                   >
                     <div className="grid lg:grid-cols-12 gap-8 items-start">
                       {/* Left — meta */}

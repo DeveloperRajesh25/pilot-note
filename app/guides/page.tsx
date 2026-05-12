@@ -160,9 +160,9 @@ export default function GuidesPage() {
 
               {/* ───── Grid ───── */}
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                   {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className="bg-white p-8">
+                    <div key={i} className="bg-white border border-neutral-200 rounded-3xl p-8">
                       <div className="h-8 skeleton rounded w-24 mb-8" />
                       <div className="h-6 skeleton rounded w-4/5 mb-3" />
                       <div className="space-y-2 mb-8">
@@ -179,12 +179,12 @@ export default function GuidesPage() {
                   <p className="text-neutral-500">No guides in this category yet. Check back soon.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                   {guides.map((guide, idx) => (
                     <button
                       key={guide.id}
                       onClick={() => openGuide(guide.id)}
-                      className="group bg-white p-8 lg:p-10 text-left transition-colors hover:bg-neutral-50 flex flex-col h-full"
+                      className="group bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col h-full"
                     >
                       <div className="flex items-center justify-between mb-10">
                         <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full font-medium">

@@ -67,13 +67,13 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: inherit;
 }
 
-.font-display { font-family: var(--font-display), ui-serif, Georgia, serif; }
+.font-display { font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: -0.025em; }
 .font-sans    { font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
 .font-mono    { font-family: var(--font-mono), ui-monospace, "JetBrains Mono", monospace; }
 
@@ -81,11 +81,12 @@ h1, h2, h3, h4, h5, h6 {
    Utility classes
    ===================================================================== */
 
-/* Editorial italic accent (for inline display headings) */
+/* Inline display accent — emerald colored italic for highlights inside a heading */
 .italic-serif {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-style: italic;
-  font-weight: 400;
+  font-weight: 700;
+  color: #10b981;
 }
 
 /* Hairline divider */
