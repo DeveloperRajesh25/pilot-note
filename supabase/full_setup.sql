@@ -544,3 +544,57 @@ on conflict (id) do nothing;
 insert into public.exams (id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, status) values
 ('e1','All India Air Navigation Mock','Air Navigation','National level mock exam for Air Navigation.','2026-04-15','10:00',120,100,499,'Upcoming')
 on conflict (id) do nothing;
+
+-- ============================================================
+-- 9. PARIKSHA v2 — synchronized exam window, payments, proctoring
+-- ============================================================
+
+-- 9a. exams: wall-clock windowing + grading + per-question timer
+alter table public.exams
+  add column if not exists start_at             timestamptz,
+  add column if not exists end_at               timestamptz,
+  add column if not exists per_question_seconds int     not null default 60,
+  add column if not exists pass_score           int     not null default 40,
+  add column if not exists payment_provider     text    not null default 'razorpay';
+
+-- Backfill start_at / end_at for existing rows (IST → UTC).
+update public.exams
+   set start_at = ((exam_date::text || ' ' || coalesce(exam_time,'10:00') || ':00')::timestamp at time zone 'Asia/Kolkata'),
+       end_at   = ((exam_date::text || ' ' || coalesce(exam_time,'10:00') || ':00')::timestamp at time zone 'Asia/Kolkata')
+                  + (coalesce(duration,120) * interval '1 minute')
+ where start_at is null and exam_date is not null;
+
+-- 9b. exam_attempts: proctoring + resume state + auto-submit flag
+alter table public.exam_attempts
+  add column if not exists last_seen_at            timestamptz,
+  add column if not exists violations              jsonb   not null default '[]'::jsonb,
+  add column if not exists auto_submitted          boolean not null default false,
+  add column if not exists current_question_index  int     not null default 0;
+
+-- 9c. payments: durable Razorpay record (independent of registration)
+create table if not exists public.payments (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  exam_id     text not null references public.exams(id) on delete cascade,
+  provider    text not null default 'razorpay',
+  order_id    text not null unique,
+  payment_id  text,
+  signature   text,
+  amount      int  not null,
+  currency    text not null default 'INR',
+  status      text not null default 'created',
+  raw         jsonb,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+alter table public.payments enable row level security;
+create index if not exists payments_user_exam_idx on public.payments(user_id, exam_id);
+
+do $$
+begin
+  execute 'drop policy if exists "Users can view own payments" on public.payments';
+  create policy "Users can view own payments" on public.payments for select using (auth.uid() = user_id);
+  execute 'drop policy if exists "Admins can read all payments" on public.payments';
+  create policy "Admins can read all payments" on public.payments for select using (public.is_admin());
+end $$;

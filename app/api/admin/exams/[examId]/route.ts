@@ -14,13 +14,17 @@ export async function GET(
     db.from('exams').select('*').eq('id', examId).maybeSingle(),
     db.from('exam_questions').select('*').eq('exam_id', examId).order('created_at'),
     db.from('exam_registrations').select('id, user_id, registered_at, profiles(email, full_name)').eq('exam_id', examId).order('registered_at', { ascending: false }),
-    db.from('exam_attempts').select('user_id, score, total, submitted_at, profiles(email)').eq('exam_id', examId).not('submitted_at', 'is', null),
+    db.from('exam_attempts').select('user_id, score, total, submitted_at, auto_submitted, violations, profiles(email)').eq('exam_id', examId).not('submitted_at', 'is', null),
   ]);
   if (!exam) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ exam, questions: questions ?? [], registrations: regs ?? [], attempts: attempts ?? [] });
 }
 
-const EXAM_FIELDS = ['title', 'subject', 'description', 'exam_date', 'exam_time', 'duration', 'total_questions', 'fee', 'status'] as const;
+const EXAM_FIELDS = [
+  'title', 'subject', 'description', 'exam_date', 'exam_time',
+  'duration', 'total_questions', 'fee', 'status',
+  'start_at', 'end_at', 'per_question_seconds', 'pass_score', 'payment_provider',
+] as const;
 
 export async function PUT(
   request: NextRequest,

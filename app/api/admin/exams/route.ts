@@ -21,10 +21,28 @@ export async function POST(request: NextRequest) {
   const check = await requireAdmin();
   if (check.error) return check.error;
   const body = await request.json();
-  const { id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, status } = body;
+  const {
+    id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, status,
+    start_at, end_at, per_question_seconds, pass_score, payment_provider,
+  } = body;
   if (!title || !subject) return NextResponse.json({ error: 'title and subject required' }, { status: 400 });
   const db = createAdminClient();
-  const record: Record<string, unknown> = { title, subject, description, exam_date, exam_time, duration: duration ?? 120, total_questions: total_questions ?? 100, fee: fee ?? 499, status: status ?? 'Upcoming' };
+  const record: Record<string, unknown> = {
+    title,
+    subject,
+    description,
+    exam_date,
+    exam_time,
+    duration: duration ?? 120,
+    total_questions: total_questions ?? 100,
+    fee: fee ?? 499,
+    status: status ?? 'Upcoming',
+    start_at: start_at || null,
+    end_at: end_at || null,
+    per_question_seconds: per_question_seconds ?? 60,
+    pass_score: pass_score ?? 40,
+    payment_provider: payment_provider ?? 'razorpay',
+  };
   record.id = id || slugId(title);
   const { data, error } = await db.from('exams').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

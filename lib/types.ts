@@ -154,6 +154,12 @@ export interface Exam {
   total_questions: number;
   fee: number;
   status: 'Upcoming' | 'Active' | 'Completed' | 'Cancelled' | string;
+  // Pariksha v2 — synchronized window + grading.
+  start_at: string | null;             // canonical UTC; everyone starts here
+  end_at: string | null;               // canonical UTC; auto-submit deadline
+  per_question_seconds: number;        // soft per-question timer
+  pass_score: number;                  // percentage threshold for pass/fail
+  payment_provider: string;            // 'razorpay' for now
   created_at?: string;
   registration_count?: number;
   isRegistered?: boolean;
@@ -186,7 +192,46 @@ export interface ExamAttempt {
   total: number | null;
   started_at: string;
   submitted_at: string | null;
+  // Pariksha v2.
+  last_seen_at: string | null;
+  violations: ViolationEvent[];
+  auto_submitted: boolean;
+  current_question_index: number;
 }
+
+export type ViolationType =
+  | 'tab_hidden'
+  | 'window_blur'
+  | 'fullscreen_exit'
+  | 'right_click'
+  | 'devtools_key'
+  | 'clipboard';
+
+export interface ViolationEvent {
+  type: ViolationType;
+  at: string;            // ISO timestamp
+  meta?: Record<string, unknown>;
+}
+
+export type PaymentStatus = 'created' | 'paid' | 'failed' | 'refunded';
+
+export interface Payment {
+  id: string;
+  user_id: string;
+  exam_id: string;
+  provider: string;
+  order_id: string;
+  payment_id: string | null;
+  signature: string | null;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  raw: unknown;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ExamPhase = 'pre_exam' | 'live' | 'post_exam';
 
 export interface AdminStats {
   totalUsers: number;

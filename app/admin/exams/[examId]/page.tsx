@@ -25,6 +25,8 @@ interface AttemptRow {
   score: number | null;
   total: number | null;
   submitted_at: string;
+  auto_submitted?: boolean;
+  violations?: { type: string; at: string }[];
   profiles?: { email: string | null; full_name: string | null } | null;
 }
 
@@ -156,20 +158,49 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
       {tab === 'results' && (
         <div className="bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden">
           <table className="w-full text-left">
-            <thead><tr className="border-b border-neutral-800"><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">User</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Score</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">%</th><th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Submitted</th></tr></thead>
+            <thead>
+              <tr className="border-b border-neutral-800">
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">User</th>
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Score</th>
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">%</th>
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Flags</th>
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Auto?</th>
+                <th className="px-6 py-3 text-xs font-black text-neutral-400 uppercase">Submitted</th>
+              </tr>
+            </thead>
             <tbody>
               {attempts.map((a) => {
                 const pct = a.total ? Math.round(((a.score ?? 0) / a.total) * 100) : 0;
+                const passThreshold = exam.pass_score ?? 40;
+                const passed = pct >= passThreshold;
+                const violations = a.violations ?? [];
+                const violationSummary = violations.reduce<Record<string, number>>((acc, v) => {
+                  acc[v.type] = (acc[v.type] ?? 0) + 1;
+                  return acc;
+                }, {});
+                const summaryStr = Object.entries(violationSummary)
+                  .map(([t, n]) => `${t} × ${n}`)
+                  .join(', ');
                 return (
                   <tr key={a.user_id} className="border-b border-neutral-800">
                     <td className="px-6 py-3 text-sm text-neutral-400">{a.profiles?.email}</td>
                     <td className="px-6 py-3 text-sm text-white font-bold">{a.score}/{a.total}</td>
-                    <td className="px-6 py-3"><span className={`text-sm font-black ${pct >= 70 ? 'text-emerald-400' : 'text-rose-400'}`}>{pct}%</span></td>
-                    <td className="px-6 py-3 text-sm text-neutral-400">{new Date(a.submitted_at).toLocaleDateString('en-IN')}</td>
+                    <td className="px-6 py-3"><span className={`text-sm font-black ${passed ? 'text-emerald-400' : 'text-rose-400'}`}>{pct}%</span></td>
+                    <td className="px-6 py-3">
+                      {violations.length > 0 ? (
+                        <span title={summaryStr} className="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-300">
+                          {violations.length}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-neutral-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-3 text-xs text-neutral-400">{a.auto_submitted ? 'Auto' : 'Manual'}</td>
+                    <td className="px-6 py-3 text-sm text-neutral-400">{new Date(a.submitted_at).toLocaleString('en-IN')}</td>
                   </tr>
                 );
               })}
-              {attempts.length === 0 && <tr><td colSpan={4} className="px-6 py-12 text-center text-neutral-500">No results yet</td></tr>}
+              {attempts.length === 0 && <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500">No results yet</td></tr>}
             </tbody>
           </table>
         </div>

@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { Users, Calendar, Clock, FileText, Loader2, ArrowRight } from 'lucide-react';
+import { Users, Calendar, Clock, FileText, ArrowRight } from 'lucide-react';
 
 interface Exam {
   id: string;
@@ -32,7 +32,6 @@ const STATUS_BADGE: Record<string, string> = {
 export default function ParikshaPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
-  const [registering, setRegistering] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchExams = async () => {
@@ -49,24 +48,6 @@ export default function ParikshaPage() {
   };
 
   useEffect(() => { fetchExams(); }, []);
-
-  const handleRegister = async (examId: string) => {
-    setRegistering(examId);
-    try {
-      const res = await fetch(`/api/exams/${examId}/register`, { method: 'POST' });
-      if (res.status === 401) { window.location.href = '/login'; return; }
-      const data = await res.json();
-      if (!res.ok && !data.alreadyRegistered) {
-        alert(data.error || 'Registration failed.');
-        return;
-      }
-      await fetchExams();
-    } catch {
-      alert('Network error. Please try again.');
-    } finally {
-      setRegistering(null);
-    }
-  };
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-IN', {
@@ -198,7 +179,7 @@ export default function ParikshaPage() {
                         </div>
 
                         {exam.hasAttempted ? (
-                          <Link href={`/pariksha/${exam.id}`}>
+                          <Link href={`/pariksha/${exam.id}/results`}>
                             <Button variant="secondary" size="md">
                               View results <ArrowRight className="w-4 h-4" />
                             </Button>
@@ -209,25 +190,16 @@ export default function ParikshaPage() {
                               Enter exam <ArrowRight className="w-4 h-4" />
                             </Button>
                           </Link>
-                        ) : (
-                          <Button
-                            size="md"
-                            onClick={() => handleRegister(exam.id)}
-                            disabled={registering === exam.id || exam.status === 'Completed'}
-                          >
-                            {registering === exam.id ? (
-                              <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Registering…
-                              </>
-                            ) : exam.status === 'Completed' ? (
-                              'Exam ended'
-                            ) : (
-                              <>
-                                Register <ArrowRight className="w-4 h-4" />
-                              </>
-                            )}
+                        ) : exam.status === 'Completed' ? (
+                          <Button size="md" disabled>
+                            Exam ended
                           </Button>
+                        ) : (
+                          <Link href={`/pariksha/${exam.id}/register`}>
+                            <Button size="md">
+                              Register <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          </Link>
                         )}
                       </div>
                     </div>

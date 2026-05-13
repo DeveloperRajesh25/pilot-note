@@ -14,7 +14,24 @@ const STATUSES = ['Upcoming', 'Active', 'Completed'];
 const EMPTY_EXAM: ExamForm = {
   title: '', subject: SUBJECTS[0], description: '', exam_date: '', exam_time: '10:00',
   duration: 120, total_questions: 100, fee: 499, status: 'Upcoming',
+  start_at: null, end_at: null, per_question_seconds: 60, pass_score: 40,
+  payment_provider: 'razorpay',
 };
+
+// <input type="datetime-local"> needs `YYYY-MM-DDTHH:mm` in *local* time. We
+// store start_at/end_at as canonical UTC ISO strings, so convert on the way in/out.
+function isoToLocalInput(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function localInputToIso(local: string): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<ExamForm[]>([]);
@@ -139,6 +156,43 @@ export default function AdminExamsPage() {
                 <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Duration (min)</label><input type="number" value={editExam.duration || 120} onChange={e => setEditExam(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
                 <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Questions</label><input type="number" value={editExam.total_questions || 100} onChange={e => setEditExam(p => ({ ...p, total_questions: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
                 <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Fee (₹)</label><input type="number" value={editExam.fee || 499} onChange={e => setEditExam(p => ({ ...p, fee: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
+              </div>
+
+              {/* Pariksha v2 — synchronized window + grading */}
+              <div className="border-t border-neutral-800 pt-4 mt-2">
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Exam window (server-authoritative)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Start at</label>
+                    <input
+                      type="datetime-local"
+                      value={isoToLocalInput(editExam.start_at)}
+                      onChange={e => setEditExam(p => ({ ...p, start_at: localInputToIso(e.target.value) }))}
+                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">End at</label>
+                    <input
+                      type="datetime-local"
+                      value={isoToLocalInput(editExam.end_at)}
+                      onChange={e => setEditExam(p => ({ ...p, end_at: localInputToIso(e.target.value) }))}
+                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-2">All registered users start and end at exactly these timestamps. Leave end blank to fall back to start + duration.</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Per-question seconds</label>
+                  <input type="number" min={5} value={editExam.per_question_seconds ?? 60} onChange={e => setEditExam(p => ({ ...p, per_question_seconds: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Pass score (%)</label>
+                  <input type="number" min={0} max={100} value={editExam.pass_score ?? 40} onChange={e => setEditExam(p => ({ ...p, pass_score: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                </div>
               </div>
             </div>
             <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
