@@ -59,8 +59,8 @@ export default function AdminUsersPage() {
     <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white mb-1">Users</h1>
-          <p className="text-neutral-400">{total} registered accounts</p>
+          <h1 className="text-3xl font-black text-neutral-900 mb-1">Users</h1>
+          <p className="text-neutral-500">{total} registered accounts</p>
         </div>
       </div>
 
@@ -73,78 +73,78 @@ export default function AdminUsersPage() {
             placeholder="Search by email or name..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="w-full max-w-md bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-500 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-violet transition-colors"
+            className="w-full max-w-md bg-white border border-neutral-200 text-neutral-900 placeholder-neutral-500 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-neutral-400 transition-colors"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-neutral-900 rounded-2xl border border-neutral-800 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-neutral-800">
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">User</th>
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">Joined</th>
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">Last Login</th>
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">Purchases</th>
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">Status</th>
-                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-400">Actions</th>
+              <tr className="border-b border-neutral-200">
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">User</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">Joined</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">Last Login</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">Purchases</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">Status</th>
+                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-neutral-500">Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 [...Array(5)].map((_, i) => (
-                  <tr key={i} className="border-b border-neutral-800 animate-pulse">
+                  <tr key={i} className="border-b border-neutral-100 animate-pulse">
                     {[...Array(6)].map((__, j) => (
-                      <td key={j} className="px-6 py-4"><div className="h-4 bg-neutral-800 rounded w-24" /></td>
+                      <td key={j} className="px-6 py-4"><div className="h-4 bg-neutral-100 rounded w-24" /></td>
                     ))}
                   </tr>
                 ))
               )}
               {!loading && users.map((user) => (
-                <tr key={user.id} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
+                <tr key={user.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                   <td className="px-6 py-4">
                     <Link href={`/admin/users/${user.id}`} className="group flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-violet/20 flex items-center justify-center text-violet font-bold text-sm flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold text-sm flex-shrink-0 border border-emerald-200">
                         {user.email?.[0]?.toUpperCase() ?? '?'}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white group-hover:text-violet transition-colors">{user.full_name || '—'}</p>
+                        <p className="text-sm font-semibold text-neutral-900 group-hover:text-emerald-600 transition-colors">{user.full_name || '—'}</p>
                         <p className="text-xs text-neutral-500">{user.email}</p>
                       </div>
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-400">{new Date(user.created_at).toLocaleDateString('en-IN')}</td>
-                  <td className="px-6 py-4 text-sm text-neutral-400">{user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString('en-IN') : '—'}</td>
+                  <td className="px-6 py-4 text-sm text-neutral-500">{new Date(user.created_at).toLocaleDateString('en-IN')}</td>
+                  <td className="px-6 py-4 text-sm text-neutral-500">{user.last_sign_in ? new Date(user.last_sign_in).toLocaleDateString('en-IN') : '—'}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${user.purchases > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-800 text-neutral-500'}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${user.purchases > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
                       {user.purchases} {user.purchases === 1 ? 'purchase' : 'purchases'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
-                      {user.isAdmin && <span className="px-2 py-0.5 bg-violet/20 text-violet text-[10px] font-black rounded-full border border-violet/30">ADMIN</span>}
+                      {user.isAdmin && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-full border border-emerald-200">ADMIN</span>}
                       {user.emailConfirmed
-                        ? <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-black rounded-full">VERIFIED</span>
-                        : <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] font-black rounded-full">UNVERIFIED</span>
+                        ? <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-full border border-emerald-200">VERIFIED</span>
+                        : <span className="px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-black rounded-full border border-amber-200">UNVERIFIED</span>
                       }
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <Link href={`/admin/users/${user.id}`} className="text-xs text-neutral-400 hover:text-white transition-colors font-semibold">View</Link>
+                      <Link href={`/admin/users/${user.id}`} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-semibold">View</Link>
                       <button
                         onClick={() => handleAction(user.id, user.isAdmin ? 'remove_admin' : 'make_admin')}
                         disabled={actionLoading === user.id + (user.isAdmin ? 'remove_admin' : 'make_admin')}
-                        className="text-xs text-violet hover:text-violet-300 transition-colors font-semibold disabled:opacity-50"
+                        className="text-xs text-emerald-600 hover:text-emerald-700 transition-colors font-semibold disabled:opacity-50"
                       >
                         {user.isAdmin ? 'Remove Admin' : 'Make Admin'}
                       </button>
                       <button
                         onClick={() => handleAction(user.id, 'delete')}
                         disabled={actionLoading === user.id + 'delete'}
-                        className="text-xs text-rose-500 hover:text-rose-400 transition-colors font-semibold disabled:opacity-50"
+                        className="text-xs text-rose-600 hover:text-rose-700 transition-colors font-semibold disabled:opacity-50"
                       >
                         Delete
                       </button>
@@ -160,11 +160,11 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination */}
-        <div className="px-6 py-4 border-t border-neutral-800 flex items-center justify-between">
-          <p className="text-sm text-neutral-400">Showing page {page}</p>
+        <div className="px-6 py-4 border-t border-neutral-200 flex items-center justify-between">
+          <p className="text-sm text-neutral-500">Showing page {page}</p>
           <div className="flex gap-2">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1.5 text-sm bg-neutral-800 text-white rounded-lg disabled:opacity-40 hover:bg-neutral-700 transition-colors">← Prev</button>
-            <button onClick={() => setPage(p => p + 1)} disabled={users.length < 20} className="px-3 py-1.5 text-sm bg-neutral-800 text-white rounded-lg disabled:opacity-40 hover:bg-neutral-700 transition-colors">Next →</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1.5 text-sm bg-neutral-100 text-neutral-900 rounded-lg disabled:opacity-40 hover:bg-neutral-200 transition-colors">← Prev</button>
+            <button onClick={() => setPage(p => p + 1)} disabled={users.length < 20} className="px-3 py-1.5 text-sm bg-neutral-100 text-neutral-900 rounded-lg disabled:opacity-40 hover:bg-neutral-200 transition-colors">Next →</button>
           </div>
         </div>
       </div>

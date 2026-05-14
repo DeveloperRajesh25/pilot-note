@@ -5,42 +5,21 @@ import { signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import Link from 'next/link'
-import { Loader2, CheckCircle2, ArrowRight, Mail } from 'lucide-react'
+import { Loader2, CheckCircle2, ArrowRight } from 'lucide-react'
 
 export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
-    setMessage(null)
     const result = await signup(formData)
+    // On success the server action calls redirect() and never returns here.
     if (result?.error) {
       setError(result.error)
       setLoading(false)
-    } else if (result?.message) {
-      setMessage(result.message)
-      setLoading(false)
     }
-  }
-
-  if (message) {
-    return (
-      <div className="w-full text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/60 mb-7">
-          <Mail className="w-7 h-7 text-emerald-600" strokeWidth={1.5} />
-        </div>
-        <h1 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-4">
-          Check your <span className="italic-serif">inbox.</span>
-        </h1>
-        <p className="text-neutral-500 leading-relaxed mb-10 text-[15px]">{message}</p>
-        <Button href="/login" variant="secondary" className="w-full h-12">
-          Back to sign in
-        </Button>
-      </div>
-    )
   }
 
   return (

@@ -74,10 +74,10 @@ export default function AdminAptitudePage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white mb-1">Aptitude Questions</h1>
-          <p className="text-neutral-400">{questions.length} questions</p>
+          <h1 className="text-3xl font-black text-neutral-900 mb-1">Aptitude Questions</h1>
+          <p className="text-neutral-500">{questions.length} questions</p>
         </div>
-        <button onClick={openCreate} className="px-5 py-2.5 bg-violet text-white font-bold text-sm rounded-xl hover:bg-violet-700 transition-colors flex items-center gap-2">
+        <button onClick={openCreate} className="px-5 py-2.5 bg-neutral-900 text-white font-bold text-sm rounded-xl hover:bg-neutral-800 transition-colors flex items-center gap-2">
           <span>+</span> Add Question
         </button>
       </div>
@@ -85,8 +85,8 @@ export default function AdminAptitudePage() {
       {/* Category stats */}
       <div className="grid grid-cols-4 gap-4 mb-8">
         {CATEGORIES.map(cat => (
-          <div key={cat} className="bg-neutral-900 rounded-xl border border-neutral-800 p-4 text-center">
-            <p className="text-2xl font-black text-white">{catCounts[cat] ?? 0}</p>
+          <div key={cat} className="bg-white rounded-xl border border-neutral-200 p-4 text-center">
+            <p className="text-2xl font-black text-neutral-900">{catCounts[cat] ?? 0}</p>
             <p className="text-xs text-neutral-500 font-medium mt-1">{cat}</p>
           </div>
         ))}
@@ -96,7 +96,7 @@ export default function AdminAptitudePage() {
       <div className="flex gap-2 mb-6">
         {['all', ...CATEGORIES].map(cat => (
           <button key={cat} onClick={() => setFilterCat(cat)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${filterCat === cat ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${filterCat === cat ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200'}`}>
             {cat === 'all' ? 'All' : cat}
           </button>
         ))}
@@ -104,26 +104,26 @@ export default function AdminAptitudePage() {
 
       {/* Questions list */}
       <div className="space-y-3">
-        {loading && [...Array(5)].map((_, i) => <div key={i} className="h-16 bg-neutral-900 rounded-xl border border-neutral-800 animate-pulse" />)}
+        {loading && [...Array(5)].map((_, i) => <div key={i} className="h-16 bg-neutral-100 rounded-xl border border-neutral-200 animate-pulse" />)}
         {!loading && questions.map((q, idx) => (
-          <div key={q.id} className="bg-neutral-900 rounded-xl border border-neutral-800 p-4 flex items-start gap-4 hover:border-neutral-700 transition-colors">
-            <span className="text-lg font-black text-neutral-600 flex-shrink-0 w-8 text-center">{idx + 1}</span>
+          <div key={q.id} className="bg-white rounded-xl border border-neutral-200 p-4 flex items-start gap-4 hover:border-neutral-300 hover:shadow-sm transition-all">
+            <span className="text-lg font-black text-neutral-400 flex-shrink-0 w-8 text-center">{idx + 1}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold text-violet">{q.category}</span>
+                <span className="text-xs font-bold text-emerald-600">{q.category}</span>
               </div>
-              <p className="text-sm text-white font-medium line-clamp-2">{q.question}</p>
+              <p className="text-sm text-neutral-900 font-medium line-clamp-2">{q.question}</p>
               <div className="flex gap-3 mt-2">
                 {q.options.map((opt, i) => (
-                  <span key={i} className={`text-xs px-2 py-0.5 rounded ${i === q.correct ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'bg-neutral-800 text-neutral-500'}`}>
+                  <span key={i} className={`text-xs px-2 py-0.5 rounded border ${i === q.correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
                     {String.fromCharCode(65 + i)}: {opt.substring(0, 20)}{opt.length > 20 ? '…' : ''}
                   </span>
                 ))}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button onClick={() => openEdit(q)} className="text-xs text-neutral-400 hover:text-white font-semibold">Edit</button>
-              <button onClick={() => handleDelete(q.id)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Delete</button>
+              <button onClick={() => openEdit(q)} className="text-xs text-neutral-500 hover:text-neutral-900 font-semibold">Edit</button>
+              <button onClick={() => handleDelete(q.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
             </div>
           </div>
         ))}
@@ -132,45 +132,45 @@ export default function AdminAptitudePage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-2xl my-6">
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
+          <div className="bg-white border border-neutral-200 shadow-2xl rounded-3xl p-8 w-full max-w-2xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{(editQ as Question).id ? 'Edit Question' : 'New Question'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl">&times;</button>
+              <h2 className="text-xl font-black text-neutral-900">{(editQ as Question).id ? 'Edit Question' : 'New Question'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-neutral-900 text-2xl">&times;</button>
             </div>
             <div className="space-y-5">
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Category</label>
-                <select value={editQ.category} onChange={e => setEditQ(p => ({ ...p, category: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors">
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Category</label>
+                <select value={editQ.category} onChange={e => setEditQ(p => ({ ...p, category: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors">
                   {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Question *</label>
-                <textarea value={editQ.question || ''} onChange={e => setEditQ(p => ({ ...p, question: e.target.value }))} rows={3} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors resize-none" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Question *</label>
+                <textarea value={editQ.question || ''} onChange={e => setEditQ(p => ({ ...p, question: e.target.value }))} rows={3} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Options (mark correct with radio)</label>
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Options (mark correct with radio)</label>
                 <div className="space-y-2">
                   {(editQ.options ?? ['', '', '', '']).map((opt, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <input type="radio" name="correct" checked={editQ.correct === i} onChange={() => setEditQ(p => ({ ...p, correct: i }))} className="w-4 h-4 accent-violet flex-shrink-0" />
-                      <span className="text-sm font-bold text-neutral-400 w-4">{String.fromCharCode(65 + i)}</span>
-                      <input value={opt} onChange={e => updateOption(i, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)}`} className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-violet transition-colors" />
+                      <input type="radio" name="correct" checked={editQ.correct === i} onChange={() => setEditQ(p => ({ ...p, correct: i }))} className="w-4 h-4 accent-neutral-900 flex-shrink-0" />
+                      <span className="text-sm font-bold text-neutral-500 w-4">{String.fromCharCode(65 + i)}</span>
+                      <input value={opt} onChange={e => updateOption(i, e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)}`} className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 transition-colors" />
                     </div>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Explanation</label>
-                <textarea value={editQ.explanation || ''} onChange={e => setEditQ(p => ({ ...p, explanation: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors resize-none" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Explanation</label>
+                <textarea value={editQ.explanation || ''} onChange={e => setEditQ(p => ({ ...p, explanation: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-none" />
               </div>
             </div>
-            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
-              <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-violet text-white font-bold rounded-xl hover:bg-violet-700 transition-colors disabled:opacity-50">
+            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+              <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-50">
                 {saving ? 'Saving...' : 'Save Question'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-800 text-white font-bold rounded-xl hover:bg-neutral-700 transition-colors">Cancel</button>
+              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200 transition-colors">Cancel</button>
             </div>
           </div>
         </div>

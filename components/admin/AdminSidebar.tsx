@@ -23,20 +23,20 @@ export function AdminSidebar() {
 
   return (
     <aside
-      className={`flex-shrink-0 bg-neutral-900 border-r border-neutral-800 flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}
+      className={`flex-shrink-0 bg-white border-r border-neutral-200 flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 p-6 border-b border-neutral-800">
-        <div className="w-9 h-9 bg-violet rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0">PN</div>
+      <div className="flex items-center gap-3 p-6 border-b border-neutral-200">
+        <div className="w-9 h-9 bg-neutral-900 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0">PN</div>
         {!collapsed && (
           <div>
-            <p className="font-black text-white text-sm">Pilot Note</p>
-            <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Admin Panel</p>
+            <p className="font-black text-neutral-900 text-sm">Pilot Note</p>
+            <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Admin Panel</p>
           </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto text-neutral-500 hover:text-white transition-colors"
+          className="ml-auto text-neutral-400 hover:text-neutral-900 transition-colors"
           aria-label="Toggle sidebar"
         >
           {collapsed ? (
@@ -57,8 +57,8 @@ export function AdminSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${
                 active
-                  ? 'bg-violet/20 text-violet border border-violet/20'
-                  : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
+                  ? 'bg-neutral-900 text-white'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
               }`}
             >
               <span className="text-xl flex-shrink-0 leading-none">{item.icon}</span>
@@ -66,7 +66,7 @@ export function AdminSidebar() {
                 <span className="text-sm font-semibold whitespace-nowrap">{item.label}</span>
               )}
               {!collapsed && active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet flex-shrink-0" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
               )}
             </Link>
           );
@@ -74,10 +74,10 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-neutral-800">
+      <div className="p-3 border-t border-neutral-200">
         <Link
           href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-neutral-500 hover:text-white hover:bg-neutral-800 transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-all"
         >
           <span className="text-xl leading-none">↗</span>
           {!collapsed && <span className="text-sm font-semibold">Back to Site</span>}

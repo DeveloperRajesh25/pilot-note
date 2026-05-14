@@ -72,42 +72,42 @@ export default function AdminGuidesPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-white mb-1">Guides</h1>
-          <p className="text-neutral-400">{guides.length} guides total</p>
+          <h1 className="text-3xl font-black text-neutral-900 mb-1">Guides</h1>
+          <p className="text-neutral-500">{guides.length} guides total</p>
         </div>
-        <button onClick={openCreate} className="px-5 py-2.5 bg-violet text-white font-bold text-sm rounded-xl hover:bg-violet-700 transition-colors flex items-center gap-2">
+        <button onClick={openCreate} className="px-5 py-2.5 bg-neutral-900 text-white font-bold text-sm rounded-xl hover:bg-neutral-800 transition-colors flex items-center gap-2">
           <span className="text-lg leading-none">+</span> New Guide
         </button>
       </div>
 
       {loading ? (
         <div className="space-y-3">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-neutral-900 rounded-2xl border border-neutral-800 animate-pulse" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="h-20 bg-neutral-100 rounded-2xl border border-neutral-200 animate-pulse" />)}
         </div>
       ) : (
         <div className="space-y-3">
           {guides.map((g) => (
-            <div key={g.id} className="bg-neutral-900 rounded-2xl border border-neutral-800 p-5 flex items-center gap-4 hover:border-neutral-700 transition-colors">
+            <div key={g.id} className="bg-white rounded-2xl border border-neutral-200 p-5 flex items-center gap-4 hover:border-neutral-300 hover:shadow-sm transition-all">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-violet uppercase tracking-wider">{g.category}</span>
-                  <span className="text-neutral-700">·</span>
+                  <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">{g.category}</span>
+                  <span className="text-neutral-300">·</span>
                   <span className="text-xs text-neutral-500">{g.difficulty}</span>
-                  <span className="text-neutral-700">·</span>
+                  <span className="text-neutral-300">·</span>
                   <span className="text-xs text-neutral-500">{g.read_time}</span>
                 </div>
-                <p className="font-bold text-white text-sm truncate">{g.title}</p>
+                <p className="font-bold text-neutral-900 text-sm truncate">{g.title}</p>
                 <p className="text-xs text-neutral-500 mt-1 line-clamp-1">{g.summary}</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => togglePublish(g)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${g.published ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'}`}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${g.published ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:bg-neutral-200'}`}
                 >
                   {g.published ? '✓ Published' : 'Draft'}
                 </button>
-                <button onClick={() => openEdit(g)} className="text-xs text-neutral-400 hover:text-white transition-colors font-semibold">Edit</button>
-                <button onClick={() => handleDelete(g.id)} disabled={deleteLoading === g.id} className="text-xs text-rose-500 hover:text-rose-400 transition-colors font-semibold disabled:opacity-50">Delete</button>
+                <button onClick={() => openEdit(g)} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-semibold">Edit</button>
+                <button onClick={() => handleDelete(g.id)} disabled={deleteLoading === g.id} className="text-xs text-rose-600 hover:text-rose-700 transition-colors font-semibold disabled:opacity-50">Delete</button>
               </div>
             </div>
           ))}
@@ -117,55 +117,55 @@ export default function AdminGuidesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-3xl my-6">
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
+          <div className="bg-white border border-neutral-200 shadow-2xl rounded-3xl p-8 w-full max-w-3xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{editGuide.id ? 'Edit Guide' : 'New Guide'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl leading-none">&times;</button>
+              <h2 className="text-xl font-black text-neutral-900">{editGuide.id ? 'Edit Guide' : 'New Guide'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-neutral-900 text-2xl leading-none">&times;</button>
             </div>
 
             <div className="space-y-5">
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Title *</label>
-                <input value={editGuide.title || ''} onChange={e => setEditGuide(p => ({ ...p, title: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Title *</label>
+                <input value={editGuide.title || ''} onChange={e => setEditGuide(p => ({ ...p, title: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors" />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Category</label>
-                  <select value={editGuide.category || 'Career Path'} onChange={e => setEditGuide(p => ({ ...p, category: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors">
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Category</label>
+                  <select value={editGuide.category || 'Career Path'} onChange={e => setEditGuide(p => ({ ...p, category: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors">
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Difficulty</label>
-                  <select value={editGuide.difficulty || 'Beginner'} onChange={e => setEditGuide(p => ({ ...p, difficulty: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors">
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Difficulty</label>
+                  <select value={editGuide.difficulty || 'Beginner'} onChange={e => setEditGuide(p => ({ ...p, difficulty: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors">
                     {DIFFICULTIES.map(d => <option key={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Read Time</label>
-                  <input value={editGuide.read_time || ''} onChange={e => setEditGuide(p => ({ ...p, read_time: e.target.value }))} placeholder="e.g. 8 min read" className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors" />
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Read Time</label>
+                  <input value={editGuide.read_time || ''} onChange={e => setEditGuide(p => ({ ...p, read_time: e.target.value }))} placeholder="e.g. 8 min read" className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Summary</label>
-                <textarea value={editGuide.summary || ''} onChange={e => setEditGuide(p => ({ ...p, summary: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors resize-none" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Summary</label>
+                <textarea value={editGuide.summary || ''} onChange={e => setEditGuide(p => ({ ...p, summary: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Content (HTML)</label>
-                <textarea value={editGuide.content || ''} onChange={e => setEditGuide(p => ({ ...p, content: e.target.value }))} rows={10} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet transition-colors resize-y font-mono text-xs" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Content (HTML)</label>
+                <textarea value={editGuide.content || ''} onChange={e => setEditGuide(p => ({ ...p, content: e.target.value }))} rows={10} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-y font-mono text-xs" />
               </div>
               <div className="flex items-center gap-3">
-                <input type="checkbox" id="pub" checked={!!editGuide.published} onChange={e => setEditGuide(p => ({ ...p, published: e.target.checked }))} className="w-4 h-4 accent-violet" />
-                <label htmlFor="pub" className="text-sm text-neutral-300 font-medium">Published (visible to users)</label>
+                <input type="checkbox" id="pub" checked={!!editGuide.published} onChange={e => setEditGuide(p => ({ ...p, published: e.target.checked }))} className="w-4 h-4 accent-neutral-900" />
+                <label htmlFor="pub" className="text-sm text-neutral-700 font-medium">Published (visible to users)</label>
               </div>
             </div>
 
-            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
-              <button onClick={handleSave} disabled={saving || !editGuide.title} className="px-6 py-3 bg-violet text-white font-bold rounded-xl hover:bg-violet-700 transition-colors disabled:opacity-50">
+            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+              <button onClick={handleSave} disabled={saving || !editGuide.title} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 transition-colors disabled:opacity-50">
                 {saving ? 'Saving...' : 'Save Guide'}
               </button>
-              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-800 text-white font-bold rounded-xl hover:bg-neutral-700 transition-colors">Cancel</button>
+              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200 transition-colors">Cancel</button>
             </div>
           </div>
         </div>

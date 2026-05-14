@@ -76,19 +76,19 @@ export default async function AdminDashboard() {
   ];
 
   const colorMap: Record<string, string> = {
-    violet: 'border-violet/30 bg-violet/10 text-violet',
-    green: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-    blue: 'border-blue-500/30 bg-blue-500/10 text-blue-400',
-    orange: 'border-orange-500/30 bg-orange-500/10 text-orange-400',
-    pink: 'border-pink-500/30 bg-pink-500/10 text-pink-400',
-    teal: 'border-teal-500/30 bg-teal-500/10 text-teal-400',
+    violet: 'border-violet-200 bg-violet-50 text-violet-700',
+    green: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    blue: 'border-blue-200 bg-blue-50 text-blue-700',
+    orange: 'border-orange-200 bg-orange-50 text-orange-700',
+    pink: 'border-pink-200 bg-pink-50 text-pink-700',
+    teal: 'border-teal-200 bg-teal-50 text-teal-700',
   };
 
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-3xl font-black text-white mb-1">Dashboard Overview</h1>
-        <p className="text-neutral-400">Welcome back — here&apos;s everything happening on Pilot Note.</p>
+        <h1 className="text-3xl font-black text-neutral-900 mb-1">Dashboard Overview</h1>
+        <p className="text-neutral-500">Welcome back — here&apos;s everything happening on Pilot Note.</p>
       </div>
 
       {/* KPI Cards */}
@@ -99,7 +99,7 @@ export default async function AdminDashboard() {
               <span className="text-3xl">{kpi.icon}</span>
               <span className="text-xs font-bold uppercase tracking-widest opacity-70">{kpi.sub}</span>
             </div>
-            <p className="text-3xl font-black text-white mb-1">{kpi.value ?? 0}</p>
+            <p className="text-3xl font-black text-neutral-900 mb-1">{kpi.value ?? 0}</p>
             <p className="text-sm font-semibold opacity-80">{kpi.label}</p>
           </div>
         ))}
@@ -107,23 +107,23 @@ export default async function AdminDashboard() {
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Recent Purchases */}
-        <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-black text-white text-lg">Recent Purchases</h2>
-            <Link href="/admin/purchases" className="text-xs text-violet font-bold hover:underline">View all →</Link>
+            <h2 className="font-black text-neutral-900 text-lg">Recent Purchases</h2>
+            <Link href="/admin/purchases" className="text-xs text-emerald-600 font-bold hover:underline">View all →</Link>
           </div>
           <div className="space-y-3">
             {stats.recentPurchases.length === 0 && (
               <p className="text-neutral-500 text-sm py-4 text-center">No purchases yet</p>
             )}
             {stats.recentPurchases.map((p) => (
-              <div key={p.id} className="flex items-center justify-between py-3 border-b border-neutral-800 last:border-0">
+              <div key={p.id} className="flex items-center justify-between py-3 border-b border-neutral-100 last:border-0">
                 <div>
-                  <p className="text-sm font-semibold text-white">{p.profiles?.email ?? 'Unknown'}</p>
+                  <p className="text-sm font-semibold text-neutral-900">{p.profiles?.email ?? 'Unknown'}</p>
                   <p className="text-xs text-neutral-500">{p.rtr_tests?.title ?? p.test_id ?? '—'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-emerald-400">₹{p.amount}</p>
+                  <p className="text-sm font-black text-emerald-600">₹{p.amount}</p>
                   <p className="text-xs text-neutral-500">{new Date(p.purchased_at).toLocaleDateString('en-IN')}</p>
                 </div>
               </div>
@@ -132,25 +132,25 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Recent Users */}
-        <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-black text-white text-lg">Recent Signups</h2>
-            <Link href="/admin/users" className="text-xs text-violet font-bold hover:underline">View all →</Link>
+            <h2 className="font-black text-neutral-900 text-lg">Recent Signups</h2>
+            <Link href="/admin/users" className="text-xs text-emerald-600 font-bold hover:underline">View all →</Link>
           </div>
           <div className="space-y-3">
             {stats.recentUsers.length === 0 && (
               <p className="text-neutral-500 text-sm py-4 text-center">No users yet</p>
             )}
             {stats.recentUsers.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 py-3 border-b border-neutral-800 last:border-0">
-                <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-300 shrink-0">
+              <div key={u.id} className="flex items-center gap-3 py-3 border-b border-neutral-100 last:border-0">
+                <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-700 shrink-0">
                   {u.email?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{u.full_name || u.email}</p>
+                  <p className="text-sm font-semibold text-neutral-900 truncate">{u.full_name || u.email}</p>
                   <p className="text-xs text-neutral-500">{new Date(u.created_at).toLocaleDateString('en-IN')}</p>
                 </div>
-                <Link href={`/admin/users/${u.id}`} className="text-xs text-violet hover:underline shrink-0">View</Link>
+                <Link href={`/admin/users/${u.id}`} className="text-xs text-emerald-600 hover:underline shrink-0">View</Link>
               </div>
             ))}
           </div>
@@ -159,34 +159,34 @@ export default async function AdminDashboard() {
 
       {/* Exams & Tests status */}
       <div className="mt-8 grid lg:grid-cols-2 gap-8">
-        <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-black text-white text-lg">Pariksha Exams</h2>
-            <Link href="/admin/exams" className="text-xs text-violet font-bold hover:underline">Manage →</Link>
+            <h2 className="font-black text-neutral-900 text-lg">Pariksha Exams</h2>
+            <Link href="/admin/exams" className="text-xs text-emerald-600 font-bold hover:underline">Manage →</Link>
           </div>
           {stats.exams.map((e) => (
-            <div key={e.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
-              <p className="text-sm text-white font-medium">{e.title}</p>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                e.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400' :
-                e.status === 'Completed' ? 'bg-neutral-700 text-neutral-400' :
-                'bg-amber-500/20 text-amber-400'
+            <div key={e.id} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+              <p className="text-sm text-neutral-900 font-medium">{e.title}</p>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                e.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                e.status === 'Completed' ? 'bg-neutral-100 text-neutral-500 border-neutral-200' :
+                'bg-amber-50 text-amber-700 border-amber-200'
               }`}>{e.status}</span>
             </div>
           ))}
           {stats.exams.length === 0 && <p className="text-neutral-500 text-sm text-center py-4">No exams created</p>}
         </div>
 
-        <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6">
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-black text-white text-lg">RTR Tests</h2>
-            <Link href="/admin/rtr" className="text-xs text-violet font-bold hover:underline">Manage →</Link>
+            <h2 className="font-black text-neutral-900 text-lg">RTR Tests</h2>
+            <Link href="/admin/rtr" className="text-xs text-emerald-600 font-bold hover:underline">Manage →</Link>
           </div>
           {stats.rtrTests.map((t) => (
-            <div key={t.id} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
-              <p className="text-sm text-white font-medium">{t.title}</p>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                t.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-neutral-700 text-neutral-400'
+            <div key={t.id} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+              <p className="text-sm text-neutral-900 font-medium">{t.title}</p>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                t.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-neutral-100 text-neutral-500 border-neutral-200'
               }`}>{t.status}</span>
             </div>
           ))}

@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { Users, Calendar, Clock, FileText, ArrowRight } from 'lucide-react';
+import { computeExamStatus } from '@/lib/exam-status';
 
 interface Exam {
   id: string;
@@ -18,6 +19,8 @@ interface Exam {
   total_questions: number;
   fee: number;
   status: string;
+  start_at: string | null;
+  end_at: string | null;
   registrations: number;
   isRegistered: boolean;
   hasAttempted: boolean;
@@ -26,13 +29,18 @@ interface Exam {
 const STATUS_BADGE: Record<string, string> = {
   Upcoming: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
   Active: 'bg-amber-50 text-amber-700 border-amber-200/60',
+  Live: 'bg-amber-50 text-amber-700 border-amber-200/60',
   Completed: 'bg-neutral-100 text-neutral-500 border-neutral-200/60',
+  Cancelled: 'bg-rose-50 text-rose-700 border-rose-200/60',
 };
 
 export default function ParikshaPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Tick once a minute so status badges flip from Upcoming → Active → Completed
+  // without the user having to refresh.
+  const [, setNowTick] = useState(0);
 
   const fetchExams = async () => {
     try {
@@ -48,6 +56,11 @@ export default function ParikshaPage() {
   };
 
   useEffect(() => { fetchExams(); }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-IN', {
@@ -115,7 +128,9 @@ export default function ParikshaPage() {
           ) : (
             <div className="space-y-6 lg:space-y-8">
               {exams.map((exam, idx) => {
-                const statusClass = STATUS_BADGE[exam.status] || STATUS_BADGE.Upcoming;
+                const liveStatus = computeExamStatus(exam);
+                const statusLabel = liveStatus === 'Active' ? 'Live' : liveStatus;
+                const statusClass = STATUS_BADGE[statusLabel] || STATUS_BADGE.Upcoming;
                 return (
                   <div
                     key={exam.id}
@@ -133,7 +148,7 @@ export default function ParikshaPage() {
                       <div className="lg:col-span-7">
                         <div className="flex flex-wrap items-center gap-2.5 mb-4">
                           <span className={`px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] rounded-full border ${statusClass}`}>
-                            {exam.status}
+                            {statusLabel}
                           </span>
                           <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">
                             {exam.subject}
@@ -190,9 +205,13 @@ export default function ParikshaPage() {
                               Enter exam <ArrowRight className="w-4 h-4" />
                             </Button>
                           </Link>
-                        ) : exam.status === 'Completed' ? (
+                        ) : liveStatus === 'Completed' ? (
                           <Button size="md" disabled>
                             Exam ended
+                          </Button>
+                        ) : liveStatus === 'Cancelled' ? (
+                          <Button size="md" disabled>
+                            Cancelled
                           </Button>
                         ) : (
                           <Link href={`/pariksha/${exam.id}/register`}>

@@ -3,35 +3,52 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import type { Exam } from '@/lib/types';
+import { computeExamStatus } from '@/lib/exam-status';
 
 interface ExamForm extends Partial<Exam> {
   registrations?: number;
+  // Local-only working fields — the form captures times in IST and the
+  // selected date comes from `exam_date`. We compose start_at/end_at on save.
+  _start_time?: string;
+  _end_time?: string;
 }
 
 const SUBJECTS = ['Air Navigation', 'Meteorology', 'Air Regulations', 'Technical General', 'Technical Specific'];
-const STATUSES = ['Upcoming', 'Active', 'Completed'];
+const STATUSES = ['Upcoming', 'Active', 'Completed', 'Cancelled'];
 
 const EMPTY_EXAM: ExamForm = {
-  title: '', subject: SUBJECTS[0], description: '', exam_date: '', exam_time: '10:00',
+  title: '', subject: SUBJECTS[0], description: '', exam_date: '',
   duration: 120, total_questions: 100, fee: 499, status: 'Upcoming',
   start_at: null, end_at: null, per_question_seconds: 60, pass_score: 40,
   payment_provider: 'razorpay',
+  _start_time: '10:00', _end_time: '',
 };
 
-// <input type="datetime-local"> needs `YYYY-MM-DDTHH:mm` in *local* time. We
-// store start_at/end_at as canonical UTC ISO strings, so convert on the way in/out.
-function isoToLocalInput(iso: string | null | undefined): string {
+// Capture times as IST regardless of the admin's browser timezone.
+const IST_TIME_FMT = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false,
+});
+
+function isoToIstTime(iso: string | null | undefined): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return IST_TIME_FMT.format(d);
 }
-function localInputToIso(local: string): string | null {
-  if (!local) return null;
-  const d = new Date(local);
+
+function combineDateTimeIST(date: string | null | undefined, time: string | undefined): string | null {
+  if (!date || !time) return null;
+  const d = new Date(`${date}T${time}:00+05:30`);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
+
+const STATUS_BADGE: Record<string, string> = {
+  Upcoming: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  Active: 'bg-amber-50 text-amber-700 border-amber-200',
+  Live: 'bg-amber-50 text-amber-700 border-amber-200',
+  Completed: 'bg-neutral-100 text-neutral-500 border-neutral-200',
+  Cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
+};
 
 export default function AdminExamsPage() {
   const [exams, setExams] = useState<ExamForm[]>([]);
@@ -39,6 +56,7 @@ export default function AdminExamsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editExam, setEditExam] = useState<ExamForm>(EMPTY_EXAM);
   const [saving, setSaving] = useState(false);
+  const [, setNowTick] = useState(0);
 
   const fetchExams = useCallback(async () => {
     setLoading(true);
@@ -48,15 +66,46 @@ export default function AdminExamsPage() {
     setLoading(false);
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void fetchExams(); }, [fetchExams]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const openEdit = (ex: ExamForm) => {
+    setEditExam({
+      ...ex,
+      _start_time: isoToIstTime(ex.start_at) || (ex.exam_time?.slice(0, 5) ?? '10:00'),
+      _end_time: isoToIstTime(ex.end_at),
+    });
+    setShowModal(true);
+  };
 
   const handleSave = async () => {
     if (!editExam.title || !editExam.subject) { alert('Title and subject required'); return; }
+    if (!editExam.exam_date) { alert('Exam date is required'); return; }
+    if (!editExam._start_time) { alert('Start time is required'); return; }
+
+    const start_at = combineDateTimeIST(editExam.exam_date, editExam._start_time);
+    const end_at = editExam._end_time
+      ? combineDateTimeIST(editExam.exam_date, editExam._end_time)
+      : null;
+
+    const payload: Record<string, unknown> = {
+      ...editExam,
+      start_at,
+      end_at,
+      exam_time: editExam._start_time, // keep legacy column in sync
+    };
+    delete payload._start_time;
+    delete payload._end_time;
+    delete payload.registrations;
+
     setSaving(true);
     const isEdit = !!editExam.id;
     const url = isEdit ? `/api/admin/exams/${editExam.id}` : '/api/admin/exams';
-    const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(editExam) });
+    const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     setSaving(false);
     if (res.ok) { setShowModal(false); await fetchExams(); }
     else { const d = await res.json(); alert(d.error || 'Error'); }
@@ -73,131 +122,134 @@ export default function AdminExamsPage() {
     await fetchExams();
   };
 
-  const STATUS_COLOR: Record<string, string> = {
-    Upcoming: 'bg-amber-500/20 text-amber-400',
-    Active: 'bg-emerald-500/20 text-emerald-400',
-    Completed: 'bg-neutral-700 text-neutral-400',
-  };
-
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <div><h1 className="text-3xl font-black text-white mb-1">Pariksha Exams</h1><p className="text-neutral-400">{exams.length} exams</p></div>
+        <div>
+          <h1 className="text-3xl font-black text-neutral-900 mb-1">Pariksha Exams</h1>
+          <p className="text-neutral-500">{exams.length} exams</p>
+        </div>
         <button onClick={() => { setEditExam({ ...EMPTY_EXAM }); setShowModal(true); }}
-          className="px-5 py-2.5 bg-violet text-white font-bold text-sm rounded-xl hover:bg-violet-700 transition-colors flex items-center gap-2">
+          className="px-5 py-2.5 bg-neutral-900 text-white font-bold text-sm rounded-xl hover:bg-neutral-800 transition-colors flex items-center gap-2">
           <span>+</span> New Exam
         </button>
       </div>
 
       {loading ? (
-        <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-neutral-900 rounded-2xl border border-neutral-800 animate-pulse" />)}</div>
+        <div className="space-y-4">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-neutral-100 rounded-2xl border border-neutral-200 animate-pulse" />)}</div>
       ) : (
         <div className="space-y-4">
-          {exams.map((ex) => (
-            <div key={ex.id} className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 hover:border-neutral-700 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-black text-white">{ex.title}</h3>
-                    <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full ${STATUS_COLOR[ex.status ?? ''] ?? STATUS_COLOR.Upcoming}`}>{ex.status}</span>
+          {exams.map((ex) => {
+            const live = computeExamStatus(ex);
+            const liveLabel = live === 'Active' ? 'Live' : live;
+            return (
+              <div key={ex.id} className="bg-white rounded-2xl border border-neutral-200 p-6 hover:border-neutral-300 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-black text-neutral-900">{ex.title}</h3>
+                      <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${STATUS_BADGE[liveLabel] ?? STATUS_BADGE.Upcoming}`}>{liveLabel}</span>
+                    </div>
+                    <p className="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-2">{ex.subject}</p>
+                    <div className="flex flex-wrap gap-4 text-xs text-neutral-500">
+                      <span>📅 {ex.exam_date ? new Date(ex.exam_date).toLocaleDateString('en-IN') : 'TBD'}</span>
+                      <span>⏰ {isoToIstTime(ex.start_at) || ex.exam_time || 'TBD'}</span>
+                      <span>⏱ {ex.duration} min</span>
+                      <span>❓ {ex.total_questions} Qs</span>
+                      <span>👥 {ex.registrations ?? 0} registered</span>
+                      <span>💳 ₹{ex.fee}</span>
+                    </div>
                   </div>
-                  <p className="text-violet text-xs font-bold uppercase tracking-wider mb-2">{ex.subject}</p>
-                  <div className="flex flex-wrap gap-4 text-xs text-neutral-500">
-                    <span>📅 {ex.exam_date ? new Date(ex.exam_date).toLocaleDateString('en-IN') : 'TBD'}</span>
-                    <span>⏰ {ex.exam_time}</span>
-                    <span>⏱ {ex.duration} min</span>
-                    <span>❓ {ex.total_questions} Qs</span>
-                    <span>👥 {ex.registrations ?? 0} registered</span>
-                    <span>💳 ₹{ex.fee}</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link href={`/admin/exams/${ex.id}`} className="px-4 py-2 bg-neutral-100 text-neutral-900 text-xs font-bold rounded-xl hover:bg-neutral-200 transition-colors">Questions →</Link>
+                    <select value={ex.status} onChange={e => ex.id && changeStatus(ex.id, e.target.value)} className="bg-white border border-neutral-200 text-neutral-900 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-neutral-400">
+                      {STATUSES.map(s => <option key={s}>{s}</option>)}
+                    </select>
+                    <button onClick={() => openEdit(ex)} className="text-xs text-neutral-500 hover:text-neutral-900 font-semibold">Edit</button>
+                    <button onClick={() => ex.id && handleDelete(ex.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Link href={`/admin/exams/${ex.id}`} className="px-4 py-2 bg-neutral-800 text-white text-xs font-bold rounded-xl hover:bg-neutral-700 transition-colors">Questions →</Link>
-                  <select value={ex.status} onChange={e => ex.id && changeStatus(ex.id, e.target.value)} className="bg-neutral-800 border border-neutral-700 text-white text-xs rounded-xl px-3 py-2 focus:outline-none">
-                    {STATUSES.map(s => <option key={s}>{s}</option>)}
-                  </select>
-                  <button onClick={() => { setEditExam({ ...ex }); setShowModal(true); }} className="text-xs text-neutral-400 hover:text-white font-semibold">Edit</button>
-                  <button onClick={() => ex.id && handleDelete(ex.id)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Delete</button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {exams.length === 0 && <div className="text-center py-24 text-neutral-500">No exams yet.</div>}
         </div>
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-xl my-6">
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
+          <div className="bg-white border border-neutral-200 shadow-2xl rounded-3xl p-8 w-full max-w-xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{editExam.id ? 'Edit Exam' : 'New Exam'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl">&times;</button>
+              <h2 className="text-xl font-black text-neutral-900">{editExam.id ? 'Edit Exam' : 'New Exam'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-neutral-900 text-2xl">&times;</button>
             </div>
             <div className="space-y-4">
-              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Title *</label><input value={editExam.title || ''} onChange={e => setEditExam(p => ({ ...p, title: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
+              <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Title *</label><input value={editExam.title || ''} onChange={e => setEditExam(p => ({ ...p, title: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Subject</label>
-                  <select value={editExam.subject} onChange={e => setEditExam(p => ({ ...p, subject: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet">
+                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Subject</label>
+                  <select value={editExam.subject} onChange={e => setEditExam(p => ({ ...p, subject: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400">
                     {SUBJECTS.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Status</label>
-                  <select value={editExam.status} onChange={e => setEditExam(p => ({ ...p, status: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet">
+                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Status</label>
+                  <select value={editExam.status} onChange={e => setEditExam(p => ({ ...p, status: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400">
                     {STATUSES.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
-              <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Description</label><textarea value={editExam.description || ''} onChange={e => setEditExam(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Exam Date</label><input type="date" value={editExam.exam_date || ''} onChange={e => setEditExam(p => ({ ...p, exam_date: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Exam Time (IST)</label><input type="time" value={editExam.exam_time || ''} onChange={e => setEditExam(p => ({ ...p, exam_time: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Duration (min)</label><input type="number" value={editExam.duration || 120} onChange={e => setEditExam(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Questions</label><input type="number" value={editExam.total_questions || 100} onChange={e => setEditExam(p => ({ ...p, total_questions: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
-                <div><label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Fee (₹)</label><input type="number" value={editExam.fee || 499} onChange={e => setEditExam(p => ({ ...p, fee: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" /></div>
+              <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Description</label><textarea value={editExam.description || ''} onChange={e => setEditExam(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 resize-none" /></div>
+
+              <div>
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Exam Date *</label>
+                <input type="date" value={editExam.exam_date || ''} onChange={e => setEditExam(p => ({ ...p, exam_date: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
               </div>
 
-              {/* Pariksha v2 — synchronized window + grading */}
-              <div className="border-t border-neutral-800 pt-4 mt-2">
-                <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Exam window (server-authoritative)</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Duration (min)</label><input type="number" value={editExam.duration || 120} onChange={e => setEditExam(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
+                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Questions</label><input type="number" value={editExam.total_questions || 100} onChange={e => setEditExam(p => ({ ...p, total_questions: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
+                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Fee (₹)</label><input type="number" value={editExam.fee || 499} onChange={e => setEditExam(p => ({ ...p, fee: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
+              </div>
+
+              {/* Pariksha v2 — synchronized window + grading. Date is taken from Exam Date above; we only collect the IST clock times. */}
+              <div className="border-t border-neutral-200 pt-4 mt-2">
+                <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Exam window (server-authoritative · IST)</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Start at</label>
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Start time</label>
                     <input
-                      type="datetime-local"
-                      value={isoToLocalInput(editExam.start_at)}
-                      onChange={e => setEditExam(p => ({ ...p, start_at: localInputToIso(e.target.value) }))}
-                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet"
+                      type="time"
+                      value={editExam._start_time || ''}
+                      onChange={e => setEditExam(p => ({ ...p, _start_time: e.target.value }))}
+                      className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">End at</label>
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">End time</label>
                     <input
-                      type="datetime-local"
-                      value={isoToLocalInput(editExam.end_at)}
-                      onChange={e => setEditExam(p => ({ ...p, end_at: localInputToIso(e.target.value) }))}
-                      className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet"
+                      type="time"
+                      value={editExam._end_time || ''}
+                      onChange={e => setEditExam(p => ({ ...p, _end_time: e.target.value }))}
+                      className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400"
                     />
                   </div>
                 </div>
-                <p className="text-[11px] text-neutral-500 mt-2">All registered users start and end at exactly these timestamps. Leave end blank to fall back to start + duration.</p>
+                <p className="text-[11px] text-neutral-500 mt-2">All registered users start and end at exactly these timestamps on the chosen exam date. Leave end blank to fall back to start + duration.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Per-question seconds</label>
-                  <input type="number" min={5} value={editExam.per_question_seconds ?? 60} onChange={e => setEditExam(p => ({ ...p, per_question_seconds: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Per-question seconds</label>
+                  <input type="number" min={5} value={editExam.per_question_seconds ?? 60} onChange={e => setEditExam(p => ({ ...p, per_question_seconds: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Pass score (%)</label>
-                  <input type="number" min={0} max={100} value={editExam.pass_score ?? 40} onChange={e => setEditExam(p => ({ ...p, pass_score: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Pass score (%)</label>
+                  <input type="number" min={0} max={100} value={editExam.pass_score ?? 40} onChange={e => setEditExam(p => ({ ...p, pass_score: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
                 </div>
               </div>
             </div>
-            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
-              <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-violet text-white font-bold rounded-xl hover:bg-violet-700 disabled:opacity-50">{saving ? 'Saving…' : 'Save Exam'}</button>
-              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-800 text-white font-bold rounded-xl hover:bg-neutral-700">Cancel</button>
+            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+              <button onClick={handleSave} disabled={saving} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 disabled:opacity-50">{saving ? 'Saving…' : 'Save Exam'}</button>
+              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200">Cancel</button>
             </div>
           </div>
         </div>

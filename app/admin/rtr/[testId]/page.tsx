@@ -246,54 +246,54 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
     });
   };
 
-  if (loading) return <div className="flex items-center justify-center py-32"><div className="w-10 h-10 border-4 border-violet border-t-transparent rounded-full animate-spin" /></div>;
-  if (!data?.test) return <div className="text-rose-400 py-20 text-center">Test not found</div>;
+  if (loading) return <div className="flex items-center justify-center py-32"><div className="w-10 h-10 border-4 border-neutral-900 border-t-transparent rounded-full animate-spin" /></div>;
+  if (!data?.test) return <div className="text-rose-600 py-20 text-center">Test not found</div>;
 
   const { test, questions, scenarios } = data;
 
   return (
     <div>
       <div className="mb-8 flex items-center gap-4">
-        <Link href="/admin/rtr" className="text-neutral-400 hover:text-white transition-colors">← RTR Tests</Link>
+        <Link href="/admin/rtr" className="text-neutral-500 hover:text-neutral-900 transition-colors">← RTR Tests</Link>
         <div>
-          <h1 className="text-3xl font-black text-white">{test.title}</h1>
-          <p className="text-neutral-400 text-sm">₹{test.price} · {test.status}</p>
+          <h1 className="text-3xl font-black text-neutral-900">{test.title}</h1>
+          <p className="text-neutral-500 text-sm">₹{test.price} · {test.status}</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">{questions.length}</p><p className="text-sm text-neutral-400">Part 1 Questions</p></div>
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">{scenarios.length}</p><p className="text-sm text-neutral-400">Part 2 Charts</p></div>
-        <div className="bg-neutral-900 rounded-xl border border-neutral-800 p-5"><p className="text-3xl font-black text-white">₹{test.price}</p><p className="text-sm text-neutral-400">Price</p></div>
+        <div className="bg-white rounded-xl border border-neutral-200 p-5"><p className="text-3xl font-black text-neutral-900">{questions.length}</p><p className="text-sm text-neutral-500">Part 1 Questions</p></div>
+        <div className="bg-white rounded-xl border border-neutral-200 p-5"><p className="text-3xl font-black text-neutral-900">{scenarios.length}</p><p className="text-sm text-neutral-500">Part 2 Charts</p></div>
+        <div className="bg-white rounded-xl border border-neutral-200 p-5"><p className="text-3xl font-black text-neutral-900">₹{test.price}</p><p className="text-sm text-neutral-500">Price</p></div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
-        <button onClick={() => setTab('part1')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part1' ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>Part 1 — MCQ ({questions.length})</button>
-        <button onClick={() => setTab('part2')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part2' ? 'bg-violet text-white' : 'bg-neutral-800 text-neutral-400 hover:text-white'}`}>Part 2 — Charts ({scenarios.length})</button>
+        <button onClick={() => setTab('part1')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part1' ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200'}`}>Part 1 — MCQ ({questions.length})</button>
+        <button onClick={() => setTab('part2')} className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${tab === 'part2' ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200'}`}>Part 2 — Charts ({scenarios.length})</button>
       </div>
 
       {tab === 'part1' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={openAddQ} className="px-4 py-2 bg-violet text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors">+ Add MCQ Question</button>
+            <button onClick={openAddQ} className="px-4 py-2 bg-neutral-900 text-white text-sm font-bold rounded-xl hover:bg-neutral-800 transition-colors">+ Add MCQ Question</button>
           </div>
           <div className="space-y-3">
             {questions.map((q, idx) => (
-              <div key={q.id} className="bg-neutral-900 rounded-xl border border-neutral-800 p-4 flex items-start gap-4">
-                <span className="text-neutral-600 font-black w-6 text-center shrink-0">{idx + 1}</span>
+              <div key={q.id} className="bg-white rounded-xl border border-neutral-200 p-4 flex items-start gap-4">
+                <span className="text-neutral-400 font-black w-6 text-center shrink-0">{idx + 1}</span>
                 <div className="flex-1">
-                  <p className="text-sm text-white font-medium mb-2">{q.question}</p>
+                  <p className="text-sm text-neutral-900 font-medium mb-2">{q.question}</p>
                   <div className="flex flex-wrap gap-2">
                     {q.options.map((opt, i) => (
-                      <span key={i} className={`text-xs px-2 py-0.5 rounded ${i === q.correct ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'bg-neutral-800 text-neutral-500'}`}>{String.fromCharCode(65 + i)}: {opt.substring(0, 30)}{opt.length > 30 ? '…' : ''}</span>
+                      <span key={i} className={`text-xs px-2 py-0.5 rounded border ${i === q.correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>{String.fromCharCode(65 + i)}: {opt.substring(0, 30)}{opt.length > 30 ? '…' : ''}</span>
                     ))}
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => openEditQ(q)} className="text-xs text-neutral-400 hover:text-white font-semibold">Edit</button>
-                  <button onClick={() => deleteQ(q.id)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Delete</button>
+                  <button onClick={() => openEditQ(q)} className="text-xs text-neutral-500 hover:text-neutral-900 font-semibold">Edit</button>
+                  <button onClick={() => deleteQ(q.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                 </div>
               </div>
             ))}
@@ -305,15 +305,15 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
       {tab === 'part2' && (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={openAddS} className="px-4 py-2 bg-violet text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors">+ Add Chart</button>
+            <button onClick={openAddS} className="px-4 py-2 bg-neutral-900 text-white text-sm font-bold rounded-xl hover:bg-neutral-800 transition-colors">+ Add Chart</button>
           </div>
           <div className="space-y-4">
             {scenarios.map((s, idx) => (
-              <div key={s.id} className="bg-neutral-900 rounded-xl border border-neutral-800 p-5">
+              <div key={s.id} className="bg-white rounded-xl border border-neutral-200 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <p className="text-xs text-violet font-black uppercase tracking-wider mb-1">Chart {idx + 1} · {s.marks} marks</p>
-                    <p className="text-sm text-white font-bold mb-1">{s.scenario}</p>
+                    <p className="text-xs text-emerald-600 font-black uppercase tracking-wider mb-1">Chart {idx + 1} · {s.marks} marks</p>
+                    <p className="text-sm text-neutral-900 font-bold mb-1">{s.scenario}</p>
                     {s.chart_context && (
                       <p className="text-xs text-neutral-500">
                         {s.chart_context.aircraft_id} · {s.chart_context.departure} → {s.chart_context.destination}
@@ -321,12 +321,12 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                       </p>
                     )}
                     {!s.chart_context && s.exchanges && (
-                      <p className="text-xs text-amber-500">Legacy dialogue scenario — re-create as chart to upgrade.</p>
+                      <p className="text-xs text-amber-700">Legacy dialogue scenario — re-create as chart to upgrade.</p>
                     )}
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => openEditS(s)} className="text-xs text-neutral-400 hover:text-white font-semibold">Edit</button>
-                    <button onClick={() => deleteS(s.id)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Delete</button>
+                    <button onClick={() => openEditS(s)} className="text-xs text-neutral-500 hover:text-neutral-900 font-semibold">Edit</button>
+                    <button onClick={() => deleteS(s.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                   </div>
                 </div>
               </div>
@@ -338,34 +338,34 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-8 w-full max-w-3xl my-6">
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto">
+          <div className="bg-white border border-neutral-200 shadow-2xl rounded-3xl p-8 w-full max-w-3xl my-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-black text-white">{editItem.id ? 'Edit' : 'New'} {modalType === 'q' ? 'Part 1 Question' : 'Part 2 Chart'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-white text-2xl">&times;</button>
+              <h2 className="text-xl font-black text-neutral-900">{editItem.id ? 'Edit' : 'New'} {modalType === 'q' ? 'Part 1 Question' : 'Part 2 Chart'}</h2>
+              <button onClick={() => setShowModal(false)} className="text-neutral-400 hover:text-neutral-900 text-2xl">&times;</button>
             </div>
 
             {modalType === 'q' && isQForm(editItem) && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Question *</label>
-                  <textarea value={editItem.question || ''} onChange={e => setEditItem(p => ({ ...(p as QForm), question: e.target.value }))} rows={3} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" />
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Question *</label>
+                  <textarea value={editItem.question || ''} onChange={e => setEditItem(p => ({ ...(p as QForm), question: e.target.value }))} rows={3} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 resize-none" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Options (select correct)</label>
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Options (select correct)</label>
                   <div className="space-y-2">
                     {editItem.options.map((opt, i) => (
                       <div key={i} className="flex items-center gap-3">
-                        <input type="radio" name="correct_q" checked={editItem.correct === i} onChange={() => setEditItem(p => ({ ...(p as QForm), correct: i }))} className="w-4 h-4 accent-violet shrink-0" />
-                        <span className="text-sm font-bold text-neutral-400 w-4">{String.fromCharCode(65 + i)}</span>
-                        <input value={opt} onChange={e => updateOption(i, e.target.value)} className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-violet" />
+                        <input type="radio" name="correct_q" checked={editItem.correct === i} onChange={() => setEditItem(p => ({ ...(p as QForm), correct: i }))} className="w-4 h-4 accent-neutral-900 shrink-0" />
+                        <span className="text-sm font-bold text-neutral-500 w-4">{String.fromCharCode(65 + i)}</span>
+                        <input value={opt} onChange={e => updateOption(i, e.target.value)} className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-neutral-400" />
                       </div>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Explanation</label>
-                  <textarea value={editItem.explanation || ''} onChange={e => setEditItem(p => ({ ...(p as QForm), explanation: e.target.value }))} rows={2} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet resize-none" />
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Explanation</label>
+                  <textarea value={editItem.explanation || ''} onChange={e => setEditItem(p => ({ ...(p as QForm), explanation: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 resize-none" />
                 </div>
               </div>
             )}
@@ -374,38 +374,38 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
               <div className="space-y-6">
                 {/* Chart meta */}
                 <section className="space-y-3">
-                  <h3 className="text-xs font-black text-violet uppercase tracking-widest">Chart Meta</h3>
+                  <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest">Chart Meta</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Title (e.g. Chart No 6(V2)) *</label>
-                      <input value={editItem.scenario || ''} onChange={e => setEditItem(p => ({ ...(p as SForm), scenario: e.target.value }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Title (e.g. Chart No 6(V2)) *</label>
+                      <input value={editItem.scenario || ''} onChange={e => setEditItem(p => ({ ...(p as SForm), scenario: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Total Marks</label>
-                      <input type="number" value={editItem.marks} onChange={e => setEditItem(p => ({ ...(p as SForm), marks: Number(e.target.value) }))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-violet" />
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Total Marks</label>
+                      <input type="number" value={editItem.marks} onChange={e => setEditItem(p => ({ ...(p as SForm), marks: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
                     </div>
                   </div>
                 </section>
 
                 {/* Chart context — fixed labels, admin fills bold values */}
                 <section className="space-y-3">
-                  <h3 className="text-xs font-black text-violet uppercase tracking-widest">Chart Header (printed on paper)</h3>
+                  <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest">Chart Header (printed on paper)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Time Allowed</label>
-                      <input value={editItem.chart_context.time_allowed} onChange={e => setChartField('time_allowed', e.target.value)} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet" />
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Time Allowed</label>
+                      <input value={editItem.chart_context.time_allowed} onChange={e => setChartField('time_allowed', e.target.value)} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-neutral-400" />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Total Marks (header)</label>
-                      <input type="number" value={editItem.chart_context.total_marks} onChange={e => setChartField('total_marks', Number(e.target.value))} className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet" />
+                      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Total Marks (header)</label>
+                      <input type="number" value={editItem.chart_context.total_marks} onChange={e => setChartField('total_marks', Number(e.target.value))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-neutral-400" />
                     </div>
                     {CHART_FIELDS.map(({ key, label }) => (
                       <div key={key}>
-                        <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2 block">{label}</label>
+                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">{label}</label>
                         <input
                           value={String(editItem.chart_context[key] ?? '')}
                           onChange={e => setChartField(key, e.target.value)}
-                          className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet"
+                          className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-neutral-400"
                         />
                       </div>
                     ))}
@@ -415,26 +415,26 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                 {/* Questions */}
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-black text-violet uppercase tracking-widest">Questions</h3>
-                    <button onClick={addQuestion} className="px-3 py-1.5 bg-violet/20 text-violet text-xs font-bold rounded-lg hover:bg-violet/30">+ Add Question</button>
+                    <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest">Questions</h3>
+                    <button onClick={addQuestion} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg hover:bg-emerald-100">+ Add Question</button>
                   </div>
                   {editItem.questions.map((q, qi) => (
-                    <div key={qi} className="bg-neutral-800/50 border border-neutral-700 rounded-2xl p-4 space-y-3">
+                    <div key={qi} className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <label className="text-xs font-bold text-neutral-400">Q#</label>
+                          <label className="text-xs font-bold text-neutral-500">Q#</label>
                           <input
                             type="number"
                             value={q.number}
                             onChange={e => updateQuestion(qi, qq => ({ ...qq, number: Number(e.target.value) }))}
-                            className="w-16 bg-neutral-900 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                            className="w-16 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-neutral-400"
                           />
                         </div>
-                        <button onClick={() => removeQuestion(qi)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold">Remove Question</button>
+                        <button onClick={() => removeQuestion(qi)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Remove Question</button>
                       </div>
 
                       {q.subParts.map((s, si) => (
-                        <div key={si} className="bg-neutral-900 border border-neutral-700 rounded-xl p-3 space-y-3">
+                        <div key={si} className="bg-white border border-neutral-200 rounded-xl p-3 space-y-3">
                           <div className="flex items-center gap-3">
                             <div>
                               <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Sub</label>
@@ -442,7 +442,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                                 value={s.label}
                                 onChange={e => updateSubPart(qi, si, ss => ({ ...ss, label: e.target.value }))}
                                 placeholder="a"
-                                className="w-12 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                                className="w-12 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-neutral-400"
                               />
                             </div>
                             <div className="flex-1">
@@ -451,10 +451,10 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                                 type="number"
                                 value={s.marks}
                                 onChange={e => updateSubPart(qi, si, ss => ({ ...ss, marks: Number(e.target.value) }))}
-                                className="w-20 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-violet"
+                                className="w-20 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-neutral-400"
                               />
                             </div>
-                            <button onClick={() => removeSubPart(qi, si)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold ml-auto">Remove</button>
+                            <button onClick={() => removeSubPart(qi, si)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold ml-auto">Remove</button>
                           </div>
                           <div>
                             <label className="text-[10px] font-bold text-neutral-500 uppercase block mb-1">Prompt (read aloud to candidate)</label>
@@ -462,7 +462,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                               rows={3}
                               value={s.prompt}
                               onChange={e => updateSubPart(qi, si, ss => ({ ...ss, prompt: e.target.value }))}
-                              className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet resize-none"
+                              className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-400 resize-none"
                             />
                           </div>
                           {!s.blanks && (
@@ -472,7 +472,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                                 rows={2}
                                 value={s.expectedAnswer}
                                 onChange={e => updateSubPart(qi, si, ss => ({ ...ss, expectedAnswer: e.target.value }))}
-                                className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet resize-none"
+                                className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-400 resize-none"
                               />
                             </div>
                           )}
@@ -486,35 +486,35 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                                     placeholder="Label (e.g. Classifications of AIRPROX are)"
                                     value={b.label}
                                     onChange={e => updateBlank(qi, si, bi, bb => ({ ...bb, label: e.target.value }))}
-                                    className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-violet"
+                                    className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-neutral-400"
                                   />
                                   <input
                                     placeholder="Expected answer"
                                     value={b.expectedAnswer}
                                     onChange={e => updateBlank(qi, si, bi, bb => ({ ...bb, expectedAnswer: e.target.value }))}
-                                    className="flex-1 bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-violet"
+                                    className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-neutral-400"
                                   />
-                                  <button onClick={() => removeBlank(qi, si, bi)} className="text-xs text-rose-500 hover:text-rose-400 font-semibold px-2">×</button>
+                                  <button onClick={() => removeBlank(qi, si, bi)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold px-2">×</button>
                                 </div>
                               ))}
                             </div>
                           )}
                           <div className="flex gap-2">
-                            <button onClick={() => addBlank(qi, si)} className="text-[11px] text-violet hover:text-violet-300 font-bold">+ Add blank</button>
+                            <button onClick={() => addBlank(qi, si)} className="text-[11px] text-emerald-600 hover:text-emerald-700 font-bold">+ Add blank</button>
                           </div>
                         </div>
                       ))}
 
-                      <button onClick={() => addSubPart(qi)} className="text-xs text-violet hover:text-violet-300 font-bold">+ Add sub-part</button>
+                      <button onClick={() => addSubPart(qi)} className="text-xs text-emerald-600 hover:text-emerald-700 font-bold">+ Add sub-part</button>
                     </div>
                   ))}
                 </section>
               </div>
             )}
 
-            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-800">
-              <button onClick={modalType === 'q' ? handleSaveQ : handleSaveS} disabled={saving} className="px-6 py-3 bg-violet text-white font-bold rounded-xl hover:bg-violet-700 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
-              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-800 text-white font-bold rounded-xl hover:bg-neutral-700">Cancel</button>
+            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+              <button onClick={modalType === 'q' ? handleSaveQ : handleSaveS} disabled={saving} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
+              <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200">Cancel</button>
             </div>
           </div>
         </div>
