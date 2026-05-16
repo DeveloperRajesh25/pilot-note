@@ -7,6 +7,7 @@ import { computeExamStatus } from '@/lib/exam-status';
 
 interface ExamForm extends Partial<Exam> {
   registrations?: number;
+  question_count?: number;
   // Local-only working fields — the form captures times in IST and the
   // selected date comes from `exam_date`. We compose start_at/end_at on save.
   _start_time?: string;
@@ -142,26 +143,44 @@ export default function AdminExamsPage() {
           {exams.map((ex) => {
             const live = computeExamStatus(ex);
             const liveLabel = live === 'Active' ? 'Live' : live;
+            const qCount = ex.question_count ?? 0;
+            const noQuestions = qCount === 0;
+            const shortOnQuestions = !noQuestions && ex.total_questions ? qCount < ex.total_questions : false;
             return (
-              <div key={ex.id} className="bg-white rounded-2xl border border-neutral-200 p-6 hover:border-neutral-300 hover:shadow-sm transition-all">
+              <div key={ex.id} className={`bg-white rounded-2xl border p-6 hover:shadow-sm transition-all ${noQuestions ? 'border-amber-300 ring-1 ring-amber-200' : 'border-neutral-200 hover:border-neutral-300'}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h3 className="text-lg font-black text-neutral-900">{ex.title}</h3>
                       <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${STATUS_BADGE[liveLabel] ?? STATUS_BADGE.Upcoming}`}>{liveLabel}</span>
+                      {noQuestions && (
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+                          <span>⚠</span> No questions
+                        </span>
+                      )}
+                      {shortOnQuestions && (
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                          {qCount}/{ex.total_questions} Qs added
+                        </span>
+                      )}
                     </div>
                     <p className="text-emerald-600 text-xs font-bold uppercase tracking-wider mb-2">{ex.subject}</p>
                     <div className="flex flex-wrap gap-4 text-xs text-neutral-500">
                       <span>📅 {ex.exam_date ? new Date(ex.exam_date).toLocaleDateString('en-IN') : 'TBD'}</span>
                       <span>⏰ {isoToIstTime(ex.start_at) || ex.exam_time || 'TBD'}</span>
                       <span>⏱ {ex.duration} min</span>
-                      <span>❓ {ex.total_questions} Qs</span>
+                      <span className={noQuestions ? 'text-amber-700 font-bold' : ''}>❓ {qCount}/{ex.total_questions} Qs</span>
                       <span>👥 {ex.registrations ?? 0} registered</span>
                       <span>💳 ₹{ex.fee}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Link href={`/admin/exams/${ex.id}`} className="px-4 py-2 bg-neutral-100 text-neutral-900 text-xs font-bold rounded-xl hover:bg-neutral-200 transition-colors">Questions →</Link>
+                    <Link
+                      href={`/admin/exams/${ex.id}`}
+                      className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors ${noQuestions ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200'}`}
+                    >
+                      {noQuestions ? '+ Add Questions' : 'Questions →'}
+                    </Link>
                     <select value={ex.status} onChange={e => ex.id && changeStatus(ex.id, e.target.value)} className="bg-white border border-neutral-200 text-neutral-900 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-neutral-400">
                       {STATUSES.map(s => <option key={s}>{s}</option>)}
                     </select>
@@ -169,6 +188,19 @@ export default function AdminExamsPage() {
                     <button onClick={() => ex.id && handleDelete(ex.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                   </div>
                 </div>
+                {noQuestions && (
+                  <div className="mt-4 pt-4 border-t border-amber-200 flex items-center justify-between gap-4">
+                    <p className="text-xs text-amber-800">
+                      <span className="font-bold">This exam has no questions yet.</span> Candidates can&apos;t take an empty exam — add questions before it goes live.
+                    </p>
+                    <Link
+                      href={`/admin/exams/${ex.id}`}
+                      className="shrink-0 px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg hover:bg-amber-600 transition-colors"
+                    >
+                      Add questions →
+                    </Link>
+                  </div>
+                )}
               </div>
             );
           })}

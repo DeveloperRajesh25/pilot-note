@@ -61,10 +61,18 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
   const openEdit = (q: ExamQuestion) => { setEditQ({ ...q, options: [...q.options] }); setShowModal(true); };
 
   const handleSave = async () => {
+    const trimmedQ = editQ.question.trim();
+    const trimmedOpts = editQ.options.map((o) => o.trim());
+    if (!trimmedQ) { alert('Question text is required.'); return; }
+    if (trimmedOpts.some((o) => !o)) { alert('All four options must be filled in. Empty options will make the exam unplayable for candidates.'); return; }
+    if (editQ.correct < 0 || editQ.correct >= trimmedOpts.length) { alert('Pick which option is the correct answer.'); return; }
+
     const isEdit = !!editQ.id;
     const url = isEdit ? `/api/admin/exam-questions/${editQ.id}` : '/api/admin/exam-questions';
     setSaving(true);
-    const payload = isEdit ? editQ : { ...editQ, exam_id: examId };
+    const payload = isEdit
+      ? { ...editQ, question: trimmedQ, options: trimmedOpts }
+      : { ...editQ, question: trimmedQ, options: trimmedOpts, exam_id: examId };
     const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     setSaving(false);
     if (res.ok) { setShowModal(false); await fetchData(); }

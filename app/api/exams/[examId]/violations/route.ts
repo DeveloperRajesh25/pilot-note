@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { ViolationEvent, ViolationType } from '@/lib/types';
 
 const VALID_TYPES: ViolationType[] = [
@@ -34,20 +35,48 @@ export async function POST(
   }
   const incoming = body as IncomingViolation;
 
+  // Write through the admin (service-role) client so the proctoring log isn't
+  // gated by RLS edge cases on jsonb columns. The user identity has already
+  // been verified above via supabase.auth.getUser().
+  const adminDb = createAdminClient();
+
   // Pull existing attempt + violations.
-  const { data: attempt } = await supabase
+  let { data: attempt } = await adminDb
     .from('exam_attempts')
     .select('id, violations, submitted_at')
     .eq('user_id', user.id)
     .eq('exam_id', examId)
     .maybeSingle();
 
-  // Silently ignore if the attempt doesn't exist or is already submitted —
-  // we don't want to leak state to a misbehaving client.
-  if (!attempt || attempt.submitted_at) {
-    return NextResponse.json({ ok: true });
+  // Lazily create an attempt row if the user hits a violation before the
+  // shell GET has booted one (e.g. focus-loss the instant the page paints).
+  // Only do this if they're actually registered for the exam.
+  if (!attempt) {
+    const { data: reg } = await adminDb
+      .from('exam_registrations')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('exam_id', examId)
+      .maybeSingle();
+    if (!reg) {
+      // Not registered — don't manufacture an attempt row, but tell the client
+      // so the silent failure is visible in the network panel.
+      return NextResponse.json({ error: 'Not registered for this exam' }, { status: 403 });
+    }
+    const { data: created, error: createErr } = await adminDb
+      .from('exam_attempts')
+      .insert({ user_id: user.id, exam_id: examId, answers: {} })
+      .select('id, violations, submitted_at')
+      .single();
+    if (createErr || !created) {
+      return NextResponse.json({ error: createErr?.message ?? 'Could not record violation' }, { status: 500 });
+    }
+    attempt = created;
   }
 
+  // If already submitted, still record the flag (it happened in the window,
+  // and admins want late events like a tab-close on the results page). Submit
+  // status is conveyed back so the client can decide what to do.
   const existing: ViolationEvent[] = Array.isArray(attempt.violations) ? attempt.violations : [];
 
   // Server-side dedupe: drop if the same type fired within the last 2 seconds.
@@ -66,7 +95,7 @@ export async function POST(
     ...(incoming.meta ? { meta: incoming.meta } : {}),
   };
 
-  const { error } = await supabase
+  const { error } = await adminDb
     .from('exam_attempts')
     .update({ violations: [...existing, event] })
     .eq('id', attempt.id);
@@ -75,5 +104,5 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, submitted: !!attempt.submitted_at });
 }

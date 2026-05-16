@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/admin/aptitude', label: 'Aptitude Qs', icon: '🧠' },
   { href: '/admin/rtr', label: 'RTR Tests', icon: '📡' },
   { href: '/admin/exams', label: 'Exams (Pariksha)', icon: '🎓' },
+  { href: '/admin/violations', label: 'Proctoring Flags', icon: '🚨' },
   { href: '/admin/purchases', label: 'Purchases', icon: '💳' },
 ];
 

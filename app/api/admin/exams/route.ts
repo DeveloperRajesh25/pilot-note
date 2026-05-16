@@ -9,11 +9,20 @@ export async function GET() {
   const db = createAdminClient();
   const { data: exams } = await db.from('exams').select('*').order('exam_date', { ascending: true });
   const { data: counts } = await db.from('exam_registration_counts').select('*');
+  const { data: qRows } = await db.from('exam_questions').select('exam_id');
   const countMap: Record<string, number> = {};
   (counts ?? []).forEach((c: { exam_id: string; registration_count: number | string }) => {
     countMap[c.exam_id] = Number(c.registration_count);
   });
-  const enriched = (exams ?? []).map((e: { id: string }) => ({ ...e, registrations: countMap[e.id] ?? 0 }));
+  const questionCountMap: Record<string, number> = {};
+  (qRows ?? []).forEach((row: { exam_id: string }) => {
+    questionCountMap[row.exam_id] = (questionCountMap[row.exam_id] ?? 0) + 1;
+  });
+  const enriched = (exams ?? []).map((e: { id: string }) => ({
+    ...e,
+    registrations: countMap[e.id] ?? 0,
+    question_count: questionCountMap[e.id] ?? 0,
+  }));
   return NextResponse.json({ exams: enriched });
 }
 

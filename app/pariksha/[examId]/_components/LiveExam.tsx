@@ -188,6 +188,12 @@ export function LiveExam({
   }, []);
 
   const currentQ = questions[currentIndex];
+  const currentQText = currentQ?.question?.trim() ?? '';
+  const currentQOptions = Array.isArray(currentQ?.options)
+    ? currentQ.options.map((o) => (typeof o === 'string' ? o : ''))
+    : [];
+  const hasOptions = currentQOptions.some((o) => o.trim().length > 0);
+  const questionIncomplete = !!currentQ && (!currentQText || !hasOptions);
   const answeredCount = Object.keys(answers).length;
   const lowTime = remaining < 300;
   const lowQTime = perQuestionLeft <= 10;
@@ -271,33 +277,47 @@ export function LiveExam({
                 </div>
               </div>
 
-              <h2 className="font-display text-2xl md:text-3xl text-neutral-900 mb-10 leading-tight tracking-tight">
-                {currentQ?.question}
-              </h2>
+              {questionIncomplete ? (
+                <div className="mb-12 border border-amber-200 bg-amber-50 rounded-2xl p-6">
+                  <p className="text-amber-800 font-bold text-sm mb-1">This question is missing content.</p>
+                  <p className="text-amber-700 text-sm">
+                    The administrator hasn&apos;t finished setting it up. Skip ahead — you won&apos;t be marked
+                    wrong for not answering it.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <h2 className="font-display text-2xl md:text-3xl text-neutral-900 mb-10 leading-tight tracking-tight">
+                    {currentQText}
+                  </h2>
 
-              <div className="space-y-3 mb-12">
-                {currentQ?.options.map((opt, i) => {
-                  const selected = answers[currentQ.id] === i;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => recordAnswer(currentQ.id, i)}
-                      className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${
-                        selected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 bg-white hover:border-neutral-900'
-                      }`}
-                    >
-                      <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${
-                        selected ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500'
-                      }`}>
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      <span className={`text-[15px] font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>
-                        {opt}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+                  <div className="space-y-3 mb-12">
+                    {currentQOptions.map((opt, i) => {
+                      const trimmed = opt.trim();
+                      if (!trimmed) return null;
+                      const selected = answers[currentQ!.id] === i;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => recordAnswer(currentQ!.id, i)}
+                          className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${
+                            selected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 bg-white hover:border-neutral-900'
+                          }`}
+                        >
+                          <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${
+                            selected ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500'
+                          }`}>
+                            {String.fromCharCode(65 + i)}
+                          </span>
+                          <span className={`text-[15px] font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>
+                            {trimmed}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               <div className="flex justify-between items-center pt-8 border-t border-neutral-200">
                 <Button
