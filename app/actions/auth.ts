@@ -1,12 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 
 export async function login(formData: FormData) {
-  const email = formData.get('email') as string
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
   const password = formData.get('password') as string
   const supabase = await createClient()
 
@@ -16,6 +15,15 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
+    // Supabase returns code `email_not_confirmed` (and message "Email not confirmed")
+    // when the user hasn't clicked the confirmation link yet. Surface a clearer
+    // message so the user knows to check their inbox instead of retrying blindly.
+    if (error.code === 'email_not_confirmed' || /not confirmed/i.test(error.message)) {
+      return {
+        error:
+          'Please confirm your email before signing in. We sent you a confirmation link — check your inbox (and spam folder).',
+      }
+    }
     return { error: error.message }
   }
 
@@ -25,47 +33,59 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const password = formData.get('password') as string
-  const full_name = (formData.get('full_name') as string) || null
+  const full_name = (formData.get('full_name') as string)?.trim() || null
 
   if (!email || !password) {
     return { error: 'Email and password are required.' }
   }
 
-  // Create user with email already confirmed — Supabase's built-in confirmation
-  // email is unreliable on the free tier, so we skip it and sign them in directly.
-  const admin = createAdminClient()
-  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+  const origin = (await headers()).get('origin')
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    email_confirm: true,
-    user_metadata: full_name ? { full_name } : undefined,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/`,
+      data: full_name ? { full_name } : undefined,
+    },
   })
 
-  if (createErr) {
-    // Supabase returns "User already registered" for duplicates — surface a
-    // friendlier message and stop, so the existing user signs in instead.
-    if (/already/i.test(createErr.message)) {
+  if (error) {
+    if (/already|registered/i.test(error.message)) {
       return { error: 'An account with this email already exists. Please sign in.' }
     }
-    return { error: createErr.message }
+    return { error: error.message }
   }
 
-  // Profile row (trigger usually handles this, belt-and-suspenders).
-  if (created.user) {
-    await admin.from('profiles').upsert(
-      { id: created.user.id, email, full_name },
-      { onConflict: 'id' },
-    )
+  // If a user already exists but is unconfirmed, Supabase returns a user object
+  // with an empty `identities` array instead of an error. Treat that as duplicate
+  // so we don't leak account existence silently.
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    return { error: 'An account with this email already exists. Please sign in.' }
   }
 
-  // Sign the new user in so the session cookie is set before we redirect.
+  return {
+    success: true,
+    message: `We sent a confirmation link to ${email}. Click it to activate your account, then sign in.`,
+  }
+}
+
+export async function resendConfirmation(formData: FormData) {
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
+  if (!email) return { error: 'Email is required.' }
+
+  const origin = (await headers()).get('origin')
   const supabase = await createClient()
-  const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password })
-  if (signInErr) {
-    return { error: signInErr.message }
-  }
 
-  redirect('/')
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${origin}/auth/callback?next=/` },
+  })
+
+  if (error) return { error: error.message }
+  return { message: `Confirmation link resent to ${email}.` }
 }
 
 export async function signOut() {
