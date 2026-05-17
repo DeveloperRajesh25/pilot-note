@@ -1,7 +1,6 @@
 'use client';
 
 import { use, useCallback, useEffect, useState } from 'react';
-import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -55,6 +54,24 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
+
+  useEffect(() => {
+    const RAZORPAY_URL = 'https://checkout.razorpay.com/v1/checkout.js';
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_URL}"]`);
+    if (existing) {
+      if (window.Razorpay) {
+        setSdkReady(true);
+      } else {
+        existing.addEventListener('load', () => setSdkReady(true), { once: true });
+      }
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = RAZORPAY_URL;
+    script.async = true;
+    script.onload = () => setSdkReady(true);
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,11 +187,6 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
 
   return (
     <>
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="afterInteractive"
-        onLoad={() => setSdkReady(true)}
-      />
       <Header />
       <main className="grow pt-36 pb-24 bg-white">
         <div className="container mx-auto px-6 max-w-3xl">
