@@ -12,6 +12,7 @@ interface Question {
   id: string;
   question: string;
   options: string[];
+  image_url?: string | null;
 }
 
 interface ExamMeta {
@@ -287,6 +288,16 @@ export function LiveExam({
                 </div>
               ) : (
                 <>
+                  {currentQ?.image_url && (
+                    <div className="mb-8">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={currentQ.image_url}
+                        alt="Question diagram"
+                        className="max-w-full max-h-72 rounded-2xl border border-neutral-200 object-contain"
+                      />
+                    </div>
+                  )}
                   <h2 className="font-display text-2xl md:text-3xl text-neutral-900 mb-10 leading-tight tracking-tight">
                     {currentQText}
                   </h2>

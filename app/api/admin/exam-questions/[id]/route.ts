@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-const EXAM_QUESTION_FIELDS = ['exam_id', 'question', 'options', 'correct', 'explanation'] as const;
+const EXAM_QUESTION_FIELDS = ['exam_id', 'question', 'options', 'correct', 'explanation', 'image_url'] as const;
 
 export async function PUT(
   request: NextRequest,

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const check = await requireAdmin();
   if (check.error) return check.error;
   const body = await request.json();
-  const { exam_id, question, options, correct, explanation } = body;
+  const { exam_id, question, options, correct, explanation, image_url } = body;
   if (!exam_id || correct === undefined) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   const db = createAdminClient();
   const { data, error } = await db
     .from('exam_questions')
-    .insert({ exam_id, question: trimmedQ, options: trimmedOpts, correct, explanation })
+    .insert({ exam_id, question: trimmedQ, options: trimmedOpts, correct, explanation, image_url: image_url ?? null })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

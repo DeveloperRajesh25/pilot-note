@@ -172,6 +172,7 @@ export interface ExamQuestion {
   options: string[];
   correct: number;
   explanation: string | null;
+  image_url?: string | null;
   created_at?: string;
 }
 

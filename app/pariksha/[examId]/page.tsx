@@ -30,7 +30,7 @@ interface AttemptPayload {
     answers: Record<string, number>;
     current_question_index: number;
   };
-  questions?: { id: string; question: string; options: string[] }[];
+  questions?: { id: string; question: string; options: string[]; image_url?: string | null }[];
   error?: string;
 }
 

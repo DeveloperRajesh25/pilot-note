@@ -10,14 +10,52 @@ export async function GET(
   const check = await requireAdmin();
   if (check.error) return check.error;
   const db = createAdminClient();
+
+  // exam_registrations.user_id and exam_attempts.user_id reference auth.users(id), not
+  // public.profiles(id), so PostgREST cannot auto-join profiles. Fetch each table
+  // separately then merge profile data by user_id.
   const [{ data: exam }, { data: questions }, { data: regs }, { data: attempts }] = await Promise.all([
     db.from('exams').select('*').eq('id', examId).maybeSingle(),
     db.from('exam_questions').select('*').eq('exam_id', examId).order('created_at'),
-    db.from('exam_registrations').select('id, user_id, registered_at, profiles(email, full_name)').eq('exam_id', examId).order('registered_at', { ascending: false }),
-    db.from('exam_attempts').select('user_id, score, total, submitted_at, auto_submitted, violations, profiles(email)').eq('exam_id', examId).not('submitted_at', 'is', null),
+    db.from('exam_registrations').select('id, user_id, registered_at, payment_id').eq('exam_id', examId).order('registered_at', { ascending: false }),
+    db.from('exam_attempts').select('user_id, score, total, submitted_at, auto_submitted, violations').eq('exam_id', examId).not('submitted_at', 'is', null),
   ]);
+
   if (!exam) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json({ exam, questions: questions ?? [], registrations: regs ?? [], attempts: attempts ?? [] });
+
+  // Collect all user_ids that need profile data.
+  const userIds = [
+    ...new Set([
+      ...(regs ?? []).map((r) => r.user_id as string),
+      ...(attempts ?? []).map((a) => a.user_id as string),
+    ]),
+  ];
+
+  type ProfileRow = { id: string; email: string | null; full_name: string | null };
+  let profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
+  if (userIds.length > 0) {
+    const { data: profiles } = await db
+      .from('profiles')
+      .select('id, email, full_name')
+      .in('id', userIds);
+    if (profiles) {
+      for (const p of profiles as ProfileRow[]) {
+        profileMap[p.id] = { email: p.email, full_name: p.full_name };
+      }
+    }
+  }
+
+  const registrations = (regs ?? []).map((r) => ({
+    ...r,
+    profiles: profileMap[r.user_id as string] ?? null,
+  }));
+
+  const attemptsWithProfiles = (attempts ?? []).map((a) => ({
+    ...a,
+    profiles: profileMap[a.user_id as string] ? { email: (profileMap[a.user_id as string]).email } : null,
+  }));
+
+  return NextResponse.json({ exam, questions: questions ?? [], registrations, attempts: attemptsWithProfiles });
 }
 
 const EXAM_FIELDS = [

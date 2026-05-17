@@ -19,6 +19,7 @@ interface QuestionRow {
   id: string;
   question: string;
   options: string[];
+  image_url?: string | null;
 }
 
 interface ScoringQuestion {
@@ -169,7 +170,7 @@ export async function GET(
   // Live phase: load questions (RLS allows registered users).
   const { data: questions, error: qErr } = await supabase
     .from('exam_questions')
-    .select('id, question, options')
+    .select('id, question, options, image_url')
     .eq('exam_id', examId)
     .order('created_at');
 
