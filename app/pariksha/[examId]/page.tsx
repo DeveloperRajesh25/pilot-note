@@ -48,7 +48,7 @@ export default function ParikshaExamShell({ params }: { params: Promise<{ examId
   const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/exams/${examId}/attempt`, { cache: 'no-store' });
-      if (res.status === 401) { router.push(`/login?redirect=/pariksha/${examId}`); return; }
+      if (res.status === 401) { router.push(`/pariksha/login?exam=${examId}`); return; }
       const data = await res.json();
       if (res.status === 403 || data?.error === 'Not registered for this exam') {
         setState({ kind: 'not_registered' });

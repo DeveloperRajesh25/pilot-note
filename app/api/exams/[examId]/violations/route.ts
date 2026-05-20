@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getExamUser } from '@/lib/exam-session';
 import type { ViolationEvent, ViolationType } from '@/lib/types';
 
 const VALID_TYPES: ViolationType[] = [
@@ -22,10 +22,8 @@ export async function POST(
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const examUser = await getExamUser(examId);
+  if (!examUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -44,7 +42,7 @@ export async function POST(
   let { data: attempt } = await adminDb
     .from('exam_attempts')
     .select('id, violations, submitted_at')
-    .eq('user_id', user.id)
+    .eq('user_id', examUser.user_id)
     .eq('exam_id', examId)
     .maybeSingle();
 
@@ -55,7 +53,7 @@ export async function POST(
     const { data: reg } = await adminDb
       .from('exam_registrations')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', examUser.user_id)
       .eq('exam_id', examId)
       .maybeSingle();
     if (!reg) {
@@ -65,7 +63,7 @@ export async function POST(
     }
     const { data: created, error: createErr } = await adminDb
       .from('exam_attempts')
-      .insert({ user_id: user.id, exam_id: examId, answers: {} })
+      .insert({ user_id: examUser.user_id, exam_id: examId, answers: {} })
       .select('id, violations, submitted_at')
       .single();
     if (createErr || !created) {

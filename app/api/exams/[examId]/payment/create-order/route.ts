@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createOrder } from '@/lib/razorpay';
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
@@ -13,6 +13,18 @@ export async function POST(
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // DOB is collected here so it's bound to the registration before payment.
+  // It becomes the candidate's exam password on credential release.
+  const body = await request.json().catch(() => ({}));
+  const dob: string | undefined = typeof body?.dob === 'string' ? body.dob : undefined;
+  if (!dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+    return NextResponse.json({ error: 'Valid date of birth required (YYYY-MM-DD)' }, { status: 400 });
+  }
+  const dobDate = new Date(`${dob}T00:00:00Z`);
+  if (Number.isNaN(dobDate.getTime()) || dobDate > new Date()) {
+    return NextResponse.json({ error: 'Date of birth must be a valid past date' }, { status: 400 });
   }
 
   const { data: exam } = await supabase
@@ -29,7 +41,7 @@ export async function POST(
     return NextResponse.json({ error: 'Exam has already ended' }, { status: 410 });
   }
 
-  // Already-paid short-circuit — let the client skip checkout.
+  // Already-paid short-circuit — let the client skip checkout but still update DOB.
   const db = createAdminClient();
   const { data: paid } = await db
     .from('payments')
@@ -38,6 +50,13 @@ export async function POST(
     .eq('exam_id', examId)
     .eq('status', 'paid')
     .maybeSingle();
+
+  // Pre-bind DOB to the registration (or create a pending row). On conflict
+  // only `dob` is updated — payment_id and registered_at are preserved.
+  await db.from('exam_registrations').upsert(
+    { user_id: user.id, exam_id: examId, dob },
+    { onConflict: 'user_id,exam_id' }
+  );
 
   if (paid) {
     return NextResponse.json({ alreadyPaid: true });

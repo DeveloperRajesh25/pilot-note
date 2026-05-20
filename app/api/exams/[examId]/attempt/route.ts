@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getExamUser } from '@/lib/exam-session';
 import type { ExamPhase } from '@/lib/types';
 
 interface ExamRow {
@@ -59,14 +59,15 @@ export async function GET(
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const examUser = await getExamUser(examId);
+  if (!examUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: examData } = await supabase
+  // Use the admin client for reads — works for both supabase-auth and exam-cookie sessions.
+  const db = createAdminClient();
+
+  const { data: examData } = await db
     .from('exams')
     .select('id, title, subject, duration, total_questions, start_at, end_at, per_question_seconds, pass_score')
     .eq('id', examId)
@@ -77,10 +78,10 @@ export async function GET(
   }
   const exam = examData as ExamRow;
 
-  const { data: reg } = await supabase
+  const { data: reg } = await db
     .from('exam_registrations')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', examUser.user_id)
     .eq('exam_id', examId)
     .maybeSingle();
 
@@ -93,17 +94,17 @@ export async function GET(
 
   // Always ensure an attempt row exists from the moment of registration; that way
   // proctoring + heartbeat can write to it as soon as the exam opens.
-  let { data: attempt } = await supabase
+  let { data: attempt } = await db
     .from('exam_attempts')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', examUser.user_id)
     .eq('exam_id', examId)
     .maybeSingle();
 
   if (!attempt) {
-    const { data: created } = await supabase
+    const { data: created } = await db
       .from('exam_attempts')
-      .insert({ user_id: user.id, exam_id: examId, answers: {} })
+      .insert({ user_id: examUser.user_id, exam_id: examId, answers: {} })
       .select('*')
       .single();
     attempt = created;
@@ -167,8 +168,8 @@ export async function GET(
     });
   }
 
-  // Live phase: load questions (RLS allows registered users).
-  const { data: questions, error: qErr } = await supabase
+  // Live phase: load questions.
+  const { data: questions, error: qErr } = await db
     .from('exam_questions')
     .select('id, question, options, image_url')
     .eq('exam_id', examId)
@@ -211,10 +212,8 @@ export async function POST(
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const examUser = await getExamUser(examId);
+  if (!examUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -224,7 +223,8 @@ export async function POST(
     return NextResponse.json({ error: 'answers required' }, { status: 400 });
   }
 
-  const { data: examData } = await supabase
+  const db = createAdminClient();
+  const { data: examData } = await db
     .from('exams')
     .select('id, start_at, end_at, per_question_seconds, pass_score')
     .eq('id', examId)
@@ -233,10 +233,10 @@ export async function POST(
     return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
   }
 
-  const { data: reg } = await supabase
+  const { data: reg } = await db
     .from('exam_registrations')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('user_id', examUser.user_id)
     .eq('exam_id', examId)
     .maybeSingle();
   if (!reg) {
@@ -251,10 +251,10 @@ export async function POST(
   }
 
   // Prevent double submission.
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('exam_attempts')
     .select('submitted_at, score, total, auto_submitted')
-    .eq('user_id', user.id)
+    .eq('user_id', examUser.user_id)
     .eq('exam_id', examId)
     .maybeSingle();
 
@@ -269,11 +269,11 @@ export async function POST(
 
   const { score, total } = await scoreAnswers(examId, answers as Record<string, number>);
 
-  const { data: savedAttempt, error: saveErr } = await supabase
+  const { data: savedAttempt, error: saveErr } = await db
     .from('exam_attempts')
     .upsert(
       {
-        user_id: user.id,
+        user_id: examUser.user_id,
         exam_id: examId,
         answers,
         score,

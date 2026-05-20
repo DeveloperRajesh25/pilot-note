@@ -29,6 +29,9 @@ interface BulkRow {
 
 interface RegistrationRow extends ExamRegistration {
   profiles?: { full_name: string | null; email: string | null } | null;
+  dob?: string | null;
+  roll_no?: string | null;
+  credentials_sent_at?: string | null;
 }
 
 interface AttemptRow {
@@ -43,10 +46,22 @@ interface AttemptRow {
 }
 
 interface ExamDetailData {
-  exam: Exam | null;
+  exam: (Exam & { credentials_released_at?: string | null; results_released_at?: string | null }) | null;
   questions: ExamQuestion[];
   registrations: RegistrationRow[];
   attempts: AttemptRow[];
+}
+
+interface ReleaseResult {
+  ok?: boolean;
+  sent?: number;
+  assigned?: number;
+  eligible?: number;
+  missingDob?: number;
+  ranked?: number;
+  errors?: string[];
+  message?: string;
+  error?: string;
 }
 
 function parseCSVLine(line: string): string[] {
@@ -114,6 +129,10 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
   const [bulkErrors, setBulkErrors] = useState<string[]>([]);
   const [bulkUploading, setBulkUploading] = useState(false);
   const [bulkResult, setBulkResult] = useState<{ inserted: number; errors?: string[] } | null>(null);
+
+  // Release state (credentials + results)
+  const [releasing, setReleasing] = useState<'creds' | 'results' | null>(null);
+  const [releaseMsg, setReleaseMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -186,6 +205,69 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
     if (!confirm('Delete this question?')) return;
     await fetch(`/api/admin/exam-questions/${id}`, { method: 'DELETE' });
     await fetchData();
+  };
+
+  const releaseCredentials = async (resend: boolean) => {
+    if (releasing) return;
+    if (!confirm(resend
+      ? 'Re-send credentials to ALL eligible candidates (including those already emailed)?'
+      : 'Send credentials emails to all paid registrations that have a DOB on file?')) return;
+    setReleasing('creds');
+    setReleaseMsg(null);
+    try {
+      const res = await fetch(`/api/admin/exams/${examId}/release-credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resend }),
+      });
+      const d: ReleaseResult = await res.json();
+      if (!res.ok || d.error) {
+        setReleaseMsg({ kind: 'error', text: d.error ?? 'Release failed' });
+      } else {
+        const lines: string[] = [];
+        if (d.sent !== undefined) lines.push(`${d.sent} email(s) sent`);
+        if (d.assigned) lines.push(`${d.assigned} roll number(s) assigned`);
+        if (d.missingDob) lines.push(`${d.missingDob} missing DOB`);
+        if (d.errors?.length) lines.push(`${d.errors.length} error(s)`);
+        setReleaseMsg({ kind: 'success', text: lines.join(' · ') || (d.message ?? 'Done') });
+      }
+      await fetchData();
+    } catch (e) {
+      setReleaseMsg({ kind: 'error', text: e instanceof Error ? e.message : 'Network error' });
+    } finally {
+      setReleasing(null);
+    }
+  };
+
+  const releaseResults = async (resend: boolean) => {
+    if (releasing) return;
+    if (!confirm(resend
+      ? 'Re-send results to ALL candidates (including those already emailed)?'
+      : 'Compute ranks and send result emails to all submitted attempts?')) return;
+    setReleasing('results');
+    setReleaseMsg(null);
+    try {
+      const res = await fetch(`/api/admin/exams/${examId}/release-results`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resend }),
+      });
+      const d: ReleaseResult = await res.json();
+      if (!res.ok || d.error) {
+        setReleaseMsg({ kind: 'error', text: d.error ?? 'Release failed' });
+      } else {
+        const lines: string[] = [];
+        if (d.sent !== undefined) lines.push(`${d.sent} email(s) sent`);
+        if (d.ranked) lines.push(`${d.ranked} ranked`);
+        if (d.errors?.length) lines.push(`${d.errors.length} error(s)`);
+        setReleaseMsg({ kind: 'success', text: lines.join(' · ') || (d.message ?? 'Done') });
+      }
+      await fetchData();
+    } catch (e) {
+      setReleaseMsg({ kind: 'error', text: e instanceof Error ? e.message : 'Network error' });
+    } finally {
+      setReleasing(null);
+    }
   };
 
   const updateOption = (i: number, val: string) => {
@@ -280,6 +362,75 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
         </div>
       </div>
 
+      {/* Release controls */}
+      <div className="mb-8 bg-white border border-neutral-200 rounded-2xl p-5 sm:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <p className="text-xs font-black text-neutral-500 uppercase tracking-wider mb-1">Release controls</p>
+            <p className="text-sm text-neutral-700">
+              {exam.credentials_released_at ? (
+                <span className="text-emerald-700 font-semibold">
+                  ✓ Credentials released {new Date(exam.credentials_released_at).toLocaleString('en-IN')}
+                </span>
+              ) : (
+                <span className="text-neutral-500">Credentials not yet released.</span>
+              )}
+              <span className="mx-2 text-neutral-300">|</span>
+              {exam.results_released_at ? (
+                <span className="text-emerald-700 font-semibold">
+                  ✓ Results released {new Date(exam.results_released_at).toLocaleString('en-IN')}
+                </span>
+              ) : (
+                <span className="text-neutral-500">Results not yet released.</span>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => releaseCredentials(false)}
+              disabled={!!releasing || registrations.filter(r => r.payment_id).length === 0}
+              className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {releasing === 'creds' ? 'Sending…' : (exam.credentials_released_at ? 'Send to new registrations' : 'Release credentials')}
+            </button>
+            {exam.credentials_released_at && (
+              <button
+                onClick={() => releaseCredentials(true)}
+                disabled={!!releasing}
+                className="px-4 py-2 bg-neutral-100 text-neutral-700 text-xs font-bold rounded-xl hover:bg-neutral-200 disabled:opacity-50"
+              >
+                Resend to all
+              </button>
+            )}
+            <button
+              onClick={() => releaseResults(false)}
+              disabled={!!releasing || attempts.length === 0}
+              className="px-4 py-2 bg-neutral-900 text-white text-xs font-bold rounded-xl hover:bg-neutral-800 disabled:opacity-50"
+            >
+              {releasing === 'results' ? 'Sending…' : (exam.results_released_at ? 'Send to new submissions' : 'Release results')}
+            </button>
+            {exam.results_released_at && (
+              <button
+                onClick={() => releaseResults(true)}
+                disabled={!!releasing}
+                className="px-4 py-2 bg-neutral-100 text-neutral-700 text-xs font-bold rounded-xl hover:bg-neutral-200 disabled:opacity-50"
+              >
+                Resend results to all
+              </button>
+            )}
+          </div>
+        </div>
+        {releaseMsg && (
+          <div className={`mt-4 text-xs px-3 py-2 rounded-lg border ${
+            releaseMsg.kind === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}>
+            {releaseMsg.text}
+          </div>
+        )}
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         {(['questions', 'registrations', 'results'] as const).map(t => (
@@ -338,35 +489,50 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
 
       {/* Registrations tab */}
       {tab === 'registrations' && (
-        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden overflow-x-auto">
+          <table className="w-full text-left min-w-190">
             <thead>
               <tr className="border-b border-neutral-200">
-                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">User</th>
-                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Amount Paid</th>
-                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Payment ID</th>
-                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Registered</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">Roll No</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">Email</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">DOB</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">Paid</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">Credentials</th>
+                <th className="px-4 py-3 text-xs font-black text-neutral-500 uppercase">Registered</th>
               </tr>
             </thead>
             <tbody>
               {registrations.map((r) => (
                 <tr key={r.id} className="border-b border-neutral-100">
-                  <td className="px-6 py-3 text-sm text-neutral-900">{r.profiles?.full_name || '—'}</td>
-                  <td className="px-6 py-3 text-sm text-neutral-500">{r.profiles?.email}</td>
-                  <td className="px-6 py-3 text-sm font-medium text-neutral-900">
-                    {exam.fee === 0 ? <span className="text-emerald-600 text-xs font-bold">Free</span> : `₹${exam.fee}`}
+                  <td className="px-4 py-3 text-xs font-mono text-neutral-900">
+                    {r.roll_no || <span className="text-neutral-400 font-sans">—</span>}
                   </td>
-                  <td className="px-6 py-3 text-xs text-neutral-400 font-mono max-w-45 truncate">
-                    {r.payment_id || (exam.fee === 0 ? '—' : <span className="text-amber-600">Pending</span>)}
+                  <td className="px-4 py-3 text-sm text-neutral-700">
+                    {r.profiles?.full_name && <div className="text-neutral-900 font-medium">{r.profiles.full_name}</div>}
+                    <div className="text-neutral-500 text-xs">{r.profiles?.email}</div>
                   </td>
-                  <td className="px-6 py-3 text-sm text-neutral-500">
+                  <td className="px-4 py-3 text-xs text-neutral-700 font-mono">
+                    {r.dob ? new Date(r.dob).toLocaleDateString('en-GB') : <span className="text-amber-600 font-bold">missing</span>}
+                  </td>
+                  <td className="px-4 py-3 text-xs font-bold">
+                    {exam.fee === 0
+                      ? <span className="text-emerald-600">Free</span>
+                      : r.payment_id
+                        ? <span className="text-emerald-600">✓</span>
+                        : <span className="text-amber-600">Pending</span>}
+                  </td>
+                  <td className="px-4 py-3 text-xs">
+                    {r.credentials_sent_at
+                      ? <span className="text-emerald-700 font-semibold">Sent {new Date(r.credentials_sent_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                      : <span className="text-neutral-400">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-neutral-500">
                     {new Date(r.registered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                 </tr>
               ))}
               {registrations.length === 0 && (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-neutral-500">No registrations yet</td></tr>
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-neutral-500">No registrations yet</td></tr>
               )}
             </tbody>
           </table>

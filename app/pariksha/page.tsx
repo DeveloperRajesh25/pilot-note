@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
 import { Users, Calendar, Clock, FileText, ArrowRight } from 'lucide-react';
 import { computeExamStatus } from '@/lib/exam-status';
 
@@ -70,23 +69,23 @@ export default function ParikshaPage() {
   return (
     <>
       <Header />
-      <main className="grow pt-36 pb-32 bg-white">
+      <main className="grow pt-28 sm:pt-36 pb-20 sm:pb-32 bg-white">
         {/* ───── Hero ───── */}
-        <section className="container mx-auto px-6 mb-20">
-          <div className="grid lg:grid-cols-12 gap-10 items-end">
+        <section className="container mx-auto px-4 sm:px-6 mb-12 sm:mb-20">
+          <div className="grid lg:grid-cols-12 gap-6 sm:gap-10 items-end">
             <div className="lg:col-span-8">
-              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5 sm:mb-6">
                 <span className="w-6 h-px bg-neutral-900" />
                 Pariksha · All India Mock Exams
               </span>
-              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1.02] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900">
                 Real exam.
                 <br />
                 <span className="italic-serif">Real</span> competition.
               </h1>
             </div>
             <div className="lg:col-span-4">
-              <p className="text-neutral-600 text-lg leading-relaxed mb-6">
+              <p className="text-neutral-600 text-base sm:text-lg leading-relaxed mb-5 sm:mb-6">
                 All-India mock examinations for CPL subjects. Compete with students nationwide — like
                 JEE, but for pilots.
               </p>
@@ -102,7 +101,7 @@ export default function ParikshaPage() {
         </section>
 
         {/* ───── Exams list ───── */}
-        <section className="container mx-auto px-6">
+        <section className="container mx-auto px-4 sm:px-6">
           {loading ? (
             <div className="space-y-6 lg:space-y-8">
               {[1, 2, 3].map(i => (
@@ -134,11 +133,11 @@ export default function ParikshaPage() {
                 return (
                   <div
                     key={exam.id}
-                    className="bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 group hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
+                    className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-8 lg:p-10 group hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
                   >
-                    <div className="grid lg:grid-cols-12 gap-8 items-start">
+                    <div className="grid lg:grid-cols-12 gap-5 sm:gap-8 items-start">
                       {/* Left — meta */}
-                      <div className="lg:col-span-1">
+                      <div className="hidden lg:block lg:col-span-1">
                         <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
                           {String(idx + 1).padStart(2, '0')}
                         </span>
@@ -146,23 +145,23 @@ export default function ParikshaPage() {
 
                       {/* Middle — content */}
                       <div className="lg:col-span-7">
-                        <div className="flex flex-wrap items-center gap-2.5 mb-4">
-                          <span className={`px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] rounded-full border ${statusClass}`}>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-3 sm:mb-4">
+                          <span className={`px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] font-medium uppercase tracking-[0.18em] rounded-full border ${statusClass}`}>
                             {statusLabel}
                           </span>
                           <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">
                             {exam.subject}
                           </span>
                         </div>
-                        <h3 className="font-display text-3xl md:text-4xl text-neutral-900 mb-4 leading-tight">
+                        <h3 className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 mb-3 sm:mb-4 leading-tight">
                           {exam.title}
                         </h3>
-                        <p className="text-neutral-600 text-[15px] leading-relaxed mb-6 max-w-2xl">
+                        <p className="text-neutral-600 text-sm sm:text-[15px] leading-relaxed mb-5 sm:mb-6 max-w-2xl">
                           {exam.description}
                         </p>
 
                         {/* Meta strip */}
-                        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+                        <div className="flex flex-wrap items-center gap-x-5 sm:gap-x-8 gap-y-2.5 sm:gap-y-3 text-[13px] sm:text-sm">
                           <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                             <span className="text-neutral-900 font-medium">{formatDate(exam.exam_date)}</span>
@@ -183,43 +182,41 @@ export default function ParikshaPage() {
                       </div>
 
                       {/* Right — action */}
-                      <div className="lg:col-span-4 lg:text-right">
-                        <div className="mb-5">
-                          <p className="font-display text-4xl text-neutral-900 leading-none tracking-tight">
-                            ₹{exam.fee}
-                          </p>
-                          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 mt-2">
-                            Per attempt
-                          </p>
+                      <div className="lg:col-span-4 lg:text-right border-t lg:border-t-0 lg:border-l border-neutral-200/70 pt-5 lg:pt-0 lg:pl-6">
+                        <div className="flex lg:block items-end justify-between mb-4 sm:mb-5">
+                          <div>
+                            <p className="font-display text-3xl sm:text-4xl text-neutral-900 leading-none tracking-tight">
+                              ₹{exam.fee}
+                            </p>
+                            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-neutral-400 mt-2">
+                              Per attempt
+                            </p>
+                          </div>
                         </div>
 
-                        {exam.hasAttempted ? (
-                          <Link href={`/pariksha/${exam.id}/results`}>
-                            <Button variant="secondary" size="md">
+                        <div className="w-full lg:w-auto inline-block">
+                          {exam.hasAttempted ? (
+                            <Button variant="secondary" size="md" href={`/pariksha/${exam.id}/results`} className="w-full lg:w-auto">
                               View results <ArrowRight className="w-4 h-4" />
                             </Button>
-                          </Link>
-                        ) : exam.isRegistered ? (
-                          <Link href={`/pariksha/${exam.id}`}>
-                            <Button variant="violet" size="md">
+                          ) : exam.isRegistered ? (
+                            <Button variant="violet" size="md" href={`/pariksha/${exam.id}`} className="w-full lg:w-auto">
                               Enter exam <ArrowRight className="w-4 h-4" />
                             </Button>
-                          </Link>
-                        ) : liveStatus === 'Completed' ? (
-                          <Button size="md" disabled>
-                            Exam ended
-                          </Button>
-                        ) : liveStatus === 'Cancelled' ? (
-                          <Button size="md" disabled>
-                            Cancelled
-                          </Button>
-                        ) : (
-                          <Link href={`/pariksha/${exam.id}/register`}>
-                            <Button size="md">
+                          ) : liveStatus === 'Completed' ? (
+                            <Button size="md" disabled className="w-full lg:w-auto">
+                              Exam ended
+                            </Button>
+                          ) : liveStatus === 'Cancelled' ? (
+                            <Button size="md" disabled className="w-full lg:w-auto">
+                              Cancelled
+                            </Button>
+                          ) : (
+                            <Button size="md" href={`/pariksha/${exam.id}/register`} className="w-full lg:w-auto">
                               Register <ArrowRight className="w-4 h-4" />
                             </Button>
-                          </Link>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

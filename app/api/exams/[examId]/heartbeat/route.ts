@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getExamUser } from '@/lib/exam-session';
 
 interface HeartbeatBody {
   answers?: Record<string, number>;
@@ -11,14 +12,13 @@ export async function POST(
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  const examUser = await getExamUser(examId);
+  if (!examUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: exam } = await supabase
+  const db = createAdminClient();
+  const { data: exam } = await db
     .from('exams')
     .select('id, start_at, end_at')
     .eq('id', examId)
@@ -40,7 +40,7 @@ export async function POST(
 
   const remaining = endMs ? Math.max(0, Math.floor((endMs - nowMs) / 1000)) : 0;
 
-  // Persist progress only when live and only for own row (RLS-protected).
+  // Persist progress only when live.
   if (phase === 'live') {
     const update: Record<string, unknown> = { last_seen_at: new Date().toISOString() };
     if (body.answers && typeof body.answers === 'object') {
@@ -50,10 +50,10 @@ export async function POST(
       update.current_question_index = body.current_question_index;
     }
 
-    await supabase
+    await db
       .from('exam_attempts')
       .update(update)
-      .eq('user_id', user.id)
+      .eq('user_id', examUser.user_id)
       .eq('exam_id', examId)
       .is('submitted_at', null);
   }

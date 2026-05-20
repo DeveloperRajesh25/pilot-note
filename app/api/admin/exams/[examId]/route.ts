@@ -17,7 +17,7 @@ export async function GET(
   const [{ data: exam }, { data: questions }, { data: regs }, { data: attempts }] = await Promise.all([
     db.from('exams').select('*').eq('id', examId).maybeSingle(),
     db.from('exam_questions').select('*').eq('exam_id', examId).order('created_at'),
-    db.from('exam_registrations').select('id, user_id, registered_at, payment_id').eq('exam_id', examId).order('registered_at', { ascending: false }),
+    db.from('exam_registrations').select('id, user_id, registered_at, payment_id, dob, roll_no, credentials_sent_at').eq('exam_id', examId).order('registered_at', { ascending: false }),
     db.from('exam_attempts').select('user_id, score, total, submitted_at, auto_submitted, violations').eq('exam_id', examId).not('submitted_at', 'is', null),
   ]);
 
@@ -32,7 +32,7 @@ export async function GET(
   ];
 
   type ProfileRow = { id: string; email: string | null; full_name: string | null };
-  let profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
+  const profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
   if (userIds.length > 0) {
     const { data: profiles } = await db
       .from('profiles')

@@ -23,6 +23,9 @@ const HUMAN_MESSAGE: Record<ViolationType, string> = {
   clipboard: 'Copy/paste is disabled during the exam.',
 };
 
+// Long-press threshold for touch context menu blocking.
+const LONG_PRESS_MS = 500;
+
 const COOLDOWN_MS = 3_000;
 
 export function useExamProctoring(examId: string, options: ProctoringOptions = {}) {
@@ -84,11 +87,23 @@ export function useExamProctoring(examId: string, options: ProctoringOptions = {
       const k = e.key;
       const ctrl = e.ctrlKey || e.metaKey;
       const shift = e.shiftKey;
+      // PrintScreen — Windows/Linux. Note: this fires on keyup on most browsers
+      // but we listen to both. We can't actually stop the OS-level screenshot,
+      // but we can log it and warn.
+      if (k === 'PrintScreen' || k === 'Print') {
+        fire('devtools_key', { key: 'PrintScreen' });
+        return;
+      }
       // F12 — devtools
       if (k === 'F12') { e.preventDefault(); fire('devtools_key', { key: 'F12' }); return; }
       // Ctrl/Cmd+Shift+I / J / C — devtools
       if (ctrl && shift && (k === 'I' || k === 'i' || k === 'J' || k === 'j' || k === 'C' || k === 'c')) {
         e.preventDefault(); fire('devtools_key', { key: `Ctrl+Shift+${k.toUpperCase()}` }); return;
+      }
+      // macOS screenshot: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5
+      if (ctrl && shift && (k === '3' || k === '4' || k === '5')) {
+        fire('devtools_key', { key: `Cmd+Shift+${k}` });
+        return;
       }
       // Ctrl+U — view source
       if (ctrl && (k === 'U' || k === 'u')) { e.preventDefault(); fire('devtools_key', { key: 'Ctrl+U' }); return; }
@@ -96,7 +111,38 @@ export function useExamProctoring(examId: string, options: ProctoringOptions = {
       if (ctrl && (k === 'P' || k === 'p')) { e.preventDefault(); fire('devtools_key', { key: 'Ctrl+P' }); return; }
       // Ctrl+S — save page
       if (ctrl && (k === 'S' || k === 's')) { e.preventDefault(); fire('devtools_key', { key: 'Ctrl+S' }); return; }
+      // Ctrl+A — select all (lets the user copy)
+      if (ctrl && (k === 'A' || k === 'a')) { e.preventDefault(); fire('devtools_key', { key: 'Ctrl+A' }); return; }
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      // Many browsers only fire PrintScreen on keyup, and the screenshot has
+      // already happened. We log it for visibility.
+      if (e.key === 'PrintScreen' || e.key === 'Print') {
+        fire('devtools_key', { key: 'PrintScreen (keyup)' });
+      }
+    };
+
+    // Touch long-press → triggers the context menu / iOS Share sheet. Cancel it.
+    let touchTimer: ReturnType<typeof setTimeout> | null = null;
+    const onTouchStart = () => {
+      if (touchTimer) clearTimeout(touchTimer);
+      touchTimer = setTimeout(() => {
+        fire('right_click', { source: 'touch_long_press' });
+      }, LONG_PRESS_MS);
+    };
+    const onTouchEnd = () => {
+      if (touchTimer) { clearTimeout(touchTimer); touchTimer = null; }
+    };
+    // Cancel the long-press timer when the user scrolls so we don't fire mid-scroll.
+    const onTouchMove = () => {
+      if (touchTimer) { clearTimeout(touchTimer); touchTimer = null; }
+    };
+    const onSelectStart = (e: Event) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      e.preventDefault();
+    };
+    const onDragStart = (e: DragEvent) => { e.preventDefault(); };
 
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('blur', onBlur);
@@ -106,6 +152,13 @@ export function useExamProctoring(examId: string, options: ProctoringOptions = {
     document.addEventListener('paste', onPaste);
     document.addEventListener('cut', onCut);
     document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('selectstart', onSelectStart);
+    document.addEventListener('dragstart', onDragStart);
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange);
@@ -116,6 +169,14 @@ export function useExamProctoring(examId: string, options: ProctoringOptions = {
       document.removeEventListener('paste', onPaste);
       document.removeEventListener('cut', onCut);
       document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchcancel', onTouchEnd);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('selectstart', onSelectStart);
+      document.removeEventListener('dragstart', onDragStart);
+      if (touchTimer) clearTimeout(touchTimer);
     };
   }, [examId, enabled]);
 }

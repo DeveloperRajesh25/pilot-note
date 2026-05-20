@@ -60,7 +60,8 @@ export async function POST(
     }
   }
 
-  // Idempotent registration insert. Unique (user_id, exam_id) prevents duplicates.
+  // Mark the registration paid. DOB was already saved by create-order, so we
+  // upsert only payment_id here — on conflict, dob is preserved.
   const { error: regErr } = await db
     .from('exam_registrations')
     .upsert(
