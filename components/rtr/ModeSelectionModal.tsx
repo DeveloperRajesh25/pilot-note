@@ -5,18 +5,23 @@ import { Button } from '@/components/ui/Button';
 
 interface ModeSelectionModalProps {
   isOpen: boolean;
+  testId: string | null;
   part: 'part1' | 'part2' | null;
-  onSelectMode: (mode: 'practice' | 'simulate') => void;
+  // Receives testId + part read straight from props at click time, so the
+  // parent never has to consult its own state (which could be stale if the
+  // modal was reopened for a different part).
+  onSelectMode: (mode: 'practice' | 'simulate', testId: string, part: 'part1' | 'part2') => void;
   onClose: () => void;
 }
 
 export function ModeSelectionModal({
   isOpen,
+  testId,
   part,
   onSelectMode,
   onClose
 }: ModeSelectionModalProps) {
-  if (!isOpen || !part) return null;
+  if (!isOpen || !part || !testId) return null;
 
   const partLabel = part === 'part1' ? 'Part 1 — Written MCQ' : 'Part 2 — RT Transmission';
 
@@ -35,7 +40,7 @@ export function ModeSelectionModal({
 
         <div className="space-y-3">
           <button
-            onClick={() => onSelectMode('practice')}
+            onClick={() => onSelectMode('practice', testId, part)}
             className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left"
           >
             <div className="flex items-start gap-4">
@@ -56,7 +61,7 @@ export function ModeSelectionModal({
           </button>
 
           <button
-            onClick={() => onSelectMode('simulate')}
+            onClick={() => onSelectMode('simulate', testId, part)}
             className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left"
           >
             <div className="flex items-start gap-4">

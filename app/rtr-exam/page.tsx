@@ -140,8 +140,13 @@ function RTRExamContent() {
   // silence in some browsers — we restart while this stays true.
   const wantsListeningRef = useRef(false);
 
-  // Timer
-  const [timeRemaining, setTimeRemaining] = useState(part === 'part1' ? RTR_CONFIG.part1.duration * 60 : RTR_CONFIG.part2.duration * 60);
+  // Timer — only ticks in simulate mode. Practice mode has no time limit.
+  const isTimedMode = mode === 'simulate';
+  const [timeRemaining, setTimeRemaining] = useState(
+    isTimedMode
+      ? (part === 'part1' ? RTR_CONFIG.part1.duration * 60 : RTR_CONFIG.part2.duration * 60)
+      : 0,
+  );
 
   const steps = useMemo(() => buildSteps(p2Scenarios), [p2Scenarios]);
   const currentStep = steps[stepIdx];
@@ -176,9 +181,10 @@ function RTRExamContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId, part]);
 
-  // Countdown timer
+  // Countdown timer — skipped entirely in practice mode (no time pressure,
+  // no auto-submit).
   useEffect(() => {
-    if (view !== 'exam') return;
+    if (view !== 'exam' || !isTimedMode) return;
     const interval = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 0) { clearInterval(interval); finishExam(); return 0; }
@@ -187,7 +193,7 @@ function RTRExamContent() {
     }, 1000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view]);
+  }, [view, isTimedMode]);
 
   const stopSpeaking = () => {
     if (typeof window === 'undefined') return;
@@ -384,7 +390,7 @@ function RTRExamContent() {
                 <h1 className="font-display text-xl text-neutral-900 tracking-tight">{testTitle}</h1>
                 <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
                   {part === 'part1'
-                    ? 'Part 1 — Written MCQ'
+                    ? `Part 1 — Written MCQ · ${mode === 'simulate' ? 'Simulate' : 'Practice'}`
                     : `Part 2 — RT · ${mode === 'simulate' ? 'Simulate' : 'Practice'}`}
                 </span>
               </div>
@@ -394,10 +400,17 @@ function RTRExamContent() {
                 <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </a>
             )}
-            <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              {formatTime(timeRemaining)}
-            </div>
+            {isTimedMode ? (
+              <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                {formatTime(timeRemaining)}
+              </div>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] font-medium uppercase tracking-[0.18em]">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Practice · no time limit
+              </span>
+            )}
           </div>
         </div>
 
