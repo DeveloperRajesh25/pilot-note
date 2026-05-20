@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { RTR_CONFIG } from '@/app/constants/data';
 import { Button } from '@/components/ui/Button';
+import { convertToRTPhraseology } from '@/lib/icao-rt-converter';
 import type { RTRChartContext, RTRChartQuestion, RTRSubPart, RTRBlank } from '@/lib/types';
 
 interface Part1Question {
@@ -43,49 +44,6 @@ const calculateSimilarity = (studentText: string, expectedText: string) => {
   expectedWords.forEach(word => { if (studentWordsSet.has(word)) matchCount++; });
   return Math.min(100, (matchCount / expectedWords.length) * 100);
 };
-
-const NATO_PHONETIC: Record<string, string> = {
-  'A': 'Alpha', 'B': 'Bravo', 'C': 'Charlie', 'D': 'Delta', 'E': 'Echo',
-  'F': 'Foxtrot', 'G': 'Golf', 'H': 'Hotel', 'I': 'India', 'J': 'Juliet',
-  'K': 'Kilo', 'L': 'Lima', 'M': 'Mike', 'N': 'November', 'O': 'Oscar',
-  'P': 'Papa', 'Q': 'Quebec', 'R': 'Romeo', 'S': 'Sierra', 'T': 'Tango',
-  'U': 'Uniform', 'V': 'Victor', 'W': 'Whiskey', 'X': 'X-ray', 'Y': 'Yankee',
-  'Z': 'Zulu'
-};
-
-const ICAO_NUMBERS: Record<string, string> = {
-  '0': 'zero', '1': 'wun', '2': 'too', '3': 'tree',
-  '4': 'fow-er', '5': 'fife', '6': 'six', '7': 'seven',
-  '8': 'ait', '9': 'niner'
-};
-
-const RT_WORDS = new Set(['ROGER', 'WILCO', 'AFFIRM', 'NEGATIVE', 'MAYDAY', 'PAN', 'CLEARED', 'TAXI', 'HOLD', 'SHORT', 'POSITION', 'LINE', 'RUNWAY', 'WIND', 'KNOTS', 'DEGREES', 'CONTACT', 'TOWER', 'GROUND', 'APPROACH', 'DEPARTURE', 'RADAR', 'SQUAWK', 'ALTITUDE', 'FLIGHT', 'LEVEL', 'CLIMB', 'DESCEND', 'MAINTAIN', 'TURN', 'LEFT', 'RIGHT', 'HEADING', 'PROCEED', 'DIRECT', 'REPORT', 'READY', 'TAKEOFF', 'LANDING', 'FINAL', 'BASE', 'DOWNWIND', 'CROSSWIND', 'CIRCUIT', 'PATTERN', 'OVERHEAD', 'FEET', 'METRES', 'MILES', 'NAUTICAL', 'VISIBILITY', 'ATIS', 'INFORMATION', 'STANDBY', 'GO', 'AHEAD', 'QNH', 'QFE', 'QFF', 'QNE', 'SAY', 'AGAIN', 'CORRECTION', 'DISREGARD', 'ACKNOWLEDGE', 'COPY', 'READ', 'BACK', 'OVER', 'OUT', 'BREAK', 'REQUEST', 'PERMISSION', 'APPROVED', 'UNABLE', 'EXPECT', 'TRAFFIC', 'NO', 'DELAY', 'IMMEDIATELY', 'EXPEDITE', 'UP', 'WAIT', 'AND', 'FOR', 'TO', 'THE', 'AT', 'ON', 'FROM', 'WITH', 'VIA', 'IS', 'ARE', 'AFTER', 'BEFORE', 'ABOVE', 'BELOW', 'THOUSAND', 'HUNDRED', 'STOP', 'GOOD', 'MORNING', 'EVENING', 'AFTERNOON', 'DAY', 'HEAVY', 'SUPER', 'LIGHT', 'MEDIUM', 'CAUTION', 'WAKE', 'TURBULENCE', 'CLOUD', 'CLEAR', 'ESTABLISHED', 'LOCALISER', 'GLIDESLOPE', 'MISSED', 'CONTINUE', 'ORBIT', 'EXTEND', 'REDUCE', 'SPEED', 'IDENTIFIED', 'NOT', 'AVAILABLE', 'CLOSED', 'OPEN', 'ENTER', 'LEAVE', 'JOIN', 'CROSS', 'BEHIND', 'FOLLOW', 'PASSING', 'REACHING', 'VACATE', 'BACKTRACK']);
-
-function convertToRTPhraseology(text: string) {
-  return text.split(/\s+/).map(word => {
-    const punctMatch = word.match(/^(.+?)([,.\-;:!?]*)$/);
-    const core = punctMatch ? punctMatch[1] : word;
-    const trailing = punctMatch ? punctMatch[2] : '';
-    let converted = core;
-
-    if (/^(FL|RW|RWY|SQ|HDG|ALT)(\d+)$/i.test(core)) {
-      const match = core.match(/^(FL|RW|RWY|SQ|HDG|ALT)(\d+)$/i)!;
-      const prefixes: Record<string, string> = { 'FL': 'Flight Level', 'RW': 'Runway', 'RWY': 'Runway', 'SQ': 'Squawk', 'HDG': 'Heading', 'ALT': 'Altitude' };
-      converted = (prefixes[match[1].toUpperCase()] || match[1]) + ' ' + match[2].split('').map(d => ICAO_NUMBERS[d] || d).join(' ');
-    } else if (RT_WORDS.has(core.toUpperCase())) {
-      converted = core;
-    } else if (/^\d+\.\d+$/.test(core)) {
-        converted = core.split('.').map(p => p.split('').map(d => ICAO_NUMBERS[d] || d).join(' ')).join(' decimal ');
-    } else if (/^\d+$/.test(core)) {
-        converted = core.split('').map(d => ICAO_NUMBERS[d] || d).join(' ');
-    } else if (/^[A-Z0-9]+-[A-Z0-9]+$/i.test(core)) {
-        converted = core.split('-').map(p => p.toUpperCase().split('').map(ch => NATO_PHONETIC[ch] || ICAO_NUMBERS[ch] || ch).join(' ')).join(', ');
-    } else {
-        converted = core;
-    }
-    return converted + trailing;
-  }).join(' ');
-}
 
 // Note + 5 instructions are constant on every chart paper.
 const FIXED_NOTE_POINTS = [
@@ -431,6 +389,11 @@ function RTRExamContent() {
                 </span>
               </div>
             </div>
+            {part === 'part2' && (
+              <a href="/rtr-phraseology-guide" target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors" title="RT Phraseology Guide" aria-label="RT Phraseology Guide">
+                <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </a>
+            )}
             <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>
               {formatTime(timeRemaining)}
@@ -696,14 +659,19 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
             {sp.blanks.map((b: RTRBlank, bi: number) => {
               const arr = Array.isArray(p2Answers[stepIdx]) ? (p2Answers[stepIdx] as string[]) : [];
               return (
-                <div key={bi} className="flex flex-col md:flex-row md:items-center gap-2">
-                  <label className="text-sm text-neutral-700 md:w-2/3">{bi + 1}. {b.label}</label>
+                <div key={bi} className="space-y-2">
+                  <label className="text-sm text-neutral-700">{bi + 1}. {b.label}</label>
                   <input
                     value={arr[bi] ?? ''}
                     onChange={e => writeBlank(bi, e.target.value)}
-                    className="flex-1 bg-neutral-50 border-b border-neutral-300 px-2 py-2 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
+                    className="w-full bg-neutral-50 border-b border-neutral-300 px-2 py-2 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
                     placeholder="Your answer"
                   />
+                  {arr[bi] && (
+                    <div className="text-xs text-neutral-500 italic">
+                      <span className="font-medium">RT Format:</span> {convertToRTPhraseology(arr[bi])}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -737,6 +705,12 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" /></svg>
               </button>
             </div>
+            {typeof p2Answers[stepIdx] === 'string' && (p2Answers[stepIdx] as string).trim() && (
+              <div className="mt-4 p-4 bg-violet-50 border border-violet-200 rounded-2xl">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-violet-900 font-bold mb-2">ICAO RT Format:</p>
+                <p className="text-sm text-violet-900 font-mono leading-relaxed">{convertToRTPhraseology((p2Answers[stepIdx] as string))}</p>
+              </div>
+            )}
           </div>
         )}
 

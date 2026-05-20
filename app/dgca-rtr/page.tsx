@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
+import { ModeSelectionModal } from '@/components/rtr/ModeSelectionModal';
 import { RTR_CONFIG } from '@/app/constants/data';
 import { CheckCircle2, Radio, FileText, Lock, Loader2, ArrowRight } from 'lucide-react';
 
@@ -17,10 +19,14 @@ interface RTRTest {
 }
 
 export default function DGCARTRPage() {
+  const router = useRouter();
   const [tests, setTests] = useState<RTRTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modeModalOpen, setModeModalOpen] = useState(false);
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+  const [selectedPart, setSelectedPart] = useState<'part1' | 'part2' | null>(null);
 
   const fetchTests = async () => {
     try {
@@ -60,6 +66,18 @@ export default function DGCARTRPage() {
     } finally {
       setPurchasing(null);
     }
+  };
+
+  const handlePartSelection = (testId: string, part: 'part1' | 'part2') => {
+    setSelectedTestId(testId);
+    setSelectedPart(part);
+    setModeModalOpen(true);
+  };
+
+  const handleModeSelection = (mode: 'practice' | 'simulate') => {
+    if (!selectedTestId || !selectedPart) return;
+    setModeModalOpen(false);
+    router.push(`/rtr-exam?testId=${selectedTestId}&part=${selectedPart}&mode=${mode}`);
   };
 
   return (
@@ -214,15 +232,12 @@ export default function DGCARTRPage() {
                     </div>
 
                     {test.isPurchased ? (
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button size="sm" variant="primary" href={`/rtr-exam?testId=${test.id}&part=part1`}>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button size="sm" variant="primary" onClick={() => handlePartSelection(test.id, 'part1')}>
                           Part 1
                         </Button>
-                        <Button size="sm" variant="secondary" href={`/rtr-exam?testId=${test.id}&part=part2&mode=practice`}>
-                          Practice
-                        </Button>
-                        <Button size="sm" variant="violet" href={`/rtr-exam?testId=${test.id}&part=part2&mode=simulate`}>
-                          Simulate
+                        <Button size="sm" variant="violet" onClick={() => handlePartSelection(test.id, 'part2')}>
+                          Part 2
                         </Button>
                       </div>
                     ) : (
@@ -251,6 +266,14 @@ export default function DGCARTRPage() {
           )}
         </section>
       </main>
+
+      <ModeSelectionModal
+        isOpen={modeModalOpen}
+        part={selectedPart}
+        onSelectMode={handleModeSelection}
+        onClose={() => setModeModalOpen(false)}
+      />
+
       <Footer />
     </>
   );
