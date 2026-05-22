@@ -25,7 +25,7 @@ export const Button = ({
   title,
 }: ButtonProps) => {
   const base =
-    'relative inline-flex items-center justify-center gap-2 font-medium rounded-full overflow-hidden transition-[transform,background-color,color,border-color,box-shadow] duration-300 ease-out active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap select-none';
+    'relative inline-flex items-center justify-center gap-2 font-medium rounded-full overflow-hidden transition-[transform,background-color,color,border-color,box-shadow] duration-300 ease-out active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap select-none cursor-pointer';
 
   const variants = {
     // Default — solid black, white text. Hover: emerald glow ring + slight lift.

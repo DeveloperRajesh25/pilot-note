@@ -40,8 +40,9 @@ export function ModeSelectionModal({
 
         <div className="space-y-3">
           <button
+            type="button"
             onClick={() => onSelectMode('practice', testId, part)}
-            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left"
+            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
@@ -61,8 +62,9 @@ export function ModeSelectionModal({
           </button>
 
           <button
+            type="button"
             onClick={() => onSelectMode('simulate', testId, part)}
-            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left"
+            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
@@ -83,8 +85,9 @@ export function ModeSelectionModal({
         </div>
 
         <button
+          type="button"
           onClick={onClose}
-          className="w-full mt-6 text-sm text-neutral-600 hover:text-neutral-900 transition-colors py-2 font-medium"
+          className="w-full mt-6 text-sm text-neutral-600 hover:text-neutral-900 transition-colors py-2 font-medium cursor-pointer"
         >
           Cancel
         </button>

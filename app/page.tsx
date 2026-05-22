@@ -30,10 +30,9 @@ export default function Home() {
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left — copy */}
               <div className="lg:col-span-7 relative">
-                <span className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white border border-neutral-200 text-neutral-600 text-[10px] font-medium tracking-[0.18em] uppercase mb-6 shadow-sm">
+                <span className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white text-neutral-600 text-[10px] font-medium tracking-[0.18em] uppercase mb-6">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                    
                   </span>
                   {HERO_CONTENT.badge}
                 </span>
