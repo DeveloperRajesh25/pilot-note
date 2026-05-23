@@ -1,16 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
 
 interface ModeSelectionModalProps {
   isOpen: boolean;
   testId: string | null;
   part: 'part1' | 'part2' | null;
-  // Receives testId + part read straight from props at click time, so the
-  // parent never has to consult its own state (which could be stale if the
-  // modal was reopened for a different part).
-  onSelectMode: (mode: 'practice' | 'simulate', testId: string, part: 'part1' | 'part2') => void;
   onClose: () => void;
 }
 
@@ -18,16 +13,26 @@ export function ModeSelectionModal({
   isOpen,
   testId,
   part,
-  onSelectMode,
-  onClose
+  onClose,
 }: ModeSelectionModalProps) {
   if (!isOpen || !part || !testId) return null;
 
   const partLabel = part === 'part1' ? 'Part 1 — Written MCQ' : 'Part 2 — RT Transmission';
 
+  // Real, static URLs — no JS handler indirection, so Practice can never
+  // resolve to the Simulate URL (and vice versa).
+  const buildUrl = (mode: 'practice' | 'simulate') =>
+    `/rtr-exam?testId=${encodeURIComponent(testId)}&part=${part}&mode=${mode}`;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl p-10 md:p-14 max-w-md mx-4 shadow-2xl">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl p-10 md:p-14 max-w-md mx-4 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-6">
           <span className="w-6 h-px bg-neutral-900" /> Select Mode
         </span>
@@ -39,10 +44,12 @@ export function ModeSelectionModal({
         </p>
 
         <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => onSelectMode('practice', testId, part)}
-            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer"
+          <a
+            href={buildUrl('practice')}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer no-underline"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
@@ -59,12 +66,14 @@ export function ModeSelectionModal({
                 </div>
               </div>
             </div>
-          </button>
+          </a>
 
-          <button
-            type="button"
-            onClick={() => onSelectMode('simulate', testId, part)}
-            className="w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer"
+          <a
+            href={buildUrl('simulate')}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer no-underline"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
@@ -81,7 +90,7 @@ export function ModeSelectionModal({
                 </div>
               </div>
             </div>
-          </button>
+          </a>
         </div>
 
         <button

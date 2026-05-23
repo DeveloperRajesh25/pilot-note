@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -19,7 +18,6 @@ interface RTRTest {
 }
 
 export default function DGCARTRPage() {
-  const router = useRouter();
   const [tests, setTests] = useState<RTRTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -72,20 +70,6 @@ export default function DGCARTRPage() {
     setSelectedTestId(testId);
     setSelectedPart(part);
     setModeModalOpen(true);
-  };
-
-  // testId + part come from the modal's props, not from this component's state.
-  // This guarantees the URL we push matches the button the user actually clicked,
-  // even if the modal was opened/closed multiple times for different parts.
-  const handleModeSelection = (
-    mode: 'practice' | 'simulate',
-    testId: string,
-    part: 'part1' | 'part2',
-  ) => {
-    setModeModalOpen(false);
-    setSelectedTestId(null);
-    setSelectedPart(null);
-    router.push(`/rtr-exam?testId=${testId}&part=${part}&mode=${mode}`);
   };
 
   const handleModalClose = () => {
@@ -285,7 +269,6 @@ export default function DGCARTRPage() {
         isOpen={modeModalOpen}
         testId={selectedTestId}
         part={selectedPart}
-        onSelectMode={handleModeSelection}
         onClose={handleModalClose}
       />
 
