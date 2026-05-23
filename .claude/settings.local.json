@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(echo \"EXIT=$?\")",
-      "Bash(curl -s -X POST https://api.razorpay.com/v1/orders -u \"rzp_test_Sp9q8jWD8VcFmL:eq7T1ltgPqbUjQtQA6h3NdQC\" -H \"Content-Type: application/json\" -d '{\"amount\":50000,\"currency\":\"INR\",\"receipt\":\"test_rcpt_001\"}')"
+      "Bash(curl -s -X POST https://api.razorpay.com/v1/orders -u \"rzp_test_Sp9q8jWD8VcFmL:eq7T1ltgPqbUjQtQA6h3NdQC\" -H \"Content-Type: application/json\" -d '{\"amount\":50000,\"currency\":\"INR\",\"receipt\":\"test_rcpt_001\"}')",
+      "Bash(node -e \"const l=require\\('lucide-react'\\); const names=Object.keys\\(l\\); console.log\\(names.filter\\(n => /instagram|youtube|linked|twitter|facebook|x|github|tik/i.test\\(n\\)\\).join\\('\\\\n'\\)\\);\")"
     ]
   }
 }

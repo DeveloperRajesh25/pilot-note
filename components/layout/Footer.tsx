@@ -1,8 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FOOTER_LINKS } from '@/app/constants/data';
+import { FOOTER_LINKS, SOCIAL_LINKS } from '@/app/constants/data';
 import { ArrowUpRight } from 'lucide-react';
+import { SOCIAL_ICON_MAP } from '@/components/ui/SocialIcons';
 
 export const Footer = () => {
   const year = new Date().getFullYear();
@@ -37,7 +38,26 @@ export const Footer = () => {
               The complete companion for CPL ground exams, aptitude tests, and pilot career guidance —
               built by pilots, for the ones who&apos;ll fly next.
             </p>
-            
+
+            {/* Social links */}
+            <div className="flex items-center gap-2.5">
+              {SOCIAL_LINKS.map((s) => {
+                const Icon = SOCIAL_ICON_MAP[s.icon];
+                return (
+                  <a
+                    key={s.id}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    title={s.label}
+                    className="w-9 h-9 flex items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:text-white hover:bg-neutral-900 hover:border-neutral-900 transition-all duration-300"
+                  >
+                    {Icon && <Icon size={14} />}
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           {/* Link columns */}

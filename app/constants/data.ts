@@ -96,10 +96,8 @@ export const FOOTER_LINKS = [
     id: 'fg2',
     title: 'Company',
     links: [
-      { label: 'About Pilot Note', url: '#' },
-      { label: 'Careers', url: '#' },
-      { label: 'Contact Us', url: '#' },
-      { label: 'Partner with Us', url: '#' }
+      { label: 'About Pilot Note', url: '/about' },
+      { label: 'Contact Us', url: '/contact' },
     ]
   },
   {
@@ -108,9 +106,17 @@ export const FOOTER_LINKS = [
     links: [
       { label: 'Privacy Policy', url: '/privacy' },
       { label: 'Terms of Use', url: '/terms' },
-      { label: 'Refund Policy', url: '#' }
+      { label: 'Refund Policy', url: '/refund-policy' }
     ]
   }
+];
+
+export const SOCIAL_LINKS = [
+  { id: 'sl1', label: 'Instagram', url: 'https://www.instagram.com/pilotnote', icon: 'instagram' },
+  { id: 'sl2', label: 'YouTube',   url: 'https://www.youtube.com/@pilotnote',  icon: 'youtube' },
+  { id: 'sl3', label: 'LinkedIn',  url: 'https://www.linkedin.com/company/pilotnote', icon: 'linkedin' },
+  { id: 'sl4', label: 'Twitter',   url: 'https://twitter.com/pilotnote',       icon: 'twitter' },
+  { id: 'sl5', label: 'Facebook',  url: 'https://www.facebook.com/pilotnote',  icon: 'facebook' }
 ];
 
 export const RTR_CONFIG = {
