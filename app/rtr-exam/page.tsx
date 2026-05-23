@@ -794,7 +794,7 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
   const part2Pct = part === 'part2' && part2Possible > 0 ? Math.round((part2Obtained / part2Possible) * 100) : 0;
   const pct = part === 'part1' ? part1Pct : part2Pct;
   const passingMarks = part === 'part1' ? RTR_CONFIG.part1.passingMarks : RTR_CONFIG.part2.passingMarks;
-  const passed = part === 'part1' ? part1Score >= passingMarks : Math.round(part2Obtained) >= passingMarks;
+  const passed = pct >= passingMarks;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
