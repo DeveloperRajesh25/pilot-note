@@ -34,10 +34,35 @@ export async function signup(formData: FormData) {
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const password = formData.get('password') as string
   const full_name = (formData.get('full_name') as string)?.trim() || null
+  const phoneRaw = (formData.get('phone') as string)?.trim() || ''
+  const dobRaw = (formData.get('date_of_birth') as string)?.trim() || ''
+  const city = (formData.get('city') as string)?.trim() || null
 
   if (!email || !password) {
     return { error: 'Email and password are required.' }
   }
+
+  // Mobile is mandatory. Accept digits with optional +, spaces, dashes, parens; 8–15 digits overall.
+  const phoneDigits = phoneRaw.replace(/[^\d]/g, '')
+  if (!phoneRaw || !/^\+?[\d\s\-()]{8,20}$/.test(phoneRaw) || phoneDigits.length < 8 || phoneDigits.length > 15) {
+    return { error: 'Please enter a valid mobile number.' }
+  }
+
+  // DOB is mandatory. Expect YYYY-MM-DD from <input type="date">.
+  if (!dobRaw || !/^\d{4}-\d{2}-\d{2}$/.test(dobRaw)) {
+    return { error: 'Please enter your date of birth.' }
+  }
+  const dob = new Date(`${dobRaw}T00:00:00Z`)
+  if (Number.isNaN(dob.getTime()) || dob.getTime() > Date.now()) {
+    return { error: 'Please enter a valid date of birth.' }
+  }
+
+  const metadata: Record<string, string> = {
+    phone: phoneRaw,
+    date_of_birth: dobRaw,
+  }
+  if (full_name) metadata.full_name = full_name
+  if (city) metadata.city = city
 
   const origin = (await headers()).get('origin')
   const supabase = await createClient()
@@ -47,7 +72,7 @@ export async function signup(formData: FormData) {
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback?next=/`,
-      data: full_name ? { full_name } : undefined,
+      data: metadata,
     },
   })
 

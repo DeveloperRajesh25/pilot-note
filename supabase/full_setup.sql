@@ -9,11 +9,14 @@ create extension if not exists "uuid-ossp";
 
 -- 2. TABLES (Base Schema)
 create table if not exists public.profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  email       text,
-  full_name   text,
-  avatar_url  text,
-  created_at  timestamptz default now()
+  id             uuid primary key references auth.users(id) on delete cascade,
+  email          text,
+  full_name      text,
+  avatar_url     text,
+  phone          text,
+  city           text,
+  date_of_birth  date,
+  created_at     timestamptz default now()
 );
 
 alter table public.profiles enable row level security;
@@ -190,9 +193,23 @@ alter table public.admin_roles enable row level security;
 -- 4. FUNCTIONS & TRIGGERS
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  meta_full_name text := nullif(trim(coalesce(new.raw_user_meta_data->>'full_name', '')), '');
+  meta_phone     text := nullif(trim(coalesce(new.raw_user_meta_data->>'phone', '')), '');
+  meta_city      text := nullif(trim(coalesce(new.raw_user_meta_data->>'city', '')), '');
+  meta_dob_text  text := nullif(trim(coalesce(new.raw_user_meta_data->>'date_of_birth', '')), '');
+  meta_dob       date;
 begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email)
+  if meta_dob_text is not null then
+    begin
+      meta_dob := meta_dob_text::date;
+    exception when others then
+      meta_dob := null;
+    end;
+  end if;
+
+  insert into public.profiles (id, email, full_name, phone, city, date_of_birth)
+  values (new.id, new.email, meta_full_name, meta_phone, meta_city, meta_dob)
   on conflict (id) do nothing;
   return new;
 end;

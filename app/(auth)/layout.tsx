@@ -12,7 +12,7 @@ export default function AuthLayout({
       {/* Left — form column */}
       <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative">
         {/* Brand */}
-        <Link href="/" className="inline-flex items-center gap-2 group w-fit">
+        <Link href="/" className="inline-flex mb-10 items-center gap-2 group w-fit">
           <Image
             src="/logo.png"
             alt="Pilot Note"
@@ -23,7 +23,7 @@ export default function AuthLayout({
           />
         </Link>
 
-        <main className="w-full max-w-md mx-auto animate-fade-up">{children}</main>
+        <main className="w-full max-w-md animate-fade-up">{children}</main>
 
         <footer className="text-xs text-neutral-400 flex items-center justify-between">
           <p>

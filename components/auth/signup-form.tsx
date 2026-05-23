@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { signup, resendConfirmation } from '@/app/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -11,11 +11,17 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [pendingEmail, setPendingEmail] = useState<string | null>(null)
+  const [maxDob, setMaxDob] = useState('')
   const [resendState, setResendState] = useState<{
     loading: boolean
     message: string | null
     error: string | null
   }>({ loading: false, message: null, error: null })
+
+  // Set max DOB to today client-side to avoid SSR/CSR hydration mismatch.
+  useEffect(() => {
+    setMaxDob(new Date().toISOString().slice(0, 10))
+  }, [])
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -120,10 +126,6 @@ export function SignupForm() {
 
   return (
     <div className="w-full">
-      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
-        <span className="w-6 h-px bg-neutral-900" />
-        Get started
-      </span>
       <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
         Create <span className="italic-serif">account.</span>
       </h1>
@@ -140,6 +142,33 @@ export function SignupForm() {
           required
           autoComplete="email"
         />
+        <Input
+          label="Mobile number"
+          name="phone"
+          type="tel"
+          placeholder="+91 98XXXXXXXX"
+          required
+          autoComplete="tel"
+          pattern="^\+?[\d\s\-()]{8,20}$"
+          hint="We'll use this for exam updates."
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Date of birth"
+            name="date_of_birth"
+            type="date"
+            required
+            autoComplete="bday"
+            max={maxDob || undefined}
+          />
+          <Input
+            label="City"
+            name="city"
+            type="text"
+            placeholder="Mumbai (optional)"
+            autoComplete="address-level2"
+          />
+        </div>
         <Input
           label="Password"
           name="password"
