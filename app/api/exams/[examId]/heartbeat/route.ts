@@ -5,6 +5,7 @@ import { getExamUser } from '@/lib/exam-session';
 interface HeartbeatBody {
   answers?: Record<string, number>;
   current_question_index?: number;
+  marked_for_review?: string[];
 }
 
 export async function POST(
@@ -48,6 +49,9 @@ export async function POST(
     }
     if (typeof body.current_question_index === 'number' && body.current_question_index >= 0) {
       update.current_question_index = body.current_question_index;
+    }
+    if (Array.isArray(body.marked_for_review)) {
+      update.marked_for_review = body.marked_for_review.filter((s): s is string => typeof s === 'string');
     }
 
     await db

@@ -29,6 +29,11 @@ interface AttemptPayload {
     id?: string;
     answers: Record<string, number>;
     current_question_index: number;
+    marked_for_review?: string[];
+  };
+  candidate?: {
+    email: string | null;
+    roll_no: string | null;
   };
   questions?: { id: string; question: string; options: string[]; image_url?: string | null }[];
   error?: string;
@@ -166,6 +171,8 @@ export default function ParikshaExamShell({ params }: { params: Promise<{ examId
           questions={data.questions}
           initialAnswers={data.attempt.answers ?? {}}
           initialIndex={data.attempt.current_question_index ?? 0}
+          initialMarked={data.attempt.marked_for_review ?? []}
+          candidate={data.candidate ?? { email: null, roll_no: null }}
           onTimeUp={onTimeUp}
         />
         <Footer />

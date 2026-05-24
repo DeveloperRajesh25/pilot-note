@@ -586,7 +586,8 @@ alter table public.exam_attempts
   add column if not exists last_seen_at            timestamptz,
   add column if not exists violations              jsonb   not null default '[]'::jsonb,
   add column if not exists auto_submitted          boolean not null default false,
-  add column if not exists current_question_index  int     not null default 0;
+  add column if not exists current_question_index  int     not null default 0,
+  add column if not exists marked_for_review       jsonb   not null default '[]'::jsonb;
 
 -- 9c. payments: durable Razorpay record (independent of registration)
 create table if not exists public.payments (

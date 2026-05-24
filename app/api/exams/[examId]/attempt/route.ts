@@ -179,6 +179,14 @@ export async function GET(
     return NextResponse.json({ error: qErr.message }, { status: 500 });
   }
 
+  // Candidate identity for watermarking the live exam screen.
+  const { data: regRow } = await db
+    .from('exam_registrations')
+    .select('roll_no')
+    .eq('user_id', examUser.user_id)
+    .eq('exam_id', examId)
+    .maybeSingle();
+
   const endMs = exam.end_at ? new Date(exam.end_at).getTime() : nowMs + exam.duration * 60_000;
   const remaining = Math.max(0, Math.floor((endMs - nowMs) / 1000));
 
@@ -194,6 +202,11 @@ export async function GET(
       id: attempt?.id,
       answers: attempt?.answers ?? {},
       current_question_index: attempt?.current_question_index ?? 0,
+      marked_for_review: Array.isArray(attempt?.marked_for_review) ? attempt.marked_for_review : [],
+    },
+    candidate: {
+      email: examUser.email ?? null,
+      roll_no: regRow?.roll_no ?? null,
     },
     questions: (questions ?? []) as QuestionRow[],
     exam: {

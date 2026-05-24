@@ -23,6 +23,11 @@ interface ExamMeta {
   pass_score: number;
 }
 
+interface Candidate {
+  email: string | null;
+  roll_no: string | null;
+}
+
 interface Props {
   examId: string;
   exam: ExamMeta;
@@ -32,6 +37,8 @@ interface Props {
   questions: Question[];
   initialAnswers: Record<string, number>;
   initialIndex: number;
+  initialMarked: string[];
+  candidate: Candidate;
   /** Called when the global clock crosses end_at locally; shell will flip to post-exam. */
   onTimeUp: () => void;
 }
@@ -47,6 +54,8 @@ export function LiveExam({
   questions,
   initialAnswers,
   initialIndex,
+  initialMarked,
+  candidate,
   onTimeUp,
 }: Props) {
   const router = useRouter();
@@ -59,16 +68,25 @@ export function LiveExam({
   const [currentIndex, setCurrentIndex] = useState(Math.min(initialIndex, Math.max(0, questions.length - 1)));
   const [remaining, setRemaining] = useState(remainingSeconds(endMs, driftRef.current));
   const [perQuestionLeft, setPerQuestionLeft] = useState(perQuestionSeconds);
+  // Indices the candidate has already spent the required dwell time on. Once
+  // a question is in this set the Next/palette controls can navigate away
+  // from it freely. This is index-based (not question-id) so the unlock
+  // travels with position in the rendered list.
+  const [unlocked, setUnlocked] = useState<Set<number>>(() => new Set());
+  const [marked, setMarked] = useState<Set<string>>(() => new Set(initialMarked));
   const [submitting, setSubmitting] = useState(false);
   const [exitStep, setExitStep] = useState<ExitStep>('closed');
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [windowFocused, setWindowFocused] = useState(true);
 
-  // Keep the latest answers/index inside refs so heartbeat closures stay current.
+  // Keep the latest answers/index/marked inside refs so heartbeat closures stay current.
   const answersRef = useRef(answers);
   const indexRef = useRef(currentIndex);
+  const markedRef = useRef(marked);
   answersRef.current = answers;
   indexRef.current = currentIndex;
+  markedRef.current = marked;
 
   // Proctoring — warn the user via toast, log to DB.
   useExamProctoring(examId, {
@@ -80,6 +98,23 @@ export function LiveExam({
   const askFullscreen = useCallback(async () => {
     setFullscreenAsked(true);
     await requestExamFullscreen();
+  }, []);
+
+  // Track window focus so we can blur the exam content when the candidate
+  // switches tabs / opens overlays — discourages over-the-shoulder + screen
+  // capture of question content.
+  useEffect(() => {
+    const onFocus = () => setWindowFocused(true);
+    const onBlur = () => setWindowFocused(false);
+    const onVis = () => setWindowFocused(!document.hidden);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVis);
+    };
   }, []);
 
   // Global countdown — drift-corrected, runs every second.
@@ -94,24 +129,37 @@ export function LiveExam({
     return () => clearInterval(i);
   }, [endMs, onTimeUp]);
 
-  // Per-question timer — soft auto-advance. Resets when the user moves.
+  // Per-question dwell timer — counts DOWN from perQuestionSeconds. When it
+  // hits zero the question is "unlocked" and the candidate can move forward.
+  // It does NOT auto-advance; visiting a question for any duration > the
+  // dwell still requires a deliberate Next click.
   useEffect(() => {
-    setPerQuestionLeft(perQuestionSeconds);
     if (questions.length === 0) return;
+    // If we're returning to a previously-unlocked question, no dwell required.
+    if (unlocked.has(currentIndex)) {
+      setPerQuestionLeft(0);
+      return;
+    }
+    setPerQuestionLeft(perQuestionSeconds);
     const i = setInterval(() => {
       setPerQuestionLeft((prev) => {
         if (prev <= 1) {
-          // Auto-advance unless we're on the last question.
-          setCurrentIndex((idx) => (idx < questions.length - 1 ? idx + 1 : idx));
-          return perQuestionSeconds;
+          setUnlocked((u) => {
+            if (u.has(currentIndex)) return u;
+            const next = new Set(u);
+            next.add(currentIndex);
+            return next;
+          });
+          clearInterval(i);
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(i);
-  }, [currentIndex, perQuestionSeconds, questions.length]);
+  }, [currentIndex, perQuestionSeconds, questions.length, unlocked]);
 
-  // Heartbeat every 30s — persists answers + current_question_index, refreshes drift.
+  // Heartbeat every 30s — persists answers + index + marked-for-review.
   useEffect(() => {
     let cancelled = false;
     const beat = async () => {
@@ -122,6 +170,7 @@ export function LiveExam({
           body: JSON.stringify({
             answers: answersRef.current,
             current_question_index: indexRef.current,
+            marked_for_review: Array.from(markedRef.current),
           }),
         });
         if (!res.ok) return;
@@ -146,7 +195,29 @@ export function LiveExam({
       fetch(`/api/exams/${examId}/heartbeat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: next, current_question_index: indexRef.current }),
+        body: JSON.stringify({
+          answers: next,
+          current_question_index: indexRef.current,
+          marked_for_review: Array.from(markedRef.current),
+        }),
+        keepalive: true,
+      }).catch(() => {});
+      return next;
+    });
+  }, [examId]);
+
+  const toggleMark = useCallback((qId: string) => {
+    setMarked((prev) => {
+      const next = new Set(prev);
+      if (next.has(qId)) next.delete(qId); else next.add(qId);
+      fetch(`/api/exams/${examId}/heartbeat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: answersRef.current,
+          current_question_index: indexRef.current,
+          marked_for_review: Array.from(next),
+        }),
         keepalive: true,
       }).catch(() => {});
       return next;
@@ -198,10 +269,72 @@ export function LiveExam({
   const questionIncomplete = !!currentQ && (!currentQText || !hasOptions);
   const answeredCount = Object.keys(answers).length;
   const lowTime = remaining < 300;
-  const lowQTime = perQuestionLeft <= 10;
+  const isUnlocked = unlocked.has(currentIndex);
+  const dwellRemaining = isUnlocked ? 0 : perQuestionLeft;
+  const lowQTime = !isUnlocked && perQuestionLeft <= 10 && perQuestionLeft > 0;
+  const isCurrentMarked = currentQ ? marked.has(currentQ.id) : false;
+
+  // Navigation guard — candidate may only move to questions they've already
+  // unlocked, plus the immediate next one if the current question is unlocked.
+  const canNavigateTo = useCallback((targetIndex: number) => {
+    if (targetIndex === currentIndex) return true;
+    if (targetIndex < 0 || targetIndex >= questions.length) return false;
+    // Free movement to any previously-visited question.
+    if (unlocked.has(targetIndex)) return true;
+    // Forward by one is allowed only when the current question is unlocked.
+    if (targetIndex === currentIndex + 1 && isUnlocked) return true;
+    return false;
+  }, [currentIndex, isUnlocked, questions.length, unlocked]);
+
+  const watermarkText = (candidate.email || candidate.roll_no || 'pilotnote candidate').toString();
 
   return (
-    <main className="grow pt-20 sm:pt-24 bg-white min-h-screen exam-lockdown">
+    <main className="grow pt-20 sm:pt-24 bg-white min-h-screen exam-lockdown relative select-none">
+      {/* Watermark overlay — repeats the candidate's email/roll across the page
+          so any screenshot is traceable. pointer-events:none so it doesn't
+          interfere with answering. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-30 overflow-hidden"
+        style={{ opacity: 0.07 }}
+      >
+        <div
+          className="absolute inset-0 text-neutral-900 font-mono text-xs whitespace-nowrap"
+          style={{
+            transform: 'rotate(-24deg) scale(1.4)',
+            transformOrigin: 'center',
+            backgroundImage: 'none',
+          }}
+        >
+          {Array.from({ length: 28 }).map((_, row) => (
+            <div key={row} className="flex gap-12 py-3 leading-none">
+              {Array.from({ length: 6 }).map((__, col) => (
+                <span key={col}>{watermarkText} · {examId}</span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Blur shield — covers the exam when the window loses focus or the
+          tab is hidden. The candidate sees a notice instead of question
+          content, so casual screenshots of an unfocused exam catch nothing
+          useful. */}
+      {fullscreenAsked && !windowFocused && (
+        <div className="fixed inset-0 z-140 bg-white/95 backdrop-blur-xl flex items-center justify-center p-6">
+          <div className="max-w-md text-center">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-rose-600 font-semibold">Focus lost</span>
+            <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 mt-2 mb-3 tracking-tight">
+              Return to the exam window
+            </h2>
+            <p className="text-neutral-600 text-sm leading-relaxed">
+              Content is hidden while this tab is in the background. The clock keeps running.
+              Click anywhere on this page to resume.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Fullscreen / consent gate. Shows once until the user acknowledges. */}
       {!fullscreenAsked && (
         <div className="fixed inset-0 z-150 bg-white/95 backdrop-blur-md flex items-center justify-center p-6">
@@ -212,8 +345,8 @@ export function LiveExam({
             </h2>
             <p className="text-neutral-600 text-sm leading-relaxed mb-6">
               The exam runs in fullscreen. Switching tabs, exiting fullscreen, right-clicks, or
-              copy/paste attempts are logged and visible to administrators. False positives may
-              occur — keep the exam window focused.
+              copy/paste attempts are logged and visible to administrators. Each question has a
+              minimum dwell time — you cannot skip ahead instantly.
             </p>
             <Button variant="violet" size="lg" onClick={askFullscreen}>
               Start exam
@@ -230,10 +363,14 @@ export function LiveExam({
             <span className="hidden sm:inline text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">{exam.subject}</span>
           </div>
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-            <div className="hidden md:flex flex-col items-end">
-              <span className="text-[9px] uppercase tracking-[0.22em] text-neutral-400 font-medium">This question</span>
-              <span className={`font-mono text-sm tabular-nums ${lowQTime ? 'text-rose-600' : 'text-neutral-700'}`}>
-                {perQuestionLeft.toString().padStart(2, '0')}s
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] uppercase tracking-[0.22em] text-neutral-400 font-medium">
+                {isUnlocked ? 'Unlocked' : 'Min dwell'}
+              </span>
+              <span className={`font-mono text-sm tabular-nums ${
+                isUnlocked ? 'text-emerald-600' : lowQTime ? 'text-rose-600' : 'text-neutral-700'
+              }`}>
+                {isUnlocked ? '✓' : `${dwellRemaining.toString().padStart(2, '0')}s`}
               </span>
             </div>
             <div className="flex flex-col items-end">
@@ -259,7 +396,7 @@ export function LiveExam({
         </div>
       </div>
 
-      <div className="container mx-auto px-3 sm:px-6 py-5 sm:py-10">
+      <div className="container mx-auto px-3 sm:px-6 py-5 sm:py-10 relative z-10">
         <div className="hidden sm:block text-[11px] text-neutral-500 leading-relaxed mb-6">
           Tab switches, fullscreen exits, copy attempts, and developer-tool shortcuts are logged and visible to administrators.
         </div>
@@ -267,14 +404,29 @@ export function LiveExam({
         <div className="flex flex-col lg:flex-row gap-5 lg:gap-8">
           {/* Question panel */}
           <div className="grow min-w-0">
-            <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12">
-              <div className="flex justify-between items-center mb-5 sm:mb-8">
+            <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 bg-white">
+              <div className="flex justify-between items-center mb-5 sm:mb-8 gap-2 flex-wrap">
                 <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
                   Question {currentIndex + 1} of {questions.length}
                 </span>
-                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">
-                  1 mark
-                </span>
+                <div className="flex items-center gap-2">
+                  {currentQ && (
+                    <button
+                      onClick={() => toggleMark(currentQ.id)}
+                      className={`px-2.5 py-1 sm:px-3 sm:py-1 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium border transition-colors ${
+                        isCurrentMarked
+                          ? 'bg-amber-100 border-amber-300 text-amber-800'
+                          : 'bg-white border-neutral-200 text-neutral-600 hover:border-amber-300 hover:text-amber-700'
+                      }`}
+                      aria-pressed={isCurrentMarked}
+                    >
+                      {isCurrentMarked ? '★ Marked for review' : '☆ Mark for review'}
+                    </button>
+                  )}
+                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">
+                    1 mark
+                  </span>
+                </div>
               </div>
 
               <div className="mb-6 sm:mb-10">
@@ -339,6 +491,12 @@ export function LiveExam({
                 </>
               )}
 
+              {!isUnlocked && !questionIncomplete && (
+                <div className="mb-4 sm:mb-6 text-[11px] sm:text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-xl px-3.5 py-2.5">
+                  Read the question carefully — you can move on in <strong className="text-neutral-800 tabular-nums">{dwellRemaining}s</strong>.
+                </div>
+              )}
+
               <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 pt-5 sm:pt-8 border-t border-neutral-200">
                 <Button
                   variant="secondary"
@@ -351,14 +509,26 @@ export function LiveExam({
                 {currentIndex < questions.length - 1 ? (
                   <Button
                     variant="primary"
-                    onClick={() => { setCurrentIndex((p) => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => {
+                      if (!isUnlocked) return;
+                      setCurrentIndex((p) => p + 1);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    disabled={!isUnlocked}
                     className="w-full sm:w-auto"
+                    title={!isUnlocked ? `Wait ${dwellRemaining}s before moving on` : undefined}
                   >
-                    Next →
+                    {isUnlocked ? 'Next →' : `Next in ${dwellRemaining}s`}
                   </Button>
                 ) : (
-                  <Button variant="violet" onClick={confirmSubmit} disabled={submitting} className="w-full sm:w-auto">
-                    {submitting ? 'Submitting…' : 'Submit exam'}
+                  <Button
+                    variant="violet"
+                    onClick={confirmSubmit}
+                    disabled={submitting || !isUnlocked}
+                    className="w-full sm:w-auto"
+                    title={!isUnlocked ? `Wait ${dwellRemaining}s before submitting` : undefined}
+                  >
+                    {submitting ? 'Submitting…' : isUnlocked ? 'Submit exam' : `Submit in ${dwellRemaining}s`}
                   </Button>
                 )}
               </div>
@@ -370,32 +540,53 @@ export function LiveExam({
 
           {/* Sidebar palette — desktop only */}
           <aside className="hidden lg:block w-72 shrink-0">
-            <div className="border border-neutral-200 rounded-3xl p-6 lg:sticky lg:top-44">
+            <div className="border border-neutral-200 rounded-3xl p-6 lg:sticky lg:top-44 bg-white">
               <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4">
                 <span className="w-6 h-px bg-neutral-900" /> Palette
               </h3>
-              <p className="text-xs text-neutral-400 mb-6 font-mono">{answeredCount} / {questions.length} answered</p>
+              <p className="text-xs text-neutral-400 mb-6 font-mono">
+                {answeredCount} / {questions.length} answered{marked.size > 0 ? ` · ${marked.size} marked` : ''}
+              </p>
               <div className="grid grid-cols-5 gap-2 mb-6">
-                {questions.map((q, i) => (
-                  <button
-                    key={q.id}
-                    onClick={() => setCurrentIndex(i)}
-                    className={`w-10 h-10 rounded-lg border text-xs font-medium flex items-center justify-center transition-all hover:scale-105 ${
-                      i === currentIndex ? 'bg-neutral-900 border-neutral-900 text-white' :
-                      answers[q.id] !== undefined ? 'bg-emerald-500 border-emerald-500 text-white' :
-                      'bg-neutral-50 text-neutral-400 border-neutral-200'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {questions.map((q, i) => {
+                  const allowed = canNavigateTo(i);
+                  const isMarked = marked.has(q.id);
+                  const isAnswered = answers[q.id] !== undefined;
+                  const isCurrent = i === currentIndex;
+                  const base =
+                    isCurrent ? 'bg-neutral-900 border-neutral-900 text-white' :
+                    isMarked && isAnswered ? 'bg-amber-500 border-amber-500 text-white' :
+                    isMarked ? 'bg-amber-100 border-amber-300 text-amber-800' :
+                    isAnswered ? 'bg-emerald-500 border-emerald-500 text-white' :
+                    'bg-neutral-50 text-neutral-400 border-neutral-200';
+                  return (
+                    <button
+                      key={q.id}
+                      onClick={() => allowed && setCurrentIndex(i)}
+                      disabled={!allowed}
+                      title={!allowed ? 'Locked — finish the current question first' : undefined}
+                      className={`w-10 h-10 rounded-lg border text-xs font-medium flex items-center justify-center transition-all ${base} ${
+                        allowed ? 'hover:scale-105' : 'opacity-40 cursor-not-allowed'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  );
+                })}
               </div>
               <div className="space-y-2 mb-6 text-[10px] uppercase tracking-[0.18em] text-neutral-500">
                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Answered</div>
+                <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-amber-500" /> Marked for review</div>
                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-neutral-900" /> Current</div>
               </div>
-              <Button variant="violet" className="w-full" onClick={confirmSubmit} disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit exam'}
+              <Button
+                variant="violet"
+                className="w-full"
+                onClick={confirmSubmit}
+                disabled={submitting || !isUnlocked}
+                title={!isUnlocked ? `Wait ${dwellRemaining}s before submitting` : undefined}
+              >
+                {submitting ? 'Submitting…' : isUnlocked ? 'Submit exam' : `Submit in ${dwellRemaining}s`}
               </Button>
             </div>
           </aside>
@@ -420,27 +611,49 @@ export function LiveExam({
               <span className="text-xs text-neutral-500 font-mono">{answeredCount} / {questions.length}</span>
             </div>
             <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 mb-5">
-              {questions.map((q, i) => (
-                <button
-                  key={q.id}
-                  onClick={() => { setCurrentIndex(i); setPaletteOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className={`w-full aspect-square rounded-lg border text-xs font-semibold flex items-center justify-center tabular-nums ${
-                    i === currentIndex ? 'bg-neutral-900 border-neutral-900 text-white' :
-                    answers[q.id] !== undefined ? 'bg-emerald-500 border-emerald-500 text-white' :
-                    'bg-neutral-50 text-neutral-500 border-neutral-200'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {questions.map((q, i) => {
+                const allowed = canNavigateTo(i);
+                const isMarked = marked.has(q.id);
+                const isAnswered = answers[q.id] !== undefined;
+                const isCurrent = i === currentIndex;
+                const base =
+                  isCurrent ? 'bg-neutral-900 border-neutral-900 text-white' :
+                  isMarked && isAnswered ? 'bg-amber-500 border-amber-500 text-white' :
+                  isMarked ? 'bg-amber-100 border-amber-300 text-amber-800' :
+                  isAnswered ? 'bg-emerald-500 border-emerald-500 text-white' :
+                  'bg-neutral-50 text-neutral-500 border-neutral-200';
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => {
+                      if (!allowed) return;
+                      setCurrentIndex(i);
+                      setPaletteOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    disabled={!allowed}
+                    className={`w-full aspect-square rounded-lg border text-xs font-semibold flex items-center justify-center tabular-nums ${base} ${
+                      allowed ? '' : 'opacity-40 cursor-not-allowed'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex gap-3 text-[10px] uppercase tracking-[0.18em] text-neutral-500 mb-5">
+            <div className="flex flex-wrap gap-3 text-[10px] uppercase tracking-[0.18em] text-neutral-500 mb-5">
               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Answered</div>
+              <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-amber-500" /> Marked</div>
               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-neutral-900" /> Current</div>
               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-sm bg-neutral-200" /> Skipped</div>
             </div>
-            <Button variant="violet" className="w-full" onClick={() => { setPaletteOpen(false); confirmSubmit(); }} disabled={submitting}>
-              {submitting ? 'Submitting…' : 'Submit exam'}
+            <Button
+              variant="violet"
+              className="w-full"
+              onClick={() => { setPaletteOpen(false); confirmSubmit(); }}
+              disabled={submitting || !isUnlocked}
+            >
+              {submitting ? 'Submitting…' : isUnlocked ? 'Submit exam' : `Submit in ${dwellRemaining}s`}
             </Button>
           </div>
         </div>
@@ -453,6 +666,9 @@ export function LiveExam({
         description={
           <>
             You&apos;ve answered <strong>{answeredCount}</strong> of <strong>{questions.length}</strong> questions.
+            {marked.size > 0 && (
+              <> <strong>{marked.size}</strong> {marked.size === 1 ? 'question is' : 'questions are'} still marked for review.</>
+            )}{' '}
             Once submitted you cannot change them.
           </>
         }
