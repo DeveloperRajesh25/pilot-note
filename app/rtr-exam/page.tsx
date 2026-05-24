@@ -195,6 +195,41 @@ function RTRExamContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, isTimedMode]);
 
+  // Picks the highest-quality voice the browser has installed. Chrome's "Google"
+  // voices and the Edge/Windows "Natural" voices sound noticeably less robotic
+  // than the default en-IN voice we used to grab.
+  const bestVoiceRef = useRef<SpeechSynthesisVoice | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const pick = () => {
+      const all = window.speechSynthesis.getVoices();
+      if (!all.length) return;
+      const score = (v: SpeechSynthesisVoice) => {
+        const n = v.name.toLowerCase();
+        let s = 0;
+        // High-quality neural/natural voices first.
+        if (n.includes('natural')) s += 60;
+        if (n.includes('neural')) s += 60;
+        if (n.includes('google')) s += 50;
+        if (n.includes('microsoft')) s += 30;
+        // Apple voices that ship with macOS/iOS.
+        if (/samantha|daniel|karen|moira|tessa|alex/.test(n)) s += 35;
+        // Prefer en-GB / en-US — they have the richest voice catalogues.
+        if (v.lang === 'en-GB') s += 20;
+        else if (v.lang === 'en-US') s += 18;
+        else if (v.lang === 'en-IN') s += 10;
+        else if (v.lang.startsWith('en')) s += 8;
+        if (v.localService) s += 2;
+        return s;
+      };
+      const best = [...all].sort((a, b) => score(b) - score(a))[0];
+      if (best) bestVoiceRef.current = best;
+    };
+    pick();
+    window.speechSynthesis.onvoiceschanged = pick;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
   const stopSpeaking = () => {
     if (typeof window === 'undefined') return;
     window.speechSynthesis?.cancel();
@@ -206,8 +241,16 @@ function RTRExamContent() {
     window.speechSynthesis.cancel();
     const rtText = convertToRTPhraseology(text);
     const utterance = new SpeechSynthesisUtterance(rtText);
-    utterance.lang = 'en-IN';
-    utterance.rate = 0.85;
+    const voice = bestVoiceRef.current;
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = 'en-US';
+    }
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => setSpeaking(false);
@@ -383,7 +426,17 @@ function RTRExamContent() {
         <div className="sticky top-20 bg-white/90 backdrop-blur-xl border-b border-neutral-200 z-40 px-6 py-4">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <button onClick={() => router.back()} className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors" aria-label="Back">
+              <button
+                onClick={() => {
+                  // Exam opens in a new tab from the mode-selection modal, so
+                  // history is empty and router.back() is a no-op. Send the
+                  // user back to the RTR landing instead.
+                  if (window.history.length > 1) router.back();
+                  else router.push('/dgca-rtr');
+                }}
+                className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors"
+                aria-label="Back"
+              >
                 <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <div>

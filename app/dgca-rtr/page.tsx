@@ -101,14 +101,15 @@ export default function DGCARTRPage() {
 
             <div className="lg:col-span-4 lg:col-start-9">
               <div className="border border-neutral-200 rounded-2xl p-6 bg-neutral-50">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-4">
-                  Quick facts
+                <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4">
+                  <span className="w-6 h-px bg-neutral-900" />
+                  DGCA RTR (R)
                 </p>
                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                  <div className="text-neutral-500">Issued by</div>
-                  <div className="text-neutral-900 font-medium">DGCA · WPC</div>
-                  <div className="text-neutral-500">Parts</div>
-                  <div className="text-neutral-900 font-medium">2 (MCQ + RT)</div>
+                  <div className="text-neutral-500">Part 1</div>
+                  <div className="text-neutral-900 font-medium">MCQ</div>
+                  <div className="text-neutral-500">Part 2</div>
+                  <div className="text-neutral-900 font-medium">RT Simulator</div>
                   <div className="text-neutral-500">Validity</div>
                   <div className="text-neutral-900 font-medium">Lifetime</div>
                 </div>

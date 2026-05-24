@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { computeDrift, remainingSeconds, formatLongCountdown } from '@/lib/time';
 import type { ExamPhase } from '@/lib/types';
-import { Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 interface ExamMeta {
   title: string;
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function PreExamCountdown({ examId, exam, startAt, endAt, serverNowMs, onPhaseChange }: Props) {
+  const router = useRouter();
   const driftRef = useRef(computeDrift(serverNowMs));
   const startMs = useMemo(() => new Date(startAt).getTime(), [startAt]);
   const [secsLeft, setSecsLeft] = useState(() =>
@@ -76,6 +78,18 @@ export function PreExamCountdown({ examId, exam, startAt, endAt, serverNowMs, on
     <main className="grow pt-28 sm:pt-32 pb-20 sm:pb-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.history.length > 1) router.back();
+              else router.push('/pariksha');
+            }}
+            className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-neutral-500 hover:text-neutral-900 font-medium mb-6 transition-colors"
+            aria-label="Back to Pariksha"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
           <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
             <span className="w-6 h-px bg-neutral-900" /> Pariksha · {exam.subject}
           </span>
