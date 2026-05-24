@@ -112,11 +112,11 @@ export const FOOTER_LINKS = [
 ];
 
 export const SOCIAL_LINKS = [
-  { id: 'sl1', label: 'Instagram', url: 'https://www.instagram.com/pilotnote', icon: 'instagram' },
-  { id: 'sl2', label: 'YouTube',   url: 'https://www.youtube.com/@pilotnote',  icon: 'youtube' },
-  { id: 'sl3', label: 'LinkedIn',  url: 'https://www.linkedin.com/company/pilotnote', icon: 'linkedin' },
-  { id: 'sl4', label: 'Twitter',   url: 'https://twitter.com/pilotnote',       icon: 'twitter' },
-  { id: 'sl5', label: 'Facebook',  url: 'https://www.facebook.com/pilotnote',  icon: 'facebook' }
+  { id: 'sl1', label: 'Instagram', url: 'https://www.instagram.com/pilotnote.in?igsh=OHVkbTZ0anFnMGhw', icon: 'instagram' },
+  { id: 'sl2', label: 'Telegram',  url: 'https://t.me/pilotnote',                                        icon: 'telegram' },
+  { id: 'sl3', label: 'YouTube',   url: 'https://youtube.com/@aviationbeast?si=In5-J63elt0fL5Hw',        icon: 'youtube' },
+  { id: 'sl4', label: 'Facebook',  url: 'https://www.facebook.com/share/1D53PXaTeo/',                    icon: 'facebook' },
+  { id: 'sl5', label: 'X',         url: 'https://x.com/aviationbeast',                                   icon: 'x' }
 ];
 
 export const RTR_CONFIG = {
