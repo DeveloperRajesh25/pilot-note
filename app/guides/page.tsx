@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ArrowLeft, ArrowUpRight, Clock, BookOpen } from 'lucide-react';
@@ -110,15 +112,25 @@ export default function GuidesPage() {
                   {activeGuide.title}
                 </h1>
 
-                <div
-                  className="prose prose-lg max-w-none text-neutral-700 leading-relaxed
-                    prose-h2:font-display prose-h2:text-3xl prose-h2:tracking-tight prose-h2:mt-14 prose-h2:mb-6 prose-h2:text-neutral-900
-                    prose-h3:font-display prose-h3:text-2xl prose-h3:tracking-tight prose-h3:mt-10 prose-h3:mb-4 prose-h3:text-neutral-900
-                    prose-p:mb-6 prose-p:text-[17px] prose-p:leading-[1.75]
-                    prose-ul:mb-8 prose-ul:space-y-2 prose-li:text-[17px] prose-li:leading-relaxed
-                    prose-strong:text-neutral-900 prose-strong:font-medium"
-                  dangerouslySetInnerHTML={{ __html: activeGuide.content || '' }}
-                />
+                <div className="guide-prose max-w-none text-neutral-700">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      a: ({ href, children, ...props }) => (
+                        <a
+                          href={href}
+                          target={href?.startsWith('http') ? '_blank' : undefined}
+                          rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                          {...props}
+                        >
+                          {children}
+                        </a>
+                      ),
+                    }}
+                  >
+                    {activeGuide.content || ''}
+                  </ReactMarkdown>
+                </div>
               </article>
             </div>
           ) : (

@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import '@uiw/react-md-editor/markdown-editor.css';
+import '@uiw/react-markdown-preview/markdown.css';
+
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 interface Guide {
   id: string;
@@ -152,8 +157,18 @@ export default function AdminGuidesPage() {
                 <textarea value={editGuide.summary || ''} onChange={e => setEditGuide(p => ({ ...p, summary: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-none" />
               </div>
               <div>
-                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Content (HTML)</label>
-                <textarea value={editGuide.content || ''} onChange={e => setEditGuide(p => ({ ...p, content: e.target.value }))} rows={10} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 transition-colors resize-y font-mono text-xs" />
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Content</label>
+                <p className="text-[11px] text-neutral-500 mb-2">
+                  Write in Markdown. Use the toolbar for headings, bold, links, lists. Press Enter twice for a new paragraph. URLs like https://dgca.gov.in auto-link.
+                </p>
+                <div data-color-mode="light" className="rounded-xl overflow-hidden border border-neutral-200">
+                  <MDEditor
+                    value={editGuide.content || ''}
+                    onChange={(val) => setEditGuide(p => ({ ...p, content: val || '' }))}
+                    height={420}
+                    preview="live"
+                  />
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <input type="checkbox" id="pub" checked={!!editGuide.published} onChange={e => setEditGuide(p => ({ ...p, published: e.target.checked }))} className="w-4 h-4 accent-neutral-900" />
