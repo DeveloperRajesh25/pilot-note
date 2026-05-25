@@ -58,7 +58,8 @@ const ABBREVIATIONS: Record<string, string> = {
 
 // Airline callsigns (should NOT be converted to phonetic)
 const AIRLINE_CALLSIGNS = new Set([
-  'AIR INDIA', 'INDIGO', 'VISTARA', 'SPICEJET', 'GOAIR',
+  'AIR INDIA', 'IFLY', 'INDIGO', 'VISTARA', 'SPICEJET', 'GOAIR',
+  'EXPRESS INDIA', 'AKASA AIR', 'ALLIED', 'STAR AIR', 'BLUE DART', 'FLY91',
   'BRITISH AIRWAYS', 'LUFTHANSA', 'AIR FRANCE', 'KLM', 'EMIRATES',
   'QATAR', 'SINGAPORE', 'CATHAY', 'ANA', 'JAL', 'UNITED', 'AMERICAN',
   'DELTA', 'SOUTHWEST', 'JETBLUE', 'VIRGIN', 'AEROFLOT', 'IBERIA'
@@ -132,17 +133,34 @@ function registrationToPhonetic(registration: string): string {
 function airlineCallsignToRT(callsign: string): string {
   const upper = callsign.toUpperCase();
 
-  // Map of common airline codes
+  // Map of common airline codes — values are the spoken RT callsign that the
+  // TTS engine reads aloud. Indian carrier names follow the DGCA-published
+  // RT callsigns (e.g. IndiGo is "IFLY", Alliance Air is "ALLIED").
   const airlineCodes: Record<string, string> = {
-    'AI': 'Air India', '6E': 'Indigo', 'UK': 'Vistara', 'SG': 'SpiceJet',
-    'G8': 'GoAir', 'BA': 'British Airways', 'LH': 'Lufthansa',
+    // Indian carriers
+    'AI': 'Air India',
+    '6E': 'Ifly',
+    'UK': 'Vistara',
+    'SG': 'SpiceJet',
+    'IX': 'Express India',
+    'QP': 'Akasa Air',
+    '9I': 'Allied',
+    'S5': 'Star Air',
+    'BZ': 'Blue Dart',
+    'IC': 'Fly Niner One',
+    'G8': 'GoAir',
+    // International carriers
+    'BA': 'British Airways', 'LH': 'Lufthansa',
     'AF': 'Air France', 'KL': 'KLM', 'EK': 'Emirates', 'QR': 'Qatar',
     'SQ': 'Singapore', 'CX': 'Cathay', 'ANA': 'ANA', 'JAL': 'JAL',
-    'UA': 'United', 'AA': 'American', 'DL': 'Delta', 'WN': 'Southwest'
+    'UA': 'United', 'AA': 'American', 'DL': 'Delta', 'WN': 'Southwest',
   };
 
-  // Extract airline code and flight number
-  let match = upper.match(/^([A-Z0-9]{2,3})(\d+)$/);
+  // Extract airline code and flight number. The code is the alpha/alpha-digit
+  // prefix (e.g. AI, 6E, 9I, G8, ANA, JAL) and the rest is the digit-only
+  // flight number. The greedy `[A-Z0-9]{2,3}` form on its own would swallow
+  // the first flight-number digit into the code (e.g. AI101 → "AI1" + "01").
+  let match = upper.match(/^([A-Z]{2,3}|\d[A-Z]|[A-Z]\d)(\d+)$/);
   if (!match) return upper;
 
   const [, code, flightNum] = match;
