@@ -31,10 +31,21 @@ export async function POST(request: NextRequest) {
   if (check.error) return check.error;
   const body = await request.json();
   const {
-    id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, status,
+    id, title, subject, description, exam_date, exam_time, duration, total_questions, fee, original_fee, status,
     start_at, end_at, per_question_seconds, pass_score, payment_provider,
   } = body;
   if (!title || !subject) return NextResponse.json({ error: 'title and subject required' }, { status: 400 });
+  const feeNum = Number(fee ?? 499);
+  if (!Number.isFinite(feeNum) || feeNum < 0) {
+    return NextResponse.json({ error: 'Fee must be 0 (free) or a positive amount' }, { status: 400 });
+  }
+  const originalFeeRaw = original_fee === '' || original_fee === undefined || original_fee === null ? null : Number(original_fee);
+  if (originalFeeRaw !== null && (!Number.isFinite(originalFeeRaw) || originalFeeRaw < 0)) {
+    return NextResponse.json({ error: 'Original fee must be blank or a non-negative amount' }, { status: 400 });
+  }
+  if (originalFeeRaw !== null && originalFeeRaw < feeNum) {
+    return NextResponse.json({ error: 'Original fee must be greater than the live fee to show a discount' }, { status: 400 });
+  }
   const db = createAdminClient();
   const record: Record<string, unknown> = {
     title,
@@ -44,7 +55,8 @@ export async function POST(request: NextRequest) {
     exam_time,
     duration: duration ?? 120,
     total_questions: total_questions ?? 100,
-    fee: fee ?? 499,
+    fee: feeNum,
+    original_fee: originalFeeRaw,
     status: status ?? 'Upcoming',
     start_at: start_at || null,
     end_at: end_at || null,

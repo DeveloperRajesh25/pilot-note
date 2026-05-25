@@ -14,6 +14,7 @@ interface ExamSummary {
   subject: string;
   description: string | null;
   fee: number;
+  original_fee?: number | null;
   start_at: string | null;
   end_at: string | null;
   duration: number;
@@ -99,6 +100,8 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
     return () => { cancelled = true; };
   }, [examId, router, toast]);
 
+  const isFree = !!exam && exam.fee === 0;
+
   const startCheckout = useCallback(async () => {
     if (!exam || paying) return;
     setDobError(null);
@@ -111,7 +114,8 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
       setDobError('Enter a valid past date.');
       return;
     }
-    if (!sdkReady || !window.Razorpay) {
+    // Razorpay SDK is only required for paid exams.
+    if (exam.fee > 0 && (!sdkReady || !window.Razorpay)) {
       toast.warn('Payment SDK is still loading — try again in a moment.');
       return;
     }
@@ -131,6 +135,20 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
         toast.error(orderData?.error ?? 'Could not start payment.');
         return;
       }
+      // Free exam — server confirmed fee=0 and pre-bound DOB. Finalise the
+      // registration and head straight to the exam shell.
+      if (orderData.free) {
+        const regRes = await fetch(`/api/exams/${examId}/register`, { method: 'POST' });
+        if (!regRes.ok) {
+          const d = await regRes.json().catch(() => ({}));
+          toast.error(d?.error ?? 'Could not complete registration.');
+          setPaying(false);
+          return;
+        }
+        toast.success('You are registered for this free exam.');
+        router.replace(`/pariksha/${examId}`);
+        return;
+      }
       if (orderData.alreadyPaid) {
         // Payment already cleared — just finalise registration.
         await fetch(`/api/exams/${examId}/register`, { method: 'POST' });
@@ -138,6 +156,11 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
         return;
       }
 
+      if (!window.Razorpay) {
+        toast.error('Payment SDK is not available — please refresh and try again.');
+        setPaying(false);
+        return;
+      }
       const rz = new window.Razorpay({
         key: orderData.key_id,
         amount: orderData.amount,
@@ -253,17 +276,44 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 pt-6 mt-6 border-t border-neutral-200">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-400 mb-1">Exam fee</p>
-                <p className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none tracking-tight">₹{exam.fee}</p>
-                <p className="text-[11px] text-neutral-500 mt-2">One-time, per attempt. Includes result + answer key.</p>
+                {isFree ? (
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <p className="font-display text-4xl sm:text-5xl text-emerald-600 leading-none tracking-tight">Free</p>
+                    {exam.original_fee && exam.original_fee > 0 ? (
+                      <span className="text-lg text-neutral-400 line-through">₹{exam.original_fee}</span>
+                    ) : null}
+                  </div>
+                ) : exam.original_fee && exam.original_fee > exam.fee ? (
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <p className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none tracking-tight">₹{exam.fee}</p>
+                    <span className="text-lg text-neutral-400 line-through">₹{exam.original_fee}</span>
+                    <span className="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold uppercase tracking-wider">
+                      -{Math.round(((exam.original_fee - exam.fee) / exam.original_fee) * 100)}%
+                    </span>
+                  </div>
+                ) : (
+                  <p className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none tracking-tight">₹{exam.fee}</p>
+                )}
+                <p className="text-[11px] text-neutral-500 mt-2">
+                  {isFree
+                    ? 'No payment required. Includes result + answer key.'
+                    : 'One-time, per attempt. Includes result + answer key.'}
+                </p>
               </div>
               <Button
                 variant="violet"
                 size="lg"
                 onClick={startCheckout}
-                disabled={paying || !sdkReady}
+                disabled={paying || (!isFree && !sdkReady)}
                 className="w-full sm:w-auto"
               >
-                {paying ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</> : `Pay ₹${exam.fee}`}
+                {paying ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+                ) : isFree ? (
+                  'Register for free'
+                ) : (
+                  `Pay ₹${exam.fee}`
+                )}
               </Button>
             </div>
           </div>
@@ -286,9 +336,14 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
           </div>
 
           <div className="mt-6 text-[11px] text-neutral-500 leading-relaxed max-w-xl">
-            Payments are processed by Razorpay. Your card details never touch our servers. By
-            paying, you agree to the exam terms — including soft proctoring. Refunds available
-            within 24 hours of the exam window opening; contact support@pilotnote.in.
+            {isFree ? (
+              <>By registering, you agree to the exam terms — including soft proctoring. For
+              support contact support@pilotnote.in.</>
+            ) : (
+              <>Payments are processed by Razorpay. Your card details never touch our servers. By
+              paying, you agree to the exam terms — including soft proctoring. Refunds available
+              within 24 hours of the exam window opening; contact support@pilotnote.in.</>
+            )}
           </div>
         </div>
       </main>

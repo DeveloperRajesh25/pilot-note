@@ -76,10 +76,16 @@ export async function POST(
     return NextResponse.json({ registration: data, success: true }, { status: 201 });
   }
 
-  // Free exam path.
-  const { data, error } = await supabase
+  // Free exam path. DOB was pre-bound by /payment/create-order's free short-circuit;
+  // if for any reason the row doesn't exist yet, create it (without DOB — the
+  // candidate will be prompted to set DOB on the credentials page).
+  const dbFree = createAdminClient();
+  const { data, error } = await dbFree
     .from('exam_registrations')
-    .insert({ user_id: user.id, exam_id: examId, payment_id: null })
+    .upsert(
+      { user_id: user.id, exam_id: examId, payment_id: null },
+      { onConflict: 'user_id,exam_id', ignoreDuplicates: false }
+    )
     .select()
     .single();
 

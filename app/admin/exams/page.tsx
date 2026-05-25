@@ -19,11 +19,16 @@ const STATUSES = ['Upcoming', 'Active', 'Completed', 'Cancelled'];
 
 const EMPTY_EXAM: ExamForm = {
   title: '', subject: SUBJECTS[0], description: '', exam_date: '',
-  duration: 120, total_questions: 100, fee: 499, status: 'Upcoming',
+  duration: 120, total_questions: 100, fee: 499, original_fee: null, status: 'Upcoming',
   start_at: null, end_at: null, per_question_seconds: 60, pass_score: 40,
   payment_provider: 'razorpay',
   _start_time: '10:00', _end_time: '',
 };
+
+function discountPct(fee: number, originalFee?: number | null): number | null {
+  if (!originalFee || originalFee <= fee) return null;
+  return Math.round(((originalFee - fee) / originalFee) * 100);
+}
 
 // Capture times as IST regardless of the admin's browser timezone.
 const IST_TIME_FMT = new Intl.DateTimeFormat('en-GB', {
@@ -87,6 +92,11 @@ export default function AdminExamsPage() {
     if (!editExam.title || !editExam.subject) { alert('Title and subject required'); return; }
     if (!editExam.exam_date) { alert('Exam date is required'); return; }
     if (!editExam._start_time) { alert('Start time is required'); return; }
+    const feeVal = Number(editExam.fee ?? 0);
+    if (!Number.isFinite(feeVal) || feeVal < 0) { alert('Fee must be 0 (free) or positive'); return; }
+    const origFeeVal = editExam.original_fee == null || (editExam.original_fee as unknown) === '' ? null : Number(editExam.original_fee);
+    if (origFeeVal !== null && (!Number.isFinite(origFeeVal) || origFeeVal < 0)) { alert('Original fee must be blank or non-negative'); return; }
+    if (origFeeVal !== null && origFeeVal <= feeVal) { alert('Original fee must be greater than the live fee to show a discount'); return; }
 
     const start_at = combineDateTimeIST(editExam.exam_date, editExam._start_time);
     const end_at = editExam._end_time
@@ -171,7 +181,18 @@ export default function AdminExamsPage() {
                       <span>⏱ {ex.duration} min</span>
                       <span className={noQuestions ? 'text-amber-700 font-bold' : ''}>❓ {qCount}/{ex.total_questions} Qs</span>
                       <span>👥 {ex.registrations ?? 0} registered</span>
-                      <span>💳 ₹{ex.fee}</span>
+                      {ex.fee === 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider">🎁 Free</span>
+                      ) : (() => {
+                        const pct = discountPct(ex.fee ?? 0, ex.original_fee);
+                        return pct ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span>💳 ₹{ex.fee}</span>
+                            <span className="line-through text-neutral-400">₹{ex.original_fee}</span>
+                            <span className="px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase tracking-wider">-{pct}%</span>
+                          </span>
+                        ) : <span>💳 ₹{ex.fee}</span>;
+                      })()}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -236,10 +257,72 @@ export default function AdminExamsPage() {
                 <input type="date" value={editExam.exam_date || ''} onChange={e => setEditExam(p => ({ ...p, exam_date: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Duration (min)</label><input type="number" value={editExam.duration || 120} onChange={e => setEditExam(p => ({ ...p, duration: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
                 <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Questions</label><input type="number" value={editExam.total_questions || 100} onChange={e => setEditExam(p => ({ ...p, total_questions: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
-                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Fee (₹)</label><input type="number" value={editExam.fee || 499} onChange={e => setEditExam(p => ({ ...p, fee: Number(e.target.value) }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
+              </div>
+
+              {/* Pricing — supports free exams (fee=0) and sticker-price discounts. */}
+              <div className="border-t border-neutral-200 pt-4 mt-2">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Pricing</p>
+                  <label className="flex items-center gap-2 text-xs font-bold text-neutral-700 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={(editExam.fee ?? 0) === 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEditExam(p => ({ ...p, fee: 0 }));
+                        } else {
+                          // Reasonable default when toggling off free.
+                          setEditExam(p => ({ ...p, fee: p.fee && p.fee > 0 ? p.fee : 499 }));
+                        }
+                      }}
+                      className="w-4 h-4 accent-emerald-600"
+                    />
+                    Make this exam free
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Live fee (₹)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={editExam.fee ?? 0}
+                      disabled={(editExam.fee ?? 0) === 0}
+                      onChange={e => setEditExam(p => ({ ...p, fee: Number(e.target.value) }))}
+                      className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 disabled:bg-neutral-100 disabled:text-neutral-400"
+                    />
+                    <p className="text-[11px] text-neutral-500 mt-1">What the candidate actually pays. 0 = free.</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Original fee (₹) — optional</label>
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="Leave blank for no discount"
+                      value={editExam.original_fee ?? ''}
+                      onChange={e => {
+                        const v = e.target.value;
+                        setEditExam(p => ({ ...p, original_fee: v === '' ? null : Number(v) }));
+                      }}
+                      className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400"
+                    />
+                    <p className="text-[11px] text-neutral-500 mt-1">Marketed sticker price. Shown struck-through when greater than live fee.</p>
+                  </div>
+                </div>
+                {(() => {
+                  const fee = editExam.fee ?? 0;
+                  const pct = discountPct(fee, editExam.original_fee);
+                  if (fee === 0) {
+                    return <p className="text-[11px] text-emerald-700 font-bold mt-2">🎁 This exam will be offered free of cost.</p>;
+                  }
+                  if (pct) {
+                    return <p className="text-[11px] text-rose-700 font-bold mt-2">Candidates will see ₹{fee} with ₹{editExam.original_fee} struck through ({pct}% off).</p>;
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Pariksha v2 — synchronized window + grading. Date is taken from Exam Date above; we only collect the IST clock times. */}

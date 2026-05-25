@@ -153,6 +153,9 @@ export interface Exam {
   duration: number;
   total_questions: number;
   fee: number;
+  // Optional sticker price for discount display. When set and greater than
+  // `fee`, the storefront shows it struck through. `fee = 0` means free.
+  original_fee?: number | null;
   status: 'Upcoming' | 'Active' | 'Completed' | 'Cancelled' | string;
   // Pariksha v2 — synchronized window + grading.
   start_at: string | null;             // canonical UTC; everyone starts here

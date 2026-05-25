@@ -41,6 +41,18 @@ export async function POST(
     return NextResponse.json({ error: 'Exam has already ended' }, { status: 410 });
   }
 
+  // Free exam — pre-bind DOB and tell the client to skip checkout. We still
+  // upsert the registration row here so `dob` is captured before the candidate
+  // finalises registration via /register.
+  if (!exam.fee || exam.fee <= 0) {
+    const dbFree = createAdminClient();
+    await dbFree.from('exam_registrations').upsert(
+      { user_id: user.id, exam_id: examId, dob },
+      { onConflict: 'user_id,exam_id' }
+    );
+    return NextResponse.json({ free: true });
+  }
+
   // Already-paid short-circuit — let the client skip checkout but still update DOB.
   const db = createAdminClient();
   const { data: paid } = await db

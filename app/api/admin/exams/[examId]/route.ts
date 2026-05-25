@@ -60,7 +60,7 @@ export async function GET(
 
 const EXAM_FIELDS = [
   'title', 'subject', 'description', 'exam_date', 'exam_time',
-  'duration', 'total_questions', 'fee', 'status',
+  'duration', 'total_questions', 'fee', 'original_fee', 'status',
   'start_at', 'end_at', 'per_question_seconds', 'pass_score', 'payment_provider',
 ] as const;
 
@@ -76,6 +76,33 @@ export async function PUT(
   for (const k of EXAM_FIELDS) if (k in body) update[k] = body[k];
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
+  // Normalise pricing fields when present in the patch.
+  if ('fee' in update) {
+    const n = Number(update.fee);
+    if (!Number.isFinite(n) || n < 0) {
+      return NextResponse.json({ error: 'Fee must be 0 (free) or a positive amount' }, { status: 400 });
+    }
+    update.fee = n;
+  }
+  if ('original_fee' in update) {
+    const raw = update.original_fee;
+    if (raw === '' || raw === null || raw === undefined) {
+      update.original_fee = null;
+    } else {
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n < 0) {
+        return NextResponse.json({ error: 'Original fee must be blank or non-negative' }, { status: 400 });
+      }
+      update.original_fee = n;
+    }
+  }
+  // If both ends of the discount are in the same patch (or one is being patched
+  // against an unknown existing value), validate the relationship when possible.
+  if ('fee' in update && 'original_fee' in update && update.original_fee !== null) {
+    if ((update.original_fee as number) < (update.fee as number)) {
+      return NextResponse.json({ error: 'Original fee must be greater than the live fee to show a discount' }, { status: 400 });
+    }
   }
   const db = createAdminClient();
   const { data, error } = await db.from('exams').update(update).eq('id', examId).select().single();

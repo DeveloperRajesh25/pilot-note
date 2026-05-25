@@ -17,6 +17,7 @@ interface Exam {
   duration: number;
   total_questions: number;
   fee: number;
+  original_fee?: number | null;
   status: string;
   start_at: string | null;
   end_at: string | null;
@@ -185,11 +186,30 @@ export default function ParikshaPage() {
                       <div className="lg:col-span-4 lg:text-right border-t lg:border-t-0 lg:border-l border-neutral-200/70 pt-5 lg:pt-0 lg:pl-6">
                         <div className="flex lg:block items-end justify-between mb-4 sm:mb-5">
                           <div>
-                            <p className="font-display text-3xl sm:text-4xl text-neutral-900 leading-none tracking-tight">
-                              ₹{exam.fee}
-                            </p>
+                            {exam.fee === 0 ? (
+                              <div className="flex items-baseline gap-2 lg:justify-end flex-wrap">
+                                <p className="font-display text-3xl sm:text-4xl text-emerald-600 leading-none tracking-tight">Free</p>
+                                {exam.original_fee && exam.original_fee > 0 ? (
+                                  <span className="text-sm text-neutral-400 line-through">₹{exam.original_fee}</span>
+                                ) : null}
+                              </div>
+                            ) : exam.original_fee && exam.original_fee > exam.fee ? (
+                              <div className="flex items-baseline gap-2 lg:justify-end flex-wrap">
+                                <p className="font-display text-3xl sm:text-4xl text-neutral-900 leading-none tracking-tight">
+                                  ₹{exam.fee}
+                                </p>
+                                <span className="text-sm text-neutral-400 line-through">₹{exam.original_fee}</span>
+                                <span className="px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase tracking-wider">
+                                  -{Math.round(((exam.original_fee - exam.fee) / exam.original_fee) * 100)}%
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="font-display text-3xl sm:text-4xl text-neutral-900 leading-none tracking-tight">
+                                ₹{exam.fee}
+                              </p>
+                            )}
                             <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-neutral-400 mt-2">
-                              Per attempt
+                              {exam.fee === 0 ? 'No payment required' : 'Per attempt'}
                             </p>
                           </div>
                         </div>
