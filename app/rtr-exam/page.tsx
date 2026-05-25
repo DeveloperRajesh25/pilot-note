@@ -450,11 +450,6 @@ function RTRExamContent() {
                 </span>
               </div>
             </div>
-            {part === 'part2' && (
-              <a href="/rtr-phraseology-guide" target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors" title="RT Phraseology Guide" aria-label="RT Phraseology Guide">
-                <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </a>
-            )}
             {isTimedMode ? (
               <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>

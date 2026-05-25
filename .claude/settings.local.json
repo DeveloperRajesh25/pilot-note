@@ -13,7 +13,10 @@
       "PowerShell(git config --local --unset user.name)",
       "PowerShell(git config --local --unset user.email)",
       "PowerShell(git remote set-url origin git@github.com:DeveloperRajesh25/pilot-note.git)",
-      "PowerShell(git ls-remote origin HEAD 2>&1)"
+      "PowerShell(git ls-remote origin HEAD 2>&1)",
+      "Bash(Get-ChildItem -Path \"d:\\\\professional\\\\pilot-note\" -Exclude \"node_modules\", \".next\", \"dist\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(Remove-Item -Path \"d:\\\\professional\\\\pilot-note\\\\app\\\\rtr-phraseology-guide\" -Recurse -Force)"
     ]
   }
 }
