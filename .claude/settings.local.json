@@ -4,7 +4,16 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(curl -s -X POST https://api.razorpay.com/v1/orders -u \"rzp_test_Sp9q8jWD8VcFmL:eq7T1ltgPqbUjQtQA6h3NdQC\" -H \"Content-Type: application/json\" -d '{\"amount\":50000,\"currency\":\"INR\",\"receipt\":\"test_rcpt_001\"}')",
       "Bash(node -e \"const l=require\\('lucide-react'\\); const names=Object.keys\\(l\\); console.log\\(names.filter\\(n => /instagram|youtube|linked|twitter|facebook|x|github|tik/i.test\\(n\\)\\).join\\('\\\\n'\\)\\);\")",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.ssh\\\\config\" -ErrorAction SilentlyContinue; Write-Output \"---\"; Get-ChildItem \"$env:USERPROFILE\\\\.ssh\\\\\" -ErrorAction SilentlyContinue | Select-Object Name)",
+      "PowerShell(ssh -T git@github.com 2>&1)",
+      "Read(//c/Users/user/.claude/projects/d--professional-pilot-note/memory/**)",
+      "PowerShell(git config --global --get user.name)",
+      "PowerShell(git config --global --get user.email)",
+      "PowerShell(git config --local --unset user.name)",
+      "PowerShell(git config --local --unset user.email)",
+      "PowerShell(git remote set-url origin git@github.com:DeveloperRajesh25/pilot-note.git)",
+      "PowerShell(git ls-remote origin HEAD 2>&1)"
     ]
   }
 }
