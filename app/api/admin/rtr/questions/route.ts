@@ -21,12 +21,16 @@ export async function POST(request: NextRequest) {
   const check = await requireAdmin();
   if (check.error) return check.error;
   const body = await request.json();
-  const { id, test_id, question, options, correct, explanation } = body;
+  const { id, test_id, question, options, correct, explanation, image_url, pdf_url } = body;
   if (!test_id || !question || !options || correct === undefined) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
   const db = createAdminClient();
-  const record: Record<string, unknown> = { test_id, question, options, correct, explanation };
+  const record: Record<string, unknown> = {
+    test_id, question, options, correct, explanation,
+    image_url: image_url ?? null,
+    pdf_url: pdf_url ?? null,
+  };
   record.id = id || opaqueId('rq1');
   const { data, error } = await db.from('rtr_questions_part1').insert(record).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

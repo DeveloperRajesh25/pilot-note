@@ -49,6 +49,8 @@ export interface RTRPart1Question {
   options: string[];
   correct: number;
   explanation: string | null;
+  image_url?: string | null;
+  pdf_url?: string | null;
   created_at?: string;
 }
 

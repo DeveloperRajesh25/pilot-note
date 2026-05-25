@@ -16,6 +16,8 @@ interface Part1Question {
   options: string[];
   correct: number;
   explanation?: string | null;
+  image_url?: string | null;
+  pdf_url?: string | null;
 }
 
 interface Part2Scenario {
@@ -548,7 +550,39 @@ function Part1View({ p1Questions, currentIndex, setCurrentIndex, p1Answers, setP
             </span>
             <span className="px-3 py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">2 Marks</span>
           </div>
-          <h2 className="font-display text-3xl md:text-4xl text-neutral-900 mb-10 leading-tight tracking-tight">{q.question}</h2>
+          <h2 className="font-display text-3xl md:text-4xl text-neutral-900 mb-6 leading-tight tracking-tight">{q.question}</h2>
+          {(q.image_url || q.pdf_url) && (
+            <div className="mb-8 space-y-4">
+              {q.image_url && (
+                <a href={q.image_url} target="_blank" rel="noopener noreferrer" className="block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={q.image_url}
+                    alt="Question diagram"
+                    className="max-h-105 w-auto max-w-full rounded-2xl border border-neutral-200 object-contain bg-white hover:border-neutral-400 transition-colors"
+                  />
+                </a>
+              )}
+              {q.pdf_url && (
+                <div className="border border-neutral-200 rounded-2xl overflow-hidden bg-white">
+                  <object data={q.pdf_url} type="application/pdf" className="w-full h-125">
+                    <div className="p-6 text-center text-sm text-neutral-600">
+                      Your browser cannot display the PDF inline.{' '}
+                      <a href={q.pdf_url} target="_blank" rel="noopener noreferrer" className="text-neutral-900 font-semibold underline">
+                        Open PDF in new tab
+                      </a>
+                    </div>
+                  </object>
+                  <div className="border-t border-neutral-200 px-4 py-2 bg-neutral-50 flex justify-between items-center">
+                    <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">PDF attachment</span>
+                    <a href={q.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-900 font-semibold hover:underline">
+                      Open in new tab ↗
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className="space-y-3 mb-12">
             {q.options.map((opt, i) => {
               const selected = p1Answers[currentIndex] === i;
@@ -889,6 +923,18 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
                 <span className={`text-xs font-bold ${p1Answers[i] === q.correct ? 'text-emerald-600' : 'text-rose-600'}`}>{p1Answers[i] === q.correct ? '✓ CORRECT' : '✗ INCORRECT'}</span>
               </div>
               <h4 className="font-bold text-neutral-900 mb-4">{q.question}</h4>
+              {q.image_url && (
+                <a href={q.image_url} target="_blank" rel="noopener noreferrer" className="block mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={q.image_url} alt="Question diagram" className="max-h-72 w-auto max-w-full rounded-xl border border-neutral-200 object-contain bg-white" />
+                </a>
+              )}
+              {q.pdf_url && (
+                <a href={q.pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mb-4 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold hover:bg-rose-100">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                  Open attached PDF ↗
+                </a>
+              )}
               {q.explanation && (
                 <div className="p-4 bg-neutral-50 rounded-xl text-sm">
                   <span className="font-bold text-neutral-400 block mb-1">EXPLANATION:</span>

@@ -27,7 +27,7 @@ export async function GET(
 
   const { data: questions, error } = await supabase
     .from('rtr_questions_part1')
-    .select('id, test_id, question, options, correct, explanation')
+    .select('id, test_id, question, options, correct, explanation, image_url, pdf_url')
     .eq('test_id', testId)
     .order('id');
 

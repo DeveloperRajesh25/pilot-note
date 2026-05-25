@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useEffect, useCallback } from 'react';
+import { use, useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type {
   RTRTest,
@@ -19,6 +19,8 @@ interface QForm {
   options: string[];
   correct: number;
   explanation: string | null;
+  image_url?: string | null;
+  pdf_url?: string | null;
 }
 
 interface BulkRow {
@@ -95,7 +97,7 @@ interface RTRDetail {
   scenarios: RTRPart2Scenario[];
 }
 
-const EMPTY_Q: QForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '' };
+const EMPTY_Q: QForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '', image_url: null, pdf_url: null };
 
 const EMPTY_CHART: RTRChartContext = {
   time_allowed: '25 minutes',
@@ -154,6 +156,13 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
   const [editItem, setEditItem] = useState<EditItem>(EMPTY_Q);
   const [saving, setSaving] = useState(false);
 
+  // Attachment upload state (Part 1 MCQ — image or PDF per question)
+  const [imageUploading, setImageUploading] = useState(false);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+
   // Bulk upload state (Part 1 MCQ only)
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkParsed, setBulkParsed] = useState<BulkRow[] | null>(null);
@@ -172,8 +181,73 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void fetchData(); }, [fetchData]);
 
-  const openAddQ = () => { setEditItem({ ...EMPTY_Q, test_id: testId }); setModalType('q'); setShowModal(true); };
-  const openEditQ = (q: RTRPart1Question) => { setEditItem({ ...q, options: [...q.options] }); setModalType('q'); setShowModal(true); };
+  const openAddQ = () => {
+    setEditItem({ ...EMPTY_Q, test_id: testId });
+    setImagePreviewUrl(null);
+    setModalType('q');
+    setShowModal(true);
+  };
+  const openEditQ = (q: RTRPart1Question) => {
+    setEditItem({ ...q, options: [...q.options], image_url: q.image_url ?? null, pdf_url: q.pdf_url ?? null });
+    setImagePreviewUrl(q.image_url ?? null);
+    setModalType('q');
+    setShowModal(true);
+  };
+
+  const uploadAttachment = async (file: File): Promise<{ url: string; kind: 'image' | 'pdf' } | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/admin/rtr/questions/upload-attachment', { method: 'POST', body: formData });
+    const d = await res.json();
+    if (!res.ok || !d.url) { alert(d.error ?? 'Upload failed'); return null; }
+    return { url: d.url, kind: d.kind };
+  };
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreviewUrl(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    setImageUploading(true);
+    try {
+      const result = await uploadAttachment(file);
+      if (result && result.kind === 'image') {
+        setEditItem(p => isQForm(p) ? { ...p, image_url: result.url } : p);
+      }
+    } catch {
+      alert('Image upload failed — check network connection');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handlePdfSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfUploading(true);
+    try {
+      const result = await uploadAttachment(file);
+      if (result && result.kind === 'pdf') {
+        setEditItem(p => isQForm(p) ? { ...p, pdf_url: result.url } : p);
+      }
+    } catch {
+      alert('PDF upload failed — check network connection');
+    } finally {
+      setPdfUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setEditItem(p => isQForm(p) ? { ...p, image_url: null } : p);
+    setImagePreviewUrl(null);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const removePdf = () => {
+    setEditItem(p => isQForm(p) ? { ...p, pdf_url: null } : p);
+    if (pdfInputRef.current) pdfInputRef.current.value = '';
+  };
   const openAddS = () => {
     setEditItem({
       ...EMPTY_S,
@@ -200,6 +274,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
 
   const handleSaveQ = async () => {
     if (!isQForm(editItem)) return;
+    if (imageUploading || pdfUploading) { alert('An attachment is still uploading, please wait.'); return; }
     const isEdit = !!editItem.id;
     const url = isEdit ? `/api/admin/rtr/questions/${editItem.id}` : '/api/admin/rtr/questions';
     setSaving(true);
@@ -394,8 +469,18 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
             {questions.map((q, idx) => (
               <div key={q.id} className="bg-white rounded-xl border border-neutral-200 p-4 flex items-start gap-4">
                 <span className="text-neutral-400 font-black w-6 text-center shrink-0">{idx + 1}</span>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
+                  {q.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={q.image_url} alt="diagram" className="h-16 w-auto mb-2 rounded-lg border border-neutral-200 object-contain" />
+                  )}
                   <p className="text-sm text-neutral-900 font-medium mb-2">{q.question}</p>
+                  {(q.image_url || q.pdf_url) && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {q.image_url && <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold uppercase tracking-wide">Image</span>}
+                      {q.pdf_url && <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 font-bold uppercase tracking-wide">PDF</span>}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {q.options.map((opt, i) => (
                       <span key={i} className={`text-xs px-2 py-0.5 rounded border ${i === q.correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>{String.fromCharCode(65 + i)}: {opt.substring(0, 30)}{opt.length > 30 ? '…' : ''}</span>
@@ -462,6 +547,59 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
                   <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Question *</label>
                   <textarea value={editItem.question || ''} onChange={e => setEditItem(p => ({ ...(p as QForm), question: e.target.value }))} rows={3} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 resize-none" />
                 </div>
+
+                <div>
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">
+                    Question Image <span className="text-neutral-400 normal-case font-normal">(optional — diagrams, charts, etc.)</span>
+                  </label>
+                  {imagePreviewUrl && (
+                    <div className="relative mb-3 inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePreviewUrl} alt="Preview" className="h-40 w-auto rounded-xl border border-neutral-200 object-contain" />
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-rose-600 text-white rounded-full text-xs flex items-center justify-center hover:bg-rose-700 leading-none"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="text-sm text-neutral-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-neutral-100 file:text-neutral-900 hover:file:bg-neutral-200 file:cursor-pointer"
+                    />
+                    {imageUploading && <span className="text-xs text-neutral-500 animate-pulse">Uploading…</span>}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">
+                    Question PDF <span className="text-neutral-400 normal-case font-normal">(optional — multi-page diagrams, extracts)</span>
+                  </label>
+                  {editItem.pdf_url && (
+                    <div className="mb-3 flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-xl">
+                      <svg className="w-5 h-5 text-rose-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                      <a href={editItem.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-900 font-semibold underline truncate flex-1">View attached PDF</a>
+                      <button type="button" onClick={removePdf} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Remove</button>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <input
+                      ref={pdfInputRef}
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      onChange={handlePdfSelect}
+                      className="text-sm text-neutral-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-neutral-100 file:text-neutral-900 hover:file:bg-neutral-200 file:cursor-pointer"
+                    />
+                    {pdfUploading && <span className="text-xs text-neutral-500 animate-pulse">Uploading…</span>}
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Options (select correct)</label>
                   <div className="space-y-2">
@@ -624,7 +762,7 @@ export default function AdminRTRTestDetailPage({ params }: { params: Promise<{ t
             )}
 
             <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
-              <button onClick={modalType === 'q' ? handleSaveQ : handleSaveS} disabled={saving} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
+              <button onClick={modalType === 'q' ? handleSaveQ : handleSaveS} disabled={saving || imageUploading || pdfUploading} className="px-6 py-3 bg-neutral-900 text-white font-bold rounded-xl hover:bg-neutral-800 disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
               <button onClick={() => setShowModal(false)} className="px-6 py-3 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200">Cancel</button>
             </div>
           </div>
