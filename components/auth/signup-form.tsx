@@ -61,14 +61,14 @@ export function SignupForm() {
         <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-6">
           <MailCheck className="w-7 h-7 text-emerald-600" />
         </div>
-        <h1 className="font-display text-4xl md:text-5xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
+        <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.05] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
           Check your <span className="italic-serif">email.</span>
         </h1>
-        <p className="text-neutral-600 mb-2 text-[15px]">
+        <p className="text-neutral-600 mb-2 text-sm sm:text-[15px] break-all">
           We sent a confirmation link to{' '}
           <span className="font-medium text-neutral-900">{pendingEmail}</span>.
         </p>
-        <p className="text-neutral-500 mb-8 text-[14px]">
+        <p className="text-neutral-500 mb-8 text-sm sm:text-[14px]">
           Click the link to activate your account, then sign in. The link is valid for 24 hours.
         </p>
 
@@ -126,14 +126,14 @@ export function SignupForm() {
 
   return (
     <div className="w-full">
-      <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
+      <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
         Create <span className="italic-serif">account.</span>
       </h1>
-      <p className="text-neutral-500 mb-10 text-[15px]">
+      <p className="text-neutral-500 mb-8 sm:mb-10 text-sm sm:text-[15px]">
         Free forever. No credit card. India&apos;s #1 CPL platform.
       </p>
 
-      <form action={handleSubmit} className="space-y-5">
+      <form action={handleSubmit} className="space-y-4 sm:space-y-5">
         <Input
           label="Email"
           name="email"
@@ -152,7 +152,7 @@ export function SignupForm() {
           pattern="^\+?[\d\s\-()]{8,20}$"
           hint="We'll use this for exam updates."
         />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Date of birth"
             name="date_of_birth"

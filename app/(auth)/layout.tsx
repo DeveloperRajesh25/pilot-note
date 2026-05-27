@@ -10,22 +10,22 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left — form column */}
-      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative">
+      <div className="flex-1 flex flex-col justify-between gap-8 sm:gap-10 px-5 py-8 sm:p-10 lg:p-14 relative">
         {/* Brand */}
-        <Link href="/" className="inline-flex mb-10 items-center gap-2 group w-fit">
+        <Link href="/" className="inline-flex items-center gap-2 group w-fit">
           <Image
             src="/logo.png"
             alt="Pilot Note"
             width={140}
             height={32}
-            className="h-8 w-auto transition-transform group-hover:-translate-y-0.5"
+            className="h-7 sm:h-8 w-auto transition-transform group-hover:-translate-y-0.5"
             priority
           />
         </Link>
 
-        <main className="w-full max-w-md animate-fade-up">{children}</main>
+        <main className="w-full max-w-md mx-auto lg:mx-0 animate-fade-up">{children}</main>
 
-        <footer className="text-xs text-neutral-400 flex items-center justify-between">
+        <footer className="text-xs text-neutral-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <p>
             © {new Date().getFullYear()}{' '}
             <span className="text-neutral-700 font-medium">Pilot Note</span>

@@ -20,12 +20,12 @@ export const Footer = () => {
         </p>
       </div>
 
-      <div className="container mx-auto px-6 pt-24 pb-12 relative">
+      <div className="container mx-auto px-4 sm:px-6 pt-16 sm:pt-20 lg:pt-24 pb-10 sm:pb-12 relative">
         {/* Top row: brand + columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-x-6 gap-y-10 sm:gap-x-8 sm:gap-y-12 lg:gap-12 mb-12 sm:mb-16 lg:mb-20">
           {/* Brand */}
-          <div className="lg:col-span-5">
-            <Link href="/" className="inline-block mb-6">
+          <div className="col-span-2 lg:col-span-5">
+            <Link href="/" className="inline-block mb-5 sm:mb-6">
               <Image
                 src="/logo.png"
                 alt="Pilot Note"
@@ -34,7 +34,7 @@ export const Footer = () => {
                 className="h-9 w-auto"
               />
             </Link>
-            <p className="text-neutral-600 max-w-md leading-relaxed text-[15px] mb-8">
+            <p className="text-neutral-600 max-w-md leading-relaxed text-sm sm:text-[15px] mb-6 sm:mb-8">
               The complete companion for CPL ground exams, aptitude tests, and pilot career guidance —
               built by pilots, for the ones who&apos;ll fly next.
             </p>
@@ -90,12 +90,12 @@ export const Footer = () => {
         </div>
 
         {/* Divider + bottom bar */}
-        <div className="pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-neutral-500">
+        <div className="pt-6 sm:pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-xs text-neutral-500 text-center md:text-left">
           <p>
             © {year} <span className="text-neutral-900 font-medium">Pilot Note</span>. All rights
             reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:gap-6">
             <Link href="/privacy" className="hover:text-neutral-900 transition-colors">
               Privacy
             </Link>

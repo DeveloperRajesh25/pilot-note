@@ -165,35 +165,35 @@ export default function ProfileClient({
   ];
 
   return (
-    <div className="container mx-auto px-6">
+    <div className="container mx-auto px-4 sm:px-6">
       {/* Back link */}
       <button
         onClick={() => router.back()}
-        className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-10 transition-colors"
+        className="group inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 mb-6 sm:mb-10 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" /> Back
       </button>
 
       {/* ───── Hero ───── */}
-      <div className="grid lg:grid-cols-12 gap-8 mb-14 items-end">
+      <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 mb-10 sm:mb-14 items-start lg:items-end">
         <div className="lg:col-span-8">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
             <span className="w-6 h-px bg-neutral-900" />
             Pilot · {joinDate}
           </span>
-          <div className="flex items-center gap-6 mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-neutral-900 text-white font-display text-3xl flex items-center justify-center tracking-tight">
+          <div className="flex items-center gap-4 sm:gap-6 mb-5 sm:mb-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-neutral-900 text-white font-display text-2xl sm:text-3xl flex items-center justify-center tracking-tight shrink-0">
               {initials}
             </div>
-            <div>
-              <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl sm:text-5xl md:text-6xl leading-[1] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 break-words">
                 {displayName.split(' ')[0]}
                 {displayName.split(' ').length > 1 && (
                   <span className="italic-serif text-neutral-400"> {displayName.split(' ').slice(1).join(' ')}</span>
                 )}
               </h1>
-              <p className="text-neutral-500 text-sm mt-2 flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5" /> {user.email}
+              <p className="text-neutral-500 text-xs sm:text-sm mt-2 flex items-center gap-2 truncate">
+                <Mail className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{user.email}</span>
               </p>
             </div>
           </div>
@@ -214,10 +214,10 @@ export default function ProfileClient({
         </div>
 
         <div className="lg:col-span-4 flex justify-start lg:justify-end">
-          <form action={signOut}>
+          <form action={signOut} className="w-full sm:w-auto">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all text-sm font-medium"
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-full bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 transition-all text-sm font-medium"
             >
               <LogOut className="w-4 h-4" /> Sign out
             </button>
@@ -226,7 +226,7 @@ export default function ProfileClient({
       </div>
 
       {/* ───── Stats row ───── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden mb-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
         <StatCard label="Tests Purchased" value={String(stats.totalPurchases)} icon={<BookOpen className="w-4 h-4" strokeWidth={1.5} />} />
         <StatCard label="Avg. RTR" value={stats.avgRtr === null ? '—' : `${stats.avgRtr}%`} icon={<Target className="w-4 h-4" strokeWidth={1.5} />} />
         <StatCard label="Avg. Aptitude" value={stats.avgAptitude === null ? '—' : `${stats.avgAptitude}%`} icon={<Trophy className="w-4 h-4" strokeWidth={1.5} />} />
@@ -234,13 +234,13 @@ export default function ProfileClient({
       </div>
 
       {/* ───── Tabs ───── */}
-      <div className="border-b border-neutral-200 mb-10 sticky top-24 bg-white/85 backdrop-blur-xl z-30">
+      <div className="border-b border-neutral-200 mb-8 sm:mb-10 sticky top-20 sm:top-24 bg-white/85 backdrop-blur-xl z-30 -mx-4 sm:mx-0 px-4 sm:px-0">
         <div className="flex gap-1 overflow-x-auto -mb-px">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-5 py-4 text-sm font-medium whitespace-nowrap border-b transition-colors ${
+              className={`flex items-center gap-2 px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium whitespace-nowrap border-b transition-colors ${
                 tab === t.id
                   ? 'text-neutral-900 border-neutral-900'
                   : 'text-neutral-500 border-transparent hover:text-neutral-900'
@@ -285,16 +285,16 @@ export default function ProfileClient({
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-white p-6 flex flex-col gap-3 hover:bg-neutral-50 transition-colors">
+    <div className="bg-white p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 hover:bg-neutral-50 transition-colors">
       <div className="flex items-center justify-between">
-        <span className="w-9 h-9 rounded-lg bg-neutral-100 text-neutral-900 flex items-center justify-center">
+        <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-neutral-100 text-neutral-900 flex items-center justify-center">
           {icon}
         </span>
       </div>
-      <p className="font-display text-3xl md:text-4xl text-neutral-900 leading-none tracking-tight">
+      <p className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 leading-none tracking-tight">
         {value}
       </p>
-      <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">{label}</p>
+      <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">{label}</p>
     </div>
   );
 }
@@ -391,24 +391,24 @@ function OverviewTab({
 
   if (isEmpty) {
     return (
-      <div className="border border-neutral-200 rounded-3xl p-12 md:p-16 text-center">
-        <h3 className="font-display text-4xl text-neutral-900 mb-3">
+      <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 text-center">
+        <h3 className="font-display text-3xl sm:text-4xl text-neutral-900 mb-3">
           Welcome aboard, <span className="italic-serif">{displayName}.</span>
         </h3>
-        <p className="text-neutral-500 mb-10 max-w-md mx-auto">
+        <p className="text-neutral-500 mb-8 sm:mb-10 max-w-md mx-auto text-sm sm:text-base">
           Your training journey starts here. Take a free aptitude test, study from our guides, or unlock the DGCA RTR mock tests.
         </p>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <Button href="/pilot-aptitude">Take aptitude test</Button>
-          <Button variant="secondary" href="/dgca-rtr">Browse RTR</Button>
-          <Button variant="secondary" href="/guides">Read guides</Button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+          <Button href="/pilot-aptitude" className="justify-center">Take aptitude test</Button>
+          <Button variant="secondary" href="/dgca-rtr" className="justify-center">Browse RTR</Button>
+          <Button variant="secondary" href="/guides" className="justify-center">Read guides</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
       {/* Recent Activity */}
       <div className="lg:col-span-2">
         <div className="flex items-center justify-between mb-6">
@@ -434,14 +434,14 @@ function OverviewTab({
         ) : (
           <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
             {activity.map((a) => (
-              <div key={a.id} className="flex items-center gap-5 p-5 hover:bg-neutral-50 transition-colors">
+              <div key={a.id} className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 hover:bg-neutral-50 transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-neutral-900 truncate">{a.title}</p>
-                  <p className="text-xs text-neutral-500 mt-0.5">{a.subtitle} · {a.date}</p>
+                  <p className="font-medium text-neutral-900 truncate text-sm sm:text-base">{a.title}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5 truncate">{a.subtitle} · {a.date}</p>
                 </div>
                 {a.pct !== undefined && (
-                  <div className="text-right">
-                    <p className={`font-display text-2xl leading-none ${pctColor(a.pct)}`}>{a.pct}%</p>
+                  <div className="text-right shrink-0">
+                    <p className={`font-display text-xl sm:text-2xl leading-none ${pctColor(a.pct)}`}>{a.pct}%</p>
                     <p className="text-[10px] text-neutral-400 mt-1 font-mono">{a.score}</p>
                   </div>
                 )}
@@ -452,9 +452,9 @@ function OverviewTab({
       </div>
 
       {/* Side */}
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {/* Upcoming */}
-        <div className="border border-neutral-200 rounded-2xl p-6">
+        <div className="border border-neutral-200 rounded-2xl p-5 sm:p-6">
           <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
             <Calendar className="w-3.5 h-3.5" /> Upcoming
           </h3>
@@ -476,7 +476,7 @@ function OverviewTab({
         </div>
 
         {/* Quick actions */}
-        <div className="border border-neutral-200 rounded-2xl p-6">
+        <div className="border border-neutral-200 rounded-2xl p-5 sm:p-6">
           <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">
             Quick actions
           </h3>
@@ -503,12 +503,12 @@ function OverviewTab({
 
         {/* Pariksha avg */}
         {avgExam !== null && (
-          <div className="bg-neutral-950 text-white rounded-2xl p-6 relative overflow-hidden">
+          <div className="bg-neutral-950 text-white rounded-2xl p-5 sm:p-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_60%)]" />
             <p className="relative text-[10px] uppercase tracking-[0.22em] text-emerald-400 font-medium mb-3">
               Pariksha avg.
             </p>
-            <p className="relative font-display text-5xl text-white leading-none mb-2">{avgExam}%</p>
+            <p className="relative font-display text-4xl sm:text-5xl text-white leading-none mb-2">{avgExam}%</p>
             <p className="relative text-xs text-white/60">Across all submitted exams</p>
           </div>
         )}
@@ -540,7 +540,7 @@ function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; exa
         ) : (
           <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
             {purchases.map((p) => (
-              <div key={p.id} className="p-6">
+              <div key={p.id} className="p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -798,7 +798,7 @@ function ResultRow({ title, subtitle, pct, score }: { title: string; subtitle: s
 
 function SettingsTab({ user, profile }: { user: UserSummary; profile: Profile | null }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
       <EditProfileForm user={user} profile={profile} />
       <ChangePasswordForm />
 
@@ -819,7 +819,7 @@ function SettingsTab({ user, profile }: { user: UserSummary; profile: Profile | 
 
 function InfoRow({ icon, label, value, mono = false }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex items-center gap-5 p-5">
+    <div className="flex items-center gap-4 sm:gap-5 p-4 sm:p-5">
       <div className="w-9 h-9 rounded-lg bg-neutral-100 text-neutral-900 flex items-center justify-center shrink-0">
         {icon}
       </div>

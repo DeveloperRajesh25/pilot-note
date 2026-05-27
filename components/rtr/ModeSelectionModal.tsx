@@ -26,20 +26,20 @@ export function ModeSelectionModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-10 md:p-14 max-w-md mx-4 shadow-2xl"
+        className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14 max-w-md w-full shadow-2xl my-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-6">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-5 sm:mb-6">
           <span className="w-6 h-px bg-neutral-900" /> Select Mode
         </span>
 
-        <h2 className="font-display text-3xl text-neutral-900 mb-2 text-center">{partLabel}</h2>
+        <h2 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-2 text-center">{partLabel}</h2>
 
-        <p className="text-center text-sm text-neutral-600 mb-8">
+        <p className="text-center text-sm text-neutral-600 mb-6 sm:mb-8">
           Choose how you want to practice
         </p>
 
@@ -49,7 +49,7 @@ export function ModeSelectionModal({
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer no-underline"
+            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-5 sm:p-6 transition-all text-left cursor-pointer no-underline"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
@@ -73,7 +73,7 @@ export function ModeSelectionModal({
             target="_blank"
             rel="noopener noreferrer"
             onClick={onClose}
-            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-6 transition-all text-left cursor-pointer no-underline"
+            className="block w-full group relative overflow-hidden rounded-2xl bg-white border-2 border-neutral-200 hover:border-neutral-900 p-5 sm:p-6 transition-all text-left cursor-pointer no-underline"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">

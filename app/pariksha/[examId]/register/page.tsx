@@ -229,19 +229,19 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
   return (
     <>
       <Header />
-      <main className="grow pt-36 pb-24 bg-white">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+      <main className="grow pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5 sm:mb-6">
             <span className="w-6 h-px bg-neutral-900" /> Register · {exam.subject}
           </span>
-          <h1 className="font-display text-4xl md:text-5xl text-neutral-900 leading-[1.05] tracking-[-0.03em] mb-4">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-neutral-900 leading-[1.05] tracking-[-0.03em] mb-3 sm:mb-4">
             {exam.title}
           </h1>
           {exam.description && (
-            <p className="text-neutral-600 text-base mb-10 max-w-2xl">{exam.description}</p>
+            <p className="text-neutral-600 text-base mb-8 sm:mb-10 max-w-2xl">{exam.description}</p>
           )}
 
-          <div className="border border-neutral-200 rounded-3xl p-6 md:p-10">
+          <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-10">
             <div className="grid sm:grid-cols-2 gap-5 sm:gap-6 mb-8">
               <Row icon={<Calendar className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />} label="Starts at" value={startLocal ?? '—'} />
               <Row icon={<Clock className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />} label="Duration" value={`${exam.duration} min`} />

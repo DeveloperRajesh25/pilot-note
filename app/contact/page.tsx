@@ -52,19 +52,19 @@ export default function ContactPage() {
       <Header />
       <main className="grow bg-white">
         {/* Hero */}
-        <section className="relative pt-36 pb-20 overflow-hidden border-b border-neutral-200">
+        <section className="relative pt-28 sm:pt-32 lg:pt-36 pb-14 sm:pb-20 overflow-hidden border-b border-neutral-200">
           <div className="absolute inset-0 bg-grid opacity-60 pointer-events-none" />
-          <div className="absolute top-1/3 -left-32 w-[420px] h-[420px] bg-emerald-100/30 rounded-full blur-[120px] pointer-events-none" />
+          <div className="hidden md:block absolute top-1/3 -left-32 w-[420px] h-[420px] bg-emerald-100/30 rounded-full blur-[120px] pointer-events-none" />
 
-          <div className="container mx-auto px-6 relative">
+          <div className="container mx-auto px-4 sm:px-6 relative">
             <div className="max-w-3xl">
-              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-6 h-px bg-neutral-900" /> Contact Pilot Note
               </span>
-              <h1 className="font-display text-[clamp(2.5rem,5.5vw,4.5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-5">
+              <h1 className="font-display text-[clamp(2.5rem,9vw,4.5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-4 sm:mb-5">
                 Let’s <span className="italic-serif">talk.</span>
               </h1>
-              <p className="text-neutral-600 text-lg max-w-2xl leading-relaxed">
+              <p className="text-neutral-600 text-base sm:text-lg max-w-2xl leading-relaxed">
                 We’re a small, focused team and we genuinely read every message. Pick the channel
                 that fits and we’ll get back to you — usually within one working day.
               </p>
@@ -73,16 +73,16 @@ export default function ContactPage() {
         </section>
 
         {/* Channels */}
-        <section className="py-20">
-          <div className="container mx-auto px-6">
-            <div className="grid sm:grid-cols-2 gap-5">
+        <section className="py-14 sm:py-20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
               {CHANNELS.map((c) => (
                 <a
                   key={c.email}
                   href={`mailto:${c.email}`}
-                  className="group bg-white border border-neutral-200 rounded-3xl p-7 hover:border-neutral-900 hover:-translate-y-1 transition-all duration-300"
+                  className="group bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-7 hover:border-neutral-900 hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="flex items-start justify-between mb-5">
+                  <div className="flex items-start justify-between mb-4 sm:mb-5">
                     <div className="w-11 h-11 rounded-2xl bg-neutral-900 text-white flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
                       {c.icon}
                     </div>
@@ -91,9 +91,9 @@ export default function ContactPage() {
                       className="text-neutral-300 group-hover:text-emerald-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all"
                     />
                   </div>
-                  <h3 className="font-display text-xl text-neutral-900 mb-2">{c.title}</h3>
-                  <p className="text-neutral-600 text-sm leading-relaxed mb-4">{c.desc}</p>
-                  <p className="text-sm font-medium text-emerald-600 group-hover:text-emerald-700">
+                  <h3 className="font-display text-lg sm:text-xl text-neutral-900 mb-2">{c.title}</h3>
+                  <p className="text-neutral-600 text-sm leading-relaxed mb-3 sm:mb-4">{c.desc}</p>
+                  <p className="text-sm font-medium text-emerald-600 group-hover:text-emerald-700 break-all">
                     {c.email}
                   </p>
                 </a>
@@ -103,14 +103,14 @@ export default function ContactPage() {
         </section>
 
         {/* Office / social */}
-        <section className="py-20 border-t border-neutral-200 bg-neutral-50">
-          <div className="container mx-auto px-6">
-            <div className="grid lg:grid-cols-12 gap-12">
+        <section className="py-14 sm:py-20 border-t border-neutral-200 bg-neutral-50">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid lg:grid-cols-12 gap-8 sm:gap-12">
               <div className="lg:col-span-5">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
                   <span className="w-6 h-px bg-neutral-900" /> Where we are
                 </span>
-                <h2 className="font-display text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-5">
+                <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-4 sm:mb-5">
                   Built in <span className="italic-serif">India</span>, for Indian skies.
                 </h2>
                 <p className="text-neutral-600 text-[15px] leading-relaxed mb-6">
@@ -125,10 +125,10 @@ export default function ContactPage() {
               </div>
 
               <div className="lg:col-span-6 lg:col-start-7">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
                   <span className="w-6 h-px bg-neutral-900" /> Follow along
                 </span>
-                <h2 className="font-display text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-5">
+                <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-4 sm:mb-5">
                   Daily tips, real <span className="italic-serif">RT</span> calls, and aviation deep-dives.
                 </h2>
                 <p className="text-neutral-600 text-[15px] leading-relaxed mb-6">
@@ -160,9 +160,9 @@ export default function ContactPage() {
         </section>
 
         {/* Footer help */}
-        <section className="py-16 border-t border-neutral-200">
-          <div className="container mx-auto px-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 text-sm">
+        <section className="py-12 sm:py-16 border-t border-neutral-200">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 text-sm">
               <p className="text-neutral-500">
                 Looking for legal info? See{' '}
                 <Link href="/privacy" className="text-neutral-900 underline underline-offset-4 hover:text-emerald-600">

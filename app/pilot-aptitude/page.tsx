@@ -148,8 +148,8 @@ export default function PilotAptitudePage() {
   return (
     <>
       <Header />
-      <main className="grow pt-36 pb-32 bg-white min-h-screen">
-        <div className="container mx-auto px-6">
+      <main className="grow pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 lg:pb-32 bg-white min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6">
           {view === 'selection' && (
             <SelectionView
               onStart={startTest}
@@ -163,18 +163,18 @@ export default function PilotAptitudePage() {
           {view === 'test' && (
             <div className="max-w-3xl mx-auto">
               {/* Top bar */}
-              <div className="flex justify-between items-center mb-10">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full font-medium">
+              <div className="flex justify-between items-center mb-6 sm:mb-10 gap-3">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 sm:px-3 rounded-full font-medium truncate">
                   {currentCategory}
                 </span>
-                <div className="flex items-center gap-2 font-mono text-base text-neutral-700">
+                <div className="flex items-center gap-2 font-mono text-sm sm:text-base text-neutral-700 shrink-0">
                   <Clock className="w-4 h-4" strokeWidth={1.5} />
                   {formatTime(elapsedSeconds)}
                 </div>
               </div>
 
               {/* Progress */}
-              <div className="mb-10">
+              <div className="mb-6 sm:mb-10">
                 <div className="flex justify-between text-xs font-medium text-neutral-500 mb-3 tracking-wide">
                   <span>Question {currentIndex + 1} of {questions.length}</span>
                   <span>{Math.round(((currentIndex + 1) / questions.length) * 100)}%</span>
@@ -188,11 +188,11 @@ export default function PilotAptitudePage() {
               </div>
 
               {/* Question */}
-              <h2 className="font-display text-3xl md:text-4xl text-neutral-900 leading-tight tracking-tight mb-10">
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 leading-tight tracking-tight mb-6 sm:mb-10">
                 {questions[currentIndex]?.question}
               </h2>
 
-              <div className="space-y-3 mb-8">
+              <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
                 {questions[currentIndex]?.options.map((opt, i) => {
                   const isSelected = answers[currentIndex] === i;
                   const isCorrect = questions[currentIndex].correct === i;
@@ -223,12 +223,12 @@ export default function PilotAptitudePage() {
                       key={i}
                       onClick={() => handleAnswer(i)}
                       disabled={hasAnswered}
-                      className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${cls}`}
+                      className={`group w-full flex items-start sm:items-center gap-3 sm:gap-5 p-3.5 sm:p-5 rounded-2xl border transition-all text-left ${cls}`}
                     >
-                      <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${letterCls}`}>
+                      <span className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-xs sm:text-sm transition-colors ${letterCls}`}>
                         {String.fromCharCode(65 + i)}
                       </span>
-                      <span className={`text-[15px] font-medium ${textCls}`}>{opt}</span>
+                      <span className={`text-sm sm:text-[15px] font-medium leading-relaxed ${textCls}`}>{opt}</span>
                     </button>
                   );
                 })}
@@ -236,20 +236,21 @@ export default function PilotAptitudePage() {
 
               {/* Explanation */}
               {answers[currentIndex] !== null && (
-                <div className="mb-8 p-5 border-l-2 border-emerald-500 bg-emerald-50/40 rounded-r-xl">
+                <div className="mb-6 sm:mb-8 p-4 sm:p-5 border-l-2 border-emerald-500 bg-emerald-50/40 rounded-r-xl">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 font-medium mb-2">
                     Explanation
                   </p>
-                  <p className="text-neutral-700 text-[15px] leading-relaxed">{questions[currentIndex]?.explanation}</p>
+                  <p className="text-neutral-700 text-sm sm:text-[15px] leading-relaxed">{questions[currentIndex]?.explanation}</p>
                 </div>
               )}
 
               {/* Actions */}
-              <div className="flex justify-between items-center pt-8 border-t border-neutral-200">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 pt-6 sm:pt-8 border-t border-neutral-200">
                 <Button
                   variant="secondary"
                   onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
                   disabled={currentIndex === 0}
+                  className="w-full sm:w-auto"
                 >
                   <ArrowLeft className="w-4 h-4" /> Previous
                 </Button>
@@ -258,6 +259,7 @@ export default function PilotAptitudePage() {
                     variant="violet"
                     onClick={finishTest}
                     disabled={answers[currentIndex] === null || saving}
+                    className="w-full sm:w-auto"
                   >
                     {saving ? 'Saving…' : 'Finish test'}
                   </Button>
@@ -266,6 +268,7 @@ export default function PilotAptitudePage() {
                     variant="primary"
                     onClick={() => { setCurrentIndex(prev => prev + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     disabled={answers[currentIndex] === null}
+                    className="w-full sm:w-auto"
                   >
                     Next <ArrowRight className="w-4 h-4" />
                   </Button>
@@ -303,44 +306,44 @@ function SelectionView({
   return (
     <div>
       {/* Header */}
-      <div className="grid lg:grid-cols-12 gap-10 mb-16 items-end">
+      <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 mb-10 sm:mb-16 items-end">
         <div className="lg:col-span-8">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
             <span className="w-6 h-px bg-neutral-900" />
             COMPASS Aptitude
           </span>
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1] tracking-[-0.03em] text-neutral-900">
             Test your <span className="italic-serif">aptitude.</span>
           </h1>
         </div>
         <div className="lg:col-span-4">
-          <p className="text-neutral-600 text-lg leading-relaxed">
+          <p className="text-neutral-600 text-base sm:text-lg leading-relaxed">
             Assess your skills across the four COMPASS aptitude domains used by airline selection.
           </p>
         </div>
       </div>
 
       {/* CTAs */}
-      <div className="flex flex-wrap items-center gap-3 mb-16 pb-12 border-b border-neutral-200">
-        <Button variant="violet" size="lg" onClick={() => onStart(null)} disabled={loading}>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 mb-10 sm:mb-16 pb-8 sm:pb-12 border-b border-neutral-200">
+        <Button variant="violet" size="lg" onClick={() => onStart(null)} disabled={loading} className="justify-center">
           {loading ? 'Loading…' : 'Take full COMPASS test'}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </Button>
-        <Button variant="secondary" size="lg" onClick={onHistory}>
+        <Button variant="secondary" size="lg" onClick={onHistory} className="justify-center">
           <BarChart3 className="w-4 h-4" /> My history
         </Button>
       </div>
 
       {/* Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {APTITUDE_CATEGORIES.map((cat, idx) => (
           <button
             key={cat}
             onClick={() => !loading && onStart(cat)}
-            className="group bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
+            className="group bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-10">
-              <div className="w-12 h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center transition-colors">
+            <div className="flex items-center justify-between mb-6 sm:mb-10">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center transition-colors">
                 {CATEGORY_ICONS[cat]}
               </div>
               <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
@@ -348,12 +351,12 @@ function SelectionView({
               </span>
             </div>
 
-            <h3 className="font-display text-3xl text-neutral-900 mb-3 leading-tight">{cat}</h3>
-            <p className="text-neutral-600 text-[15px] leading-relaxed mb-8">
+            <h3 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-3 leading-tight">{cat}</h3>
+            <p className="text-neutral-600 text-sm sm:text-[15px] leading-relaxed mb-6 sm:mb-8">
               {CATEGORY_DESCS[cat]}
             </p>
 
-            <div className="mt-auto flex items-center justify-between pt-6 border-t border-neutral-100">
+            <div className="mt-auto flex items-center justify-between pt-5 sm:pt-6 border-t border-neutral-100">
               <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-medium">
                 6 questions
               </span>
@@ -391,7 +394,7 @@ function HistoryView({
         <span className="w-6 h-px bg-neutral-900" />
         Activity
       </span>
-      <h2 className="font-display text-4xl md:text-5xl text-neutral-900 mb-12 tracking-tight">
+      <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-neutral-900 mb-8 sm:mb-12 tracking-tight">
         Your <span className="italic-serif">history.</span>
       </h2>
 
@@ -405,21 +408,21 @@ function HistoryView({
           <p className="text-neutral-500">No tests taken yet. Start your first test.</p>
         </div>
       ) : (
-        <div className="border border-neutral-200 rounded-3xl divide-y divide-neutral-200 overflow-hidden">
+        <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl divide-y divide-neutral-200 overflow-hidden">
           {history.map(r => {
             const pct = Math.round((r.score / r.total) * 100);
             const colorClass =
               pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600';
             return (
-              <div key={r.id} className="px-6 py-5 flex items-center justify-between hover:bg-neutral-50 transition-colors">
-                <div>
-                  <p className="font-medium text-neutral-900 mb-1">{r.category}</p>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-mono">
+              <div key={r.id} className="px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-3 hover:bg-neutral-50 transition-colors">
+                <div className="min-w-0">
+                  <p className="font-medium text-neutral-900 mb-1 text-sm sm:text-base truncate">{r.category}</p>
+                  <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-mono">
                     {new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} · {Math.floor(r.time_taken / 60)}m {r.time_taken % 60}s
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className={`font-display text-3xl tracking-tight leading-none ${colorClass}`}>{pct}%</p>
+                <div className="text-right shrink-0">
+                  <p className={`font-display text-2xl sm:text-3xl tracking-tight leading-none ${colorClass}`}>{pct}%</p>
                   <p className="text-[11px] text-neutral-400 mt-1">{r.score}/{r.total}</p>
                 </div>
               </div>
@@ -466,16 +469,16 @@ function ResultsView({
         <span className="w-6 h-px bg-neutral-900" />
         Test complete
       </span>
-      <h2 className="font-display text-5xl md:text-6xl text-neutral-900 mb-3 tracking-tight">
+      <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-neutral-900 mb-3 tracking-tight">
         Your <span className="italic-serif">result.</span>
       </h2>
-      <p className="text-neutral-500 mb-12">{category}</p>
+      <p className="text-neutral-500 mb-8 sm:mb-12">{category}</p>
 
-      <div className="grid md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-3xl overflow-hidden mb-12">
+      <div className="grid md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
         {/* Score circle */}
-        <div className="bg-white p-10 flex flex-col items-center justify-center">
-          <div className="relative w-44 h-44 mb-4">
-            <svg className="w-full h-full transform -rotate-90">
+        <div className="bg-white p-8 sm:p-10 flex flex-col items-center justify-center">
+          <div className="relative w-36 h-36 sm:w-44 sm:h-44 mb-4">
+            <svg viewBox="0 0 176 176" className="w-full h-full transform -rotate-90">
               <circle cx="88" cy="88" r="76" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-neutral-100" />
               <circle
                 cx="88"
@@ -491,7 +494,7 @@ function ResultsView({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-5xl text-neutral-900 leading-none">{percentage}%</span>
+              <span className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none">{percentage}%</span>
               <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-400 mt-2">{correctCount}/{questions.length}</span>
             </div>
           </div>
@@ -501,11 +504,11 @@ function ResultsView({
         </div>
 
         {/* Pass/fail summary */}
-        <div className="bg-white p-10 flex flex-col justify-center">
+        <div className="bg-white p-8 sm:p-10 flex flex-col justify-center text-center md:text-left items-center md:items-start">
           <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium mb-3">
             Outcome
           </span>
-          <p className={`font-display text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>
+          <p className={`font-display text-4xl sm:text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>
             {passed ? 'Passed' : 'Try again'}
           </p>
           <p className="text-neutral-500 text-sm">
@@ -541,7 +544,7 @@ function ResultsView({
       </div>
 
       {/* Detailed review */}
-      <div className="mb-12">
+      <div className="mb-10 sm:mb-12">
         <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">
           Question review
         </h3>
@@ -549,13 +552,13 @@ function ResultsView({
           {questions.map((q, i) => {
             const ok = answers[i] === q.correct;
             return (
-              <div key={q.id} className="px-5 py-4 flex items-start gap-4">
+              <div key={q.id} className="px-4 sm:px-5 py-4 flex items-start gap-3 sm:gap-4">
                 {ok ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
                 ) : (
                   <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />
                 )}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-neutral-900 mb-1">Q{i + 1}. {q.question}</p>
                   <p className="text-xs text-neutral-500 line-clamp-2">{q.explanation}</p>
                 </div>
@@ -565,9 +568,9 @@ function ResultsView({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Button variant="primary" size="lg" onClick={onRetry}>Retry test</Button>
-        <Button variant="secondary" size="lg" onClick={onBack}>Back to categories</Button>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+        <Button variant="primary" size="lg" onClick={onRetry} className="justify-center">Retry test</Button>
+        <Button variant="secondary" size="lg" onClick={onBack} className="justify-center">Back to categories</Button>
       </div>
     </div>
   );

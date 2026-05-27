@@ -92,7 +92,7 @@ export default function ParikshaExamShell({ params }: { params: Promise<{ examId
     return (
       <>
         <Header />
-        <main className="grow pt-48 flex items-center justify-center bg-white">
+        <main className="grow pt-36 sm:pt-48 px-4 flex items-center justify-center bg-white">
           <div className="text-center">
             <div className="w-10 h-10 border-2 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mx-auto mb-4" />
             <p className="text-neutral-500 text-sm uppercase tracking-[0.18em]">Loading exam…</p>
@@ -107,12 +107,12 @@ export default function ParikshaExamShell({ params }: { params: Promise<{ examId
     return (
       <>
         <Header />
-        <main className="grow pt-48 flex items-center justify-center bg-white">
-          <div className="text-center max-w-md p-12 border border-neutral-200 rounded-3xl">
+        <main className="grow pt-36 sm:pt-48 px-4 flex items-center justify-center bg-white">
+          <div className="text-center max-w-md w-full p-8 sm:p-12 border border-neutral-200 rounded-2xl sm:rounded-3xl">
             <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">Locked</span>
-            <h2 className="font-display text-4xl text-neutral-900 mt-3 mb-4">Not registered</h2>
-            <p className="text-neutral-500 mb-8 text-sm">Complete registration and payment to take this exam.</p>
-            <div className="flex gap-3 justify-center">
+            <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 mt-3 mb-4">Not registered</h2>
+            <p className="text-neutral-500 mb-6 sm:mb-8 text-sm">Complete registration and payment to take this exam.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button variant="violet" href={`/pariksha/${examId}/register`}>Register now</Button>
               <Button variant="secondary" href="/pariksha">All exams</Button>
             </div>
@@ -127,10 +127,10 @@ export default function ParikshaExamShell({ params }: { params: Promise<{ examId
     return (
       <>
         <Header />
-        <main className="grow pt-48 flex items-center justify-center bg-white">
-          <div className="text-center max-w-md p-12 border border-neutral-200 rounded-3xl">
-            <h2 className="font-display text-4xl text-neutral-900 mb-4">Something went wrong</h2>
-            <p className="text-rose-500 mb-8 text-sm">{state.message}</p>
+        <main className="grow pt-36 sm:pt-48 px-4 flex items-center justify-center bg-white">
+          <div className="text-center max-w-md w-full p-8 sm:p-12 border border-neutral-200 rounded-2xl sm:rounded-3xl">
+            <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 mb-4">Something went wrong</h2>
+            <p className="text-rose-500 mb-6 sm:mb-8 text-sm">{state.message}</p>
             <Button variant="primary" onClick={() => { setState({ kind: 'loading' }); void load(); }}>Retry</Button>
           </div>
         </main>

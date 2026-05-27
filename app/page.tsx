@@ -20,30 +20,30 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         {/* ──────────── HERO ──────────── */}
-        <section className="relative h-[100dvh] min-h-[640px] max-h-[1000px] flex items-center overflow-hidden bg-white pt-20">
+        <section className="relative flex items-center overflow-hidden bg-white pt-28 pb-16 sm:pt-32 sm:pb-20 lg:h-[100dvh] lg:min-h-[640px] lg:max-h-[1000px] lg:py-20">
           {/* Background accents */}
           <div className="absolute inset-0 bg-grid opacity-60 pointer-events-none" />
-          <div className="absolute top-1/4 -left-32 w-[420px] h-[420px] bg-emerald-100/30 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-0 -right-32 w-[380px] h-[380px] bg-neutral-100 rounded-full blur-[100px] pointer-events-none" />
+          <div className="hidden md:block absolute top-1/4 -left-32 w-[420px] h-[420px] bg-emerald-100/30 rounded-full blur-[120px] pointer-events-none" />
+          <div className="hidden md:block absolute bottom-0 -right-32 w-[380px] h-[380px] bg-neutral-100 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="container mx-auto px-6 relative w-full">
-            <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="container mx-auto px-4 sm:px-6 relative w-full">
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left — copy */}
               <div className="lg:col-span-7 relative">
-                <span className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white text-neutral-600 text-[10px] font-medium tracking-[0.18em] uppercase mb-6">
+                <span className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white text-neutral-600 text-[10px] font-medium tracking-[0.18em] uppercase mb-5 sm:mb-6">
                   <span className="relative flex h-1.5 w-1.5">
-                    
+
                   </span>
                   {HERO_CONTENT.badge}
                 </span>
 
-                <h1 className="font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1] tracking-[-0.03em] text-neutral-900 mb-6">
+                <h1 className="font-display text-[clamp(2.25rem,9vw,5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-5 sm:mb-6">
                   One stop for the <span className="italic-serif">future</span>
                   <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 align-middle mx-2" />
                   captains <span className="text-neutral-400">of India.</span>
                 </h1>
 
-                <p className="text-neutral-600 text-base md:text-lg max-w-xl leading-relaxed mb-8 font-normal">
+                <p className="text-neutral-600 text-[15px] sm:text-base md:text-lg max-w-xl leading-relaxed mb-7 sm:mb-8 font-normal">
                   {HERO_CONTENT.subtitle}
                 </p>
 
@@ -61,8 +61,8 @@ export default function Home() {
               {/* Right — visual */}
               <div className="lg:col-span-5 relative">
                 <div className="relative">
-                  <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.75rem] p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
-                    <div className="aspect-[5/4] relative bg-white rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
+                  <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.5rem] sm:rounded-[1.75rem] p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
+                    <div className="aspect-[5/4] relative bg-white rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
                       <SketchCanvas />
                     </div>
                   </div>
@@ -103,11 +103,11 @@ export default function Home() {
         {/* ──────────── MARQUEE STRIP ──────────── */}
         <section className="border-y border-neutral-200 bg-neutral-50 overflow-hidden">
           <div
-            className="flex w-max py-5"
+            className="flex w-max py-4 sm:py-5"
             style={{ animation: 'pn-marquee 38s linear infinite' }}
           >
             {[...Array(2)].map((_, dup) => (
-              <div key={dup} className="flex items-center gap-12 px-6 shrink-0">
+              <div key={dup} className="flex items-center gap-8 sm:gap-12 px-4 sm:px-6 shrink-0">
                 {[
                   'DGCA RTR(A)',
                   'Air Navigation',
@@ -122,7 +122,7 @@ export default function Home() {
                 ].map((label, i) => (
                   <span
                     key={i}
-                    className="flex items-center gap-12 text-2xl md:text-3xl font-display text-neutral-900 whitespace-nowrap"
+                    className="flex items-center gap-8 sm:gap-12 text-xl sm:text-2xl md:text-3xl font-display text-neutral-900 whitespace-nowrap"
                   >
                     {label}
                     <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
@@ -134,36 +134,36 @@ export default function Home() {
         </section>
 
         {/* ──────────── FEATURES ──────────── */}
-        <section className="py-32 bg-white relative" id="features">
-          <div className="container mx-auto px-6">
-            <div className="grid lg:grid-cols-12 gap-12 mb-20">
+        <section className="py-16 sm:py-24 lg:py-32 bg-white relative" id="features">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid lg:grid-cols-12 gap-6 sm:gap-10 lg:gap-12 mb-12 sm:mb-16 lg:mb-20">
               <div className="lg:col-span-5">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
                   <span className="w-6 h-px bg-neutral-900" />
                   What we offer
                 </span>
-                <h2 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1] tracking-[-0.03em] text-neutral-900">
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-[-0.03em] text-neutral-900">
                   Everything to <br />
                   <span className="italic-serif">clear</span> CPL.
                 </h2>
               </div>
               <div className="lg:col-span-6 lg:col-start-7 flex items-end">
-                <p className="text-neutral-600 text-lg leading-relaxed max-w-xl">
+                <p className="text-neutral-600 text-base sm:text-lg leading-relaxed max-w-xl">
                   Four instruments designed for aspiring commercial pilots. Practice, learn, compete,
                   and assess your readiness — all in one cockpit.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {FEATURES.map((feature, idx) => (
                 <Link
                   key={feature.id}
                   href={feature.linkUrl}
-                  className="group relative bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
+                  className="group relative bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
                 >
                   {/* Index */}
-                  <div className="flex items-center justify-between mb-12">
+                  <div className="flex items-center justify-between mb-8 sm:mb-12">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
                       {String(idx + 1).padStart(2, '0')} / 04
                     </span>
@@ -174,14 +174,14 @@ export default function Home() {
                   </div>
 
                   {/* Icon */}
-                  <div className="w-12 h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center mb-8 transition-colors">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center mb-6 sm:mb-8 transition-colors">
                     {FEATURE_ICONS[feature.id]}
                   </div>
 
-                  <h3 className="font-display text-3xl text-neutral-900 mb-3 leading-tight">
+                  <h3 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-3 leading-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-neutral-600 text-sm leading-relaxed flex-grow mb-8">
+                  <p className="text-neutral-600 text-sm leading-relaxed flex-grow mb-6 sm:mb-8">
                     {feature.desc}
                   </p>
 
@@ -195,15 +195,15 @@ export default function Home() {
         </section>
 
         {/* ──────────── WHY US ──────────── */}
-        <section className="py-32 bg-white" id="why">
-          <div className="container mx-auto px-6">
-            <div className="grid lg:grid-cols-12 gap-10 mb-20">
+        <section className="py-16 sm:py-24 lg:py-32 bg-white" id="why">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid lg:grid-cols-12 gap-10 mb-12 sm:mb-16 lg:mb-20">
               <div className="lg:col-span-7">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
                   <span className="w-6 h-px bg-neutral-900" />
                   Why Pilot Note
                 </span>
-                <h2 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-[-0.03em] text-neutral-900">
+                <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1] tracking-[-0.03em] text-neutral-900">
                   Made by pilots.
                   <br />
                   <span className="italic-serif text-neutral-400">For the next ones.</span>
@@ -211,26 +211,26 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-px">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-px">
               {WHY_US.map((item, idx) => (
                 <div
                   key={item.id}
-                  className="group relative py-12 border-b border-neutral-200 last:border-b-0 md:[&:nth-last-child(2)]:border-b-0"
+                  className="group relative py-8 sm:py-10 lg:py-12 border-b border-neutral-200 last:border-b-0 md:[&:nth-last-child(2)]:border-b-0"
                 >
-                  <div className="flex items-start gap-8">
+                  <div className="flex items-start gap-5 sm:gap-8">
                     <div className="shrink-0">
                       <p className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono mb-2">
                         Item {item.number}
                       </p>
-                      <p className="font-display text-5xl text-neutral-300 group-hover:text-emerald-500 transition-colors leading-none">
+                      <p className="font-display text-4xl sm:text-5xl text-neutral-300 group-hover:text-emerald-500 transition-colors leading-none">
                         {String(idx + 1).padStart(2, '0')}
                       </p>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-display text-2xl md:text-3xl text-neutral-900 mb-4 leading-tight">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display text-xl sm:text-2xl md:text-3xl text-neutral-900 mb-3 sm:mb-4 leading-tight">
                         {item.title}
                       </h3>
-                      <p className="text-neutral-600 leading-relaxed text-[15px]">{item.desc}</p>
+                      <p className="text-neutral-600 leading-relaxed text-sm sm:text-[15px]">{item.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -240,31 +240,31 @@ export default function Home() {
         </section>
 
         {/* ──────────── CTA ──────────── */}
-        <section className="relative py-40 bg-neutral-950 text-white overflow-hidden">
+        <section className="relative py-20 sm:py-28 lg:py-40 bg-neutral-950 text-white overflow-hidden">
           <div className="absolute inset-0 bg-grid opacity-[0.04] pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.18)_0%,transparent_60%)] pointer-events-none" />
 
-          <div className="container mx-auto px-6 relative text-center">
-            <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-400 font-medium flex items-center justify-center gap-2 mb-8">
+          <div className="container mx-auto px-4 sm:px-6 relative text-center">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-400 font-medium flex items-center justify-center gap-2 mb-6 sm:mb-8">
               <span className="w-6 h-px bg-emerald-400" />
               Join Pilot Note
               <span className="w-6 h-px bg-emerald-400" />
             </span>
 
-            <h2 className="font-display text-white text-6xl md:text-8xl lg:text-9xl leading-[0.9] tracking-[-0.03em] mb-10 max-w-5xl mx-auto">
+            <h2 className="font-display text-white text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-[0.95] tracking-[-0.03em] mb-6 sm:mb-10 max-w-5xl mx-auto">
               Your <span className="italic-serif">cockpit</span> awaits.
             </h2>
 
-            <p className="text-neutral-400 text-lg md:text-xl mb-14 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-neutral-400 text-base sm:text-lg md:text-xl mb-10 sm:mb-14 max-w-2xl mx-auto leading-relaxed">
               Trusted by 12,500+ student pilots across India. Your complete CPL preparation
               companion — from first MCQ to that final &ldquo;line-up and wait.&rdquo;
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Button size="lg" variant="violet" href="/signup" className="px-10 h-14">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto">
+              <Button size="lg" variant="violet" href="/signup" className="px-8 sm:px-10 h-14 justify-center">
                 Start free <ArrowUpRight size={18} />
               </Button>
-              <Button size="lg" variant="outline" href="/guides" className="text-white border-white/30 hover:bg-white hover:text-neutral-900 hover:border-white px-10 h-14">
+              <Button size="lg" variant="outline" href="/guides" className="text-white border-white/30 hover:bg-white hover:text-neutral-900 hover:border-white px-8 sm:px-10 h-14 justify-center">
                 Read guides
               </Button>
             </div>

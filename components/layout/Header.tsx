@@ -44,7 +44,7 @@ export const Header = () => {
         isScrolled ? 'pt-3' : 'pt-5'
       }`}
     >
-      <div className="container mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-3 sm:px-6">
         <div
           className={`relative flex items-center justify-between rounded-full transition-all duration-500 ${
             isScrolled
@@ -53,7 +53,7 @@ export const Header = () => {
           }`}
         >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 pl-1 group">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 pl-1 group min-w-0">
             <div className="relative">
               <Image
                 src="/logo.png"
@@ -61,7 +61,7 @@ export const Header = () => {
                 width={120}
                 height={28}
                 priority
-                className="h-7 w-auto object-contain transition-transform duration-500 group-hover:-translate-y-0.5"
+                className="h-6 sm:h-7 w-auto object-contain transition-transform duration-500 group-hover:-translate-y-0.5"
               />
             </div>
           </Link>
@@ -91,7 +91,7 @@ export const Header = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {!user && (
               <Link
                 href="/login"

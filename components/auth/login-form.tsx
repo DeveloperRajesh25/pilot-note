@@ -27,10 +27,10 @@ export function LoginForm() {
         <span className="w-6 h-px bg-neutral-900" />
         Welcome back
       </span>
-      <h1 className="font-display text-5xl md:text-6xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
+      <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
         Sign <span className="italic-serif">in.</span>
       </h1>
-      <p className="text-neutral-500 mb-10 text-[15px]">
+      <p className="text-neutral-500 mb-8 sm:mb-10 text-sm sm:text-[15px]">
         Continue your CPL journey with Pilot Note.
       </p>
 

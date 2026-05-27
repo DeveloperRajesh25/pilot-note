@@ -81,26 +81,26 @@ export default function DGCARTRPage() {
   return (
     <>
       <Header />
-      <main className="flex-grow pt-36 pb-32 bg-white">
+      <main className="flex-grow pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 lg:pb-32 bg-white">
         {/* ───── Page Header ───── */}
-        <section className="container mx-auto px-6 mb-20 relative">
-          <div className="grid lg:grid-cols-12 gap-10 items-end">
+        <section className="container mx-auto px-4 sm:px-6 mb-12 sm:mb-16 lg:mb-20 relative">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-end">
             <div className="lg:col-span-7">
-              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
                 <span className="w-6 h-px bg-neutral-900" />
                 DGCA RTR(A)
               </span>
-              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-6">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1] tracking-[-0.03em] text-neutral-900 mb-4 sm:mb-6">
                 RTR mock <span className="italic-serif">exams.</span>
               </h1>
-              <p className="text-neutral-600 text-lg leading-relaxed max-w-xl">
+              <p className="text-neutral-600 text-base sm:text-lg leading-relaxed max-w-xl">
                 Full RTR(A) exam simulation — Part 1 (MCQ, 2 hours) and Part 2 (RT Transmission, 25
                 min). Exactly like the real WPC exam.
               </p>
             </div>
 
             <div className="lg:col-span-4 lg:col-start-9">
-              <div className="border border-neutral-200 rounded-2xl p-6 bg-neutral-50">
+              <div className="border border-neutral-200 rounded-2xl p-5 sm:p-6 bg-neutral-50">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4">
                   <span className="w-6 h-px bg-neutral-900" />
                   DGCA RTR (R)
@@ -119,11 +119,11 @@ export default function DGCARTRPage() {
         </section>
 
         {/* ───── Tests ───── */}
-        <section className="container mx-auto px-6">
+        <section className="container mx-auto px-4 sm:px-6">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {[1, 2].map(i => (
-                <div key={i} className="bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10">
+                <div key={i} className="bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10">
                   <div className="h-6 skeleton rounded mb-4 w-3/4" />
                   <div className="h-4 skeleton rounded mb-10 w-full" />
                   <div className="h-32 skeleton rounded-xl mb-4" />
@@ -137,14 +137,14 @@ export default function DGCARTRPage() {
               <p className="text-rose-500 font-medium">{error}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {tests.map((test, idx) => (
                 <div
                   key={test.id}
-                  className="group bg-white border border-neutral-200 rounded-3xl p-8 lg:p-10 flex flex-col hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
+                  className="group bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
                 >
                   {/* Number + status */}
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center justify-between mb-6 sm:mb-8">
                     <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
                       Set {String(idx + 1).padStart(2, '0')}
                     </span>
@@ -161,15 +161,15 @@ export default function DGCARTRPage() {
                     )}
                   </div>
 
-                  <h3 className="font-display text-3xl text-neutral-900 mb-4 leading-tight">
+                  <h3 className="font-display text-2xl sm:text-3xl text-neutral-900 mb-3 sm:mb-4 leading-tight">
                     {test.title}
                   </h3>
-                  <p className="text-neutral-600 text-sm leading-relaxed mb-10">
+                  <p className="text-neutral-600 text-sm leading-relaxed mb-6 sm:mb-10">
                     {test.description}
                   </p>
 
                   {/* Parts breakdown */}
-                  <div className="space-y-3 mb-10">
+                  <div className="space-y-3 mb-6 sm:mb-10">
                     <div className="border border-neutral-200 rounded-2xl p-5 hover:border-neutral-300 transition-colors">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5">
@@ -224,9 +224,9 @@ export default function DGCARTRPage() {
                   </div>
 
                   {/* Price + actions */}
-                  <div className="mt-auto pt-6 border-t border-neutral-200">
-                    <div className="flex items-baseline gap-2 mb-5">
-                      <span className="font-display text-4xl text-neutral-900 tracking-tight">₹{test.price}</span>
+                  <div className="mt-auto pt-5 sm:pt-6 border-t border-neutral-200">
+                    <div className="flex items-baseline gap-2 mb-4 sm:mb-5">
+                      <span className="font-display text-3xl sm:text-4xl text-neutral-900 tracking-tight">₹{test.price}</span>
                       <span className="text-xs text-neutral-400 uppercase tracking-wider">/ one-time</span>
                     </div>
 

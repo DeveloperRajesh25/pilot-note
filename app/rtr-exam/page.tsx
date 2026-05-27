@@ -402,7 +402,7 @@ function RTRExamContent() {
 
   if (view === 'loading') return (
     <><Header />
-    <main className="grow pt-48 flex items-center justify-center bg-white">
+    <main className="grow pt-36 sm:pt-48 px-4 flex items-center justify-center bg-white">
       <div className="text-center">
         <div className="w-10 h-10 border-2 border-neutral-200 border-t-neutral-900 rounded-full animate-spin mx-auto mb-4" />
         <p className="text-neutral-500 text-sm uppercase tracking-[0.18em]">Loading exam…</p>
@@ -411,10 +411,10 @@ function RTRExamContent() {
   );
   if (view === 'error') return (
     <><Header />
-    <main className="grow pt-48 flex items-center justify-center bg-white">
-      <div className="text-center max-w-md p-12 border border-neutral-200 rounded-3xl">
-        <h2 className="font-display text-4xl text-neutral-900 mb-4">Cannot load exam</h2>
-        <p className="text-rose-500 mb-8 text-sm">{errorMsg}</p>
+    <main className="grow pt-36 sm:pt-48 px-4 flex items-center justify-center bg-white">
+      <div className="text-center max-w-md w-full p-8 sm:p-12 border border-neutral-200 rounded-2xl sm:rounded-3xl">
+        <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 mb-4">Cannot load exam</h2>
+        <p className="text-rose-500 mb-6 sm:mb-8 text-sm">{errorMsg}</p>
         <Button onClick={() => router.push('/dgca-rtr')}>Back to RTR tests</Button>
       </div>
     </main><Footer /></>
@@ -423,27 +423,24 @@ function RTRExamContent() {
   return (
     <>
       <Header />
-      <main className="grow pt-24 bg-white min-h-screen">
+      <main className="grow pt-20 sm:pt-24 bg-white min-h-screen">
         {/* Top Bar */}
-        <div className="sticky top-20 bg-white/90 backdrop-blur-xl border-b border-neutral-200 z-40 px-6 py-4">
-          <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-4">
+        <div className="sticky top-16 sm:top-20 bg-white/90 backdrop-blur-xl border-b border-neutral-200 z-40 px-3 sm:px-6 py-2.5 sm:py-4">
+          <div className="container mx-auto flex justify-between items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <button
                 onClick={() => {
-                  // Exam opens in a new tab from the mode-selection modal, so
-                  // history is empty and router.back() is a no-op. Send the
-                  // user back to the RTR landing instead.
                   if (window.history.length > 1) router.back();
                   else router.push('/dgca-rtr');
                 }}
-                className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors"
+                className="w-9 h-9 flex items-center justify-center hover:bg-neutral-100 rounded-full transition-colors shrink-0"
                 aria-label="Back"
               >
                 <svg className="w-4 h-4 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
-              <div>
-                <h1 className="font-display text-xl text-neutral-900 tracking-tight">{testTitle}</h1>
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
+              <div className="min-w-0">
+                <h1 className="font-display text-base sm:text-xl text-neutral-900 tracking-tight truncate">{testTitle}</h1>
+                <span className="hidden sm:inline text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
                   {part === 'part1'
                     ? `Part 1 — Written MCQ · ${mode === 'simulate' ? 'Simulate' : 'Practice'}`
                     : `Part 2 — RT · ${mode === 'simulate' ? 'Simulate' : 'Practice'}`}
@@ -451,20 +448,21 @@ function RTRExamContent() {
               </div>
             </div>
             {isTimedMode ? (
-              <div className={`flex items-center gap-2 font-mono text-lg ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
+              <div className={`flex items-center gap-2 font-mono text-sm sm:text-lg shrink-0 ${timeRemaining < 300 ? 'text-rose-600 animate-pulse' : 'text-neutral-700'}`}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="1.5" /><path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" /></svg>
                 {formatTime(timeRemaining)}
               </div>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] font-medium uppercase tracking-[0.18em]">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 sm:px-3 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.18em] shrink-0">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Practice · no time limit
+                <span className="hidden sm:inline">Practice · no time limit</span>
+                <span className="sm:hidden">Practice</span>
               </span>
             )}
           </div>
         </div>
 
-        <div className="container mx-auto px-6 py-12">
+        <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-12">
           {view === 'exam' && part === 'part1' && (
             <Part1View
               p1Questions={p1Questions}
@@ -536,31 +534,31 @@ function Part1View({ p1Questions, currentIndex, setCurrentIndex, p1Answers, setP
   }
   const q = p1Questions[currentIndex];
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      <div className="grow">
-        <div className="border border-neutral-200 rounded-3xl p-8 md:p-12">
-          <div className="flex justify-between items-center mb-8">
-            <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
+    <div className="flex flex-col lg:flex-row gap-5 lg:gap-8">
+      <div className="grow min-w-0">
+        <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12">
+          <div className="flex justify-between items-center mb-5 sm:mb-8 gap-2 flex-wrap">
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
               Question {currentIndex + 1} of {p1Questions.length}
             </span>
-            <span className="px-3 py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">2 Marks</span>
+            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-neutral-100 text-neutral-700 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">2 Marks</span>
           </div>
-          <h2 className="font-display text-3xl md:text-4xl text-neutral-900 mb-6 leading-tight tracking-tight">{q.question}</h2>
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 mb-5 sm:mb-6 leading-tight tracking-tight">{q.question}</h2>
           {(q.image_url || q.pdf_url) && (
-            <div className="mb-8 space-y-4">
+            <div className="mb-6 sm:mb-8 space-y-4">
               {q.image_url && (
                 <a href={q.image_url} target="_blank" rel="noopener noreferrer" className="block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={q.image_url}
                     alt="Question diagram"
-                    className="max-h-105 w-auto max-w-full rounded-2xl border border-neutral-200 object-contain bg-white hover:border-neutral-400 transition-colors"
+                    className="max-h-72 sm:max-h-[420px] w-auto max-w-full rounded-2xl border border-neutral-200 object-contain bg-white hover:border-neutral-400 transition-colors"
                   />
                 </a>
               )}
               {q.pdf_url && (
                 <div className="border border-neutral-200 rounded-2xl overflow-hidden bg-white">
-                  <object data={q.pdf_url} type="application/pdf" className="w-full h-125">
+                  <object data={q.pdf_url} type="application/pdf" className="w-full h-80 sm:h-[500px]">
                     <div className="p-6 text-center text-sm text-neutral-600">
                       Your browser cannot display the PDF inline.{' '}
                       <a href={q.pdf_url} target="_blank" rel="noopener noreferrer" className="text-neutral-900 font-semibold underline">
@@ -568,7 +566,7 @@ function Part1View({ p1Questions, currentIndex, setCurrentIndex, p1Answers, setP
                       </a>
                     </div>
                   </object>
-                  <div className="border-t border-neutral-200 px-4 py-2 bg-neutral-50 flex justify-between items-center">
+                  <div className="border-t border-neutral-200 px-4 py-2 bg-neutral-50 flex justify-between items-center gap-2 flex-wrap">
                     <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">PDF attachment</span>
                     <a href={q.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-neutral-900 font-semibold hover:underline">
                       Open in new tab ↗
@@ -578,53 +576,53 @@ function Part1View({ p1Questions, currentIndex, setCurrentIndex, p1Answers, setP
               )}
             </div>
           )}
-          <div className="space-y-3 mb-12">
+          <div className="space-y-2.5 sm:space-y-3 mb-8 sm:mb-12">
             {q.options.map((opt, i) => {
               const selected = p1Answers[currentIndex] === i;
               return (
                 <button
                   key={i}
                   onClick={() => { const next = [...p1Answers]; next[currentIndex] = i; setP1Answers(next); }}
-                  className={`group w-full flex items-center gap-5 p-5 rounded-2xl border transition-all text-left ${
+                  className={`group w-full flex items-start sm:items-center gap-3 sm:gap-5 p-3.5 sm:p-5 rounded-2xl border transition-all text-left ${
                     selected ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 bg-white hover:border-neutral-900'
                   }`}
                 >
-                  <span className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-sm transition-colors ${
+                  <span className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-xs sm:text-sm transition-colors ${
                     selected ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-500'
                   }`}>{String.fromCharCode(65 + i)}</span>
-                  <span className={`text-[15px] font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>{opt}</span>
+                  <span className={`text-sm sm:text-[15px] leading-relaxed font-medium ${selected ? 'text-neutral-900' : 'text-neutral-700'}`}>{opt}</span>
                 </button>
               );
             })}
           </div>
-          <div className="flex justify-between items-center pt-8 border-t border-neutral-200 gap-3 flex-wrap">
-            <Button variant="secondary" onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))} disabled={currentIndex === 0}>← Previous</Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { const next = [...p1Flags]; next[currentIndex] = !next[currentIndex]; setP1Flags(next); }}>{p1Flags[currentIndex] ? 'Unflag' : 'Flag'}</Button>
-              <Button variant="ghost" onClick={() => { const next = [...p1Answers]; next[currentIndex] = null; setP1Answers(next); }}>Clear</Button>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-5 sm:pt-8 border-t border-neutral-200 gap-3 sm:gap-3 sm:flex-wrap">
+            <Button variant="secondary" onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))} disabled={currentIndex === 0} className="w-full sm:w-auto order-2 sm:order-none">← Previous</Button>
+            <div className="flex gap-2 order-1 sm:order-none">
+              <Button variant="outline" onClick={() => { const next = [...p1Flags]; next[currentIndex] = !next[currentIndex]; setP1Flags(next); }} className="flex-1 sm:flex-initial">{p1Flags[currentIndex] ? 'Unflag' : 'Flag'}</Button>
+              <Button variant="ghost" onClick={() => { const next = [...p1Answers]; next[currentIndex] = null; setP1Answers(next); }} className="flex-1 sm:flex-initial">Clear</Button>
             </div>
-            <Button variant="primary" onClick={() => { if (currentIndex < p1Questions.length - 1) setCurrentIndex(prev => prev + 1); else finishExam(); }}>{currentIndex === p1Questions.length - 1 ? 'Review & submit' : 'Next →'}</Button>
+            <Button variant="primary" onClick={() => { if (currentIndex < p1Questions.length - 1) setCurrentIndex(prev => prev + 1); else finishExam(); }} className="w-full sm:w-auto order-3 sm:order-none">{currentIndex === p1Questions.length - 1 ? 'Review & submit' : 'Next →'}</Button>
           </div>
         </div>
       </div>
 
       <aside className="w-full lg:w-80 shrink-0">
-        <div className="border border-neutral-200 rounded-3xl p-6 sticky top-44">
-          <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-6">
+        <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 lg:sticky lg:top-44">
+          <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5 sm:mb-6">
             <span className="w-6 h-px bg-neutral-900" /> Palette
           </h3>
-          <div className="grid grid-cols-5 gap-2 mb-6">
+          <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-5 gap-1.5 sm:gap-2 mb-5 sm:mb-6">
             {p1Questions.map((_, i) => {
               let bg = 'bg-neutral-50 text-neutral-400 border-neutral-200';
               if (i === currentIndex) bg = 'bg-neutral-900 border-neutral-900 text-white';
               else if (p1Flags[i]) bg = 'bg-rose-500 border-rose-500 text-white';
               else if (p1Answers[i] !== null) bg = 'bg-emerald-500 border-emerald-500 text-white';
               return (
-                <button key={i} onClick={() => setCurrentIndex(i)} className={`w-10 h-10 rounded-lg border text-xs font-medium flex items-center justify-center transition-all hover:scale-105 ${bg}`}>{i + 1}</button>
+                <button key={i} onClick={() => setCurrentIndex(i)} className={`w-full aspect-square lg:w-10 lg:h-10 lg:aspect-auto rounded-lg border text-xs font-medium flex items-center justify-center transition-all hover:scale-105 ${bg}`}>{i + 1}</button>
               );
             })}
           </div>
-          <div className="space-y-2 mb-6 text-[10px] uppercase tracking-[0.18em] text-neutral-500">
+          <div className="flex flex-wrap gap-3 lg:flex-col lg:space-y-2 mb-5 sm:mb-6 text-[10px] uppercase tracking-[0.18em] text-neutral-500">
             <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-emerald-500" /> Answered</div>
             <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-rose-500" /> Flagged</div>
             <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-sm bg-neutral-900" /> Current</div>
@@ -660,8 +658,8 @@ interface Part2ViewProps {
 function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, setP2Answers, isStepAnswered, goNext, goPrev, mode, speaking, toggleSpeak, listening, startListening, stopListening, finishExam }: Part2ViewProps) {
   if (steps.length === 0 || !currentStep || !currentScenario) {
     return (
-      <div className="border border-neutral-200 rounded-3xl p-12 text-center text-neutral-500">
-        <p className="font-display text-2xl text-neutral-900 mb-2">No chart questions configured</p>
+      <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center text-neutral-500">
+        <p className="font-display text-xl sm:text-2xl text-neutral-900 mb-2">No chart questions configured</p>
         <p className="text-sm">An admin needs to add a chart with questions to this test before it can be attempted.</p>
       </div>
     );
@@ -686,21 +684,21 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Chart paper card */}
-      <div className="border border-neutral-200 rounded-3xl p-8 bg-neutral-50/40">
-        <div className="flex items-baseline justify-between flex-wrap gap-y-2 mb-5 pb-3 border-b border-neutral-200">
-          <h2 className="font-display text-2xl text-neutral-900 tracking-tight">{currentScenario.scenario}</h2>
-          <div className="flex items-center gap-6 text-sm text-neutral-700">
+      <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 bg-neutral-50/40">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between sm:flex-wrap gap-3 sm:gap-y-2 mb-5 pb-3 border-b border-neutral-200">
+          <h2 className="font-display text-xl sm:text-2xl text-neutral-900 tracking-tight">{currentScenario.scenario}</h2>
+          <div className="flex flex-wrap items-center gap-x-4 sm:gap-6 gap-y-1 text-xs sm:text-sm text-neutral-700">
             <span><span className="font-bold">Time allowed:</span> {ctx?.time_allowed || '25 minutes'}</span>
             <span><span className="font-bold">Total Marks:</span> {ctx?.total_marks ?? 100}</span>
           </div>
         </div>
 
         {ctx ? (
-          <div className="space-y-2 text-sm text-neutral-800">
+          <div className="space-y-2 text-xs sm:text-sm text-neutral-800">
             {HEADER_ROWS.map((row, ri) => (
-              <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-1">
+              <div key={ri} className="grid grid-cols-1 md:grid-cols-3 gap-x-4 sm:gap-x-8 gap-y-1">
                 <HeaderCell label={row.left.label} value={ctx[row.left.key]} />
                 {row.mid && <HeaderCell label={row.mid.label} value={ctx[row.mid.key]} />}
                 {row.right && <HeaderCell label={row.right.label} value={ctx[row.right.key]} />}
@@ -712,7 +710,7 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
         )}
 
         {/* Note + 5 fixed instructions */}
-        <div className="mt-6 pt-5 border-t border-dashed border-neutral-300">
+        <div className="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-dashed border-neutral-300">
           <p className="text-xs font-black text-neutral-500 uppercase tracking-widest mb-2">Note</p>
           <ol className="list-decimal pl-5 space-y-1 text-xs text-neutral-600">
             {FIXED_NOTE_POINTS.map((pt, i) => <li key={i}>{pt}</li>)}
@@ -721,19 +719,19 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
       </div>
 
       {/* Active sub-question */}
-      <div className="border border-neutral-200 rounded-3xl p-8 md:p-10">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">Question {currentStep.numberLabel}</span>
+      <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-10">
+        <div className="flex justify-between items-center mb-5 sm:mb-6 gap-2 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">Question {currentStep.numberLabel}</span>
             <span className="text-xs text-neutral-400 font-mono">({stepIdx + 1} / {steps.length})</span>
           </div>
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">{sp.marks} Marks</span>
+          <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] uppercase tracking-[0.18em] rounded-full font-medium">{sp.marks} Marks</span>
         </div>
 
-        <div className="flex gap-3 items-start mb-6">
+        <div className="flex gap-3 items-start mb-5 sm:mb-6">
           <button
             onClick={() => toggleSpeak(sp.prompt)}
-            className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${speaking ? 'bg-neutral-900 text-white animate-pulse' : 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200'}`}
+            className={`shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-colors ${speaking ? 'bg-neutral-900 text-white animate-pulse' : 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200'}`}
             title={speaking ? 'Stop audio' : 'Play audio'}
             aria-label={speaking ? 'Stop audio' : 'Play audio'}
           >
@@ -743,8 +741,8 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" /></svg>
             )}
           </button>
-          <div className="grow p-5 bg-neutral-50 rounded-2xl border border-neutral-200/60">
-            <p className="text-base text-neutral-800 leading-relaxed">{sp.prompt}</p>
+          <div className="grow p-4 sm:p-5 bg-neutral-50 rounded-2xl border border-neutral-200/60 min-w-0">
+            <p className="text-sm sm:text-base text-neutral-800 leading-relaxed">{sp.prompt}</p>
           </div>
         </div>
 
@@ -778,8 +776,8 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
               <textarea
                 value={typeof p2Answers[stepIdx] === 'string' ? (p2Answers[stepIdx] as string) : ''}
                 onChange={e => writeAnswer(e.target.value)}
-                rows={5}
-                className="w-full bg-white border border-neutral-200 rounded-2xl p-4 pr-16 text-sm focus:ring-2 focus:ring-neutral-100 focus:border-neutral-900 outline-none transition-all"
+                rows={4}
+                className="w-full bg-white border border-neutral-200 rounded-2xl p-3.5 sm:p-4 pr-14 sm:pr-16 text-sm focus:ring-2 focus:ring-neutral-100 focus:border-neutral-900 outline-none transition-all min-h-32 sm:min-h-40"
                 placeholder="Type or use the mic to dictate your answer…"
               />
               <button
@@ -810,18 +808,18 @@ function Part2View({ steps, stepIdx, currentStep, currentScenario, p2Answers, se
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between items-center pt-8 mt-8 border-t border-neutral-100">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center pt-6 sm:pt-8 mt-6 sm:mt-8 border-t border-neutral-100 gap-3">
           {mode === 'practice' ? (
-            <Button variant="secondary" onClick={goPrev} disabled={stepIdx === 0}>← Previous</Button>
+            <Button variant="secondary" onClick={goPrev} disabled={stepIdx === 0} className="w-full sm:w-auto">← Previous</Button>
           ) : (
             <span className="text-xs text-neutral-400 italic">Simulate mode — no going back</span>
           )}
-          <Button variant="primary" onClick={isLast ? finishExam : goNext} disabled={!answered}>
+          <Button variant="primary" onClick={isLast ? finishExam : goNext} disabled={!answered} className="w-full sm:w-auto">
             {isLast ? 'Submit Exam' : `Next: Question ${steps[stepIdx + 1]?.numberLabel ?? ''} →`}
           </Button>
         </div>
         {!answered && (
-          <p className="text-xs text-neutral-400 mt-3 text-right">Type or dictate your answer to continue.</p>
+          <p className="text-xs text-neutral-400 mt-3 text-center sm:text-right">Type or dictate your answer to continue.</p>
         )}
       </div>
     </div>
@@ -879,30 +877,30 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
   const passed = pct >= passingMarks;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="border border-neutral-200 rounded-3xl p-10 md:p-14 text-center">
-        <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-5">
+    <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+      <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14 text-center">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center justify-center gap-2 mb-4 sm:mb-5">
           <span className="w-6 h-px bg-neutral-900" /> Mock exam complete
         </span>
-        <h2 className="font-display text-5xl md:text-6xl text-neutral-900 mb-10 tracking-tight">
+        <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-neutral-900 mb-8 sm:mb-10 tracking-tight">
           Your <span className="italic-serif">result.</span>
         </h2>
-        <div className="flex justify-center gap-12 items-center mb-10 flex-wrap">
-          <div className="relative w-36 h-36">
-            <svg className="w-full h-full transform -rotate-90">
+        <div className="flex flex-col sm:flex-row justify-center gap-6 sm:gap-12 items-center mb-8 sm:mb-10 flex-wrap">
+          <div className="relative w-32 h-32 sm:w-36 sm:h-36">
+            <svg viewBox="0 0 144 144" className="w-full h-full transform -rotate-90">
               <circle cx="72" cy="72" r="62" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-neutral-100" />
               <circle cx="72" cy="72" r="62" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={2 * Math.PI * 62} strokeDashoffset={(2 * Math.PI * 62) * (1 - pct / 100)} strokeLinecap="round" className={passed ? 'text-emerald-500' : 'text-rose-500'} />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center font-display text-3xl text-neutral-900">{pct}%</div>
+            <div className="absolute inset-0 flex items-center justify-center font-display text-2xl sm:text-3xl text-neutral-900">{pct}%</div>
           </div>
-          <div className="text-left">
-            <div className={`font-display text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>{passed ? 'Passed' : 'Try again'}</div>
+          <div className="text-center sm:text-left">
+            <div className={`font-display text-4xl sm:text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>{passed ? 'Passed' : 'Try again'}</div>
             <div className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">Passing: {passingMarks} marks</div>
           </div>
         </div>
-        <div className="flex justify-center gap-3 flex-wrap">
-          <Button variant="primary" onClick={() => window.location.reload()}>Retry test</Button>
-          <Button variant="secondary" onClick={() => router.push('/dgca-rtr')}>Back to RTR</Button>
+        <div className="flex flex-col sm:flex-row justify-center gap-3 flex-wrap">
+          <Button variant="primary" onClick={() => window.location.reload()} className="justify-center">Retry test</Button>
+          <Button variant="secondary" onClick={() => router.push('/dgca-rtr')} className="justify-center">Back to RTR</Button>
         </div>
       </div>
 
@@ -912,7 +910,7 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
         </h3>
         {part === 'part1' ? (
           p1Questions.map((q, i) => (
-            <div key={i} className="rounded-2xl border border-neutral-200 p-6">
+            <div key={i} className="rounded-2xl border border-neutral-200 p-5 sm:p-6">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-xs font-black text-neutral-400">QUESTION {i + 1}</span>
                 <span className={`text-xs font-bold ${p1Answers[i] === q.correct ? 'text-emerald-600' : 'text-rose-600'}`}>{p1Answers[i] === q.correct ? '✓ CORRECT' : '✗ INCORRECT'}</span>
@@ -944,7 +942,7 @@ function ResultsView({ part, p1Questions, p1Answers, steps, p2Answers, p2Scenari
             const ans = p2Answers[i];
             const sc = p2Scenarios[step.scenarioIdx];
             return (
-              <div key={i} className="rounded-2xl border border-neutral-200 p-6">
+              <div key={i} className="rounded-2xl border border-neutral-200 p-5 sm:p-6">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs font-black text-neutral-400 uppercase">{sc.scenario} · Q{step.numberLabel}</span>
                   <span className="text-xs font-bold text-violet">{sp.marks} marks</span>
