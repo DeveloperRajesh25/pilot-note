@@ -3,7 +3,7 @@ const shortSuffix = () => {
   return globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 6);
 };
 
-const slugify = (input: string) =>
+export const slugify = (input: string) =>
   (input ?? '')
     .toLowerCase()
     .trim()

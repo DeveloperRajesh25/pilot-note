@@ -48,7 +48,7 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button variant="primary" size="lg" href="/dgca-rtr">
+                  <Button variant="primary" size="lg" href="/dgca">
                     Start learning
                     <ArrowUpRight size={16} />
                   </Button>
@@ -109,7 +109,7 @@ export default function Home() {
             {[...Array(2)].map((_, dup) => (
               <div key={dup} className="flex items-center gap-8 sm:gap-12 px-4 sm:px-6 shrink-0">
                 {[
-                  'DGCA RTR(A)',
+                  'DGCA CPL & ATPL',
                   'Air Navigation',
                   'Meteorology',
                   'Aviation Met',

@@ -253,6 +253,77 @@ export interface AdminStats {
   recentPurchases?: UserPurchase[];
 }
 
+// ── DGCA practice (CPL/ATPL → Subject → Chapter → MCQ) ──────────────────────
+
+export interface DgcaCourse {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  created_at?: string;
+  // Optional aggregates attached by API responses.
+  subject_count?: number;
+}
+
+export interface DgcaSubject {
+  id: string;
+  course_id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  created_at?: string;
+  chapter_count?: number;
+}
+
+export interface DgcaChapter {
+  id: string;
+  subject_id: string;
+  title: string;
+  description: string | null;
+  price: number;                 // rupees; 0 = free
+  status: 'active' | 'inactive' | string;
+  sort_order: number;
+  created_at?: string;
+  // Optional fields attached by public API responses.
+  question_count?: number;
+  isOwned?: boolean;
+}
+
+export interface DgcaQuestion {
+  id: string;
+  chapter_id: string;
+  question: string;
+  options: string[];
+  correct: number;
+  explanation: string | null;
+  image_url?: string | null;
+  created_at?: string;
+}
+
+export interface DgcaChapterPurchase {
+  id: string;
+  user_id: string;
+  chapter_id: string;
+  amount: number;
+  payment_id: string | null;
+  purchased_at: string;
+  dgca_chapters?: { title: string } | null;
+}
+
+export interface ParikshaTopper {
+  id: string;
+  rank: number;
+  student_name: string;
+  subject: string | null;
+  marks: number | null;
+  total_marks: number | null;
+  photo_url: string | null;
+  exam_label: string | null;
+  published: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // Used in catch blocks to safely render an error message without `any`.
 export function errorMessage(e: unknown, fallback = 'Something went wrong'): string {
   if (e instanceof Error) return e.message;

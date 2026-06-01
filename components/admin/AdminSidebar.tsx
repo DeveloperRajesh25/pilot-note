@@ -7,10 +7,12 @@ import { useState } from 'react';
 const NAV_ITEMS = [
   { href: '/admin', label: 'Overview', icon: '📊', exact: true },
   { href: '/admin/users', label: 'Users', icon: '👥' },
+  { href: '/admin/dgca', label: 'DGCA Practice', icon: '🛩️' },
   { href: '/admin/guides', label: 'Guides', icon: '📖' },
   { href: '/admin/aptitude', label: 'Aptitude Qs', icon: '🧠' },
   { href: '/admin/rtr', label: 'RTR Tests', icon: '📡' },
   { href: '/admin/exams', label: 'Exams (Pariksha)', icon: '🎓' },
+  { href: '/admin/leaderboard', label: 'Pariksha Toppers', icon: '🏆' },
   { href: '/admin/violations', label: 'Proctoring Flags', icon: '🚨' },
   { href: '/admin/purchases', label: 'Purchases', icon: '💳' },
 ];

@@ -1,17 +1,17 @@
 export const HERO_CONTENT = {
   badge: "India's #1 CPL Study Platform",
   title: "One stop solution for CPL Pilots",
-  subtitle: "DGCA RTR Practice, Study Guides, All India Mock Exams, and Pilot Aptitude Tests. Everything you need. Every subject. Every step of the way.",
+  subtitle: "DGCA CPL & ATPL Practice, Study Guides, All India Mock Exams, and Pilot Aptitude Tests. Everything you need. Every subject. Every step of the way.",
 };
 
 export const FEATURES = [
   {
     id: 'f1',
-    title: 'DGCA RTR',
-    desc: 'Practice MCQs for all 5 CPL ground subjects. Exam-pattern questions with detailed explanations.',
+    title: 'DGCA',
+    desc: 'Chapter-wise MCQ practice for every CPL & ATPL ground subject. Exam-pattern questions with detailed explanations.',
     icon: 'green',
     linkText: 'Start Practicing →',
-    linkUrl: '/dgca-rtr'
+    linkUrl: '/dgca'
   },
   {
     id: 'f2',
@@ -75,9 +75,9 @@ export const WHY_US = [
 
 export const NAV_LINKS = [
   { id: 'n1', label: 'Home', url: '/' },
-  { id: 'n2', label: 'DGCA RTR', url: '/dgca-rtr' },
-  { id: 'n3', label: 'Guides', url: '/guides' },
-  { id: 'n4', label: 'Pariksha', url: '/pariksha' },
+  { id: 'n2', label: 'Pariksha', url: '/pariksha' },
+  { id: 'n3', label: 'DGCA', url: '/dgca' },
+  { id: 'n4', label: 'Guides', url: '/guides' },
   { id: 'n5', label: 'Pilot Aptitude', url: '/pilot-aptitude' }
 ];
 
@@ -86,7 +86,7 @@ export const FOOTER_LINKS = [
     id: 'fg1',
     title: 'Study',
     links: [
-      { label: 'DGCA RTR Practice', url: '/dgca-rtr' },
+      { label: 'DGCA Practice', url: '/dgca' },
       { label: 'Guides', url: '/guides' },
       { label: 'Pariksha Exams', url: '/pariksha' },
       { label: 'Pilot Aptitude', url: '/pilot-aptitude' }
