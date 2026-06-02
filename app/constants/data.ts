@@ -76,25 +76,25 @@ export const WHY_US = [
 export const NAV_LINKS = [
   { id: 'n1', label: 'Home', url: '/' },
   { id: 'n2', label: 'Pariksha', url: '/pariksha' },
-  { id: 'n3', label: 'DGCA', url: '/dgca' },
   { id: 'n4', label: 'Guides', url: '/guides' },
+  { id: 'n3', label: 'DGCA', url: '/dgca' },
   { id: 'n5', label: 'Pilot Aptitude', url: '/pilot-aptitude' }
 ];
 
 export const FOOTER_LINKS = [
   {
     id: 'fg1',
-    title: 'Study',
+    title: 'Aviate',
     links: [
-      { label: 'DGCA Practice', url: '/dgca' },
-      { label: 'Guides', url: '/guides' },
       { label: 'Pariksha Exams', url: '/pariksha' },
+      { label: 'Guides', url: '/guides' },
+      { label: 'DGCA Practice', url: '/dgca' },
       { label: 'Pilot Aptitude', url: '/pilot-aptitude' }
     ]
   },
   {
     id: 'fg2',
-    title: 'Company',
+    title: 'Navigate',
     links: [
       { label: 'About Pilot Note', url: '/about' },
       { label: 'Contact Us', url: '/contact' },
@@ -102,7 +102,7 @@ export const FOOTER_LINKS = [
   },
   {
     id: 'fg3',
-    title: 'Legal',
+    title: 'Communicate',
     links: [
       { label: 'Privacy Policy', url: '/privacy' },
       { label: 'Terms of Use', url: '/terms' },

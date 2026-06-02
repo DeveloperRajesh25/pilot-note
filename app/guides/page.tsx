@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { ArrowLeft, ArrowUpRight, Clock, BookOpen } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen } from 'lucide-react';
 
 interface Guide {
   id: string;
@@ -99,12 +99,6 @@ export default function GuidesPage() {
                 <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8 flex-wrap text-[11px] uppercase tracking-[0.18em] font-medium">
                   <span className="px-2.5 py-1 sm:px-3 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                     {activeGuide.category}
-                  </span>
-                  <span className="text-neutral-400 flex items-center gap-1.5">
-                    <Clock className="w-3 h-3" /> {activeGuide.read_time}
-                  </span>
-                  <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded">
-                    {activeGuide.difficulty}
                   </span>
                 </div>
 
@@ -214,14 +208,7 @@ export default function GuidesPage() {
                         {guide.summary}
                       </p>
 
-                      <div className="mt-auto flex items-center justify-between pt-5 sm:pt-6 border-t border-neutral-100 gap-3">
-                        <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-neutral-500 uppercase tracking-[0.14em] min-w-0">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {guide.read_time}
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-neutral-300 shrink-0" />
-                          <span className="truncate">{guide.difficulty}</span>
-                        </div>
+                      <div className="mt-auto flex items-center justify-end pt-5 sm:pt-6 border-t border-neutral-100">
                         <ArrowUpRight
                           className="w-5 h-5 text-neutral-400 group-hover:text-emerald-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all shrink-0"
                         />

@@ -177,10 +177,6 @@ export default function ProfileClient({
       {/* ───── Hero ───── */}
       <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 mb-10 sm:mb-14 items-start lg:items-end">
         <div className="lg:col-span-8">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-6">
-            <span className="w-6 h-px bg-neutral-900" />
-            Pilot · {joinDate}
-          </span>
           <div className="flex items-center gap-4 sm:gap-6 mb-5 sm:mb-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-neutral-900 text-white font-display text-2xl sm:text-3xl flex items-center justify-center tracking-tight shrink-0">
               {initials}

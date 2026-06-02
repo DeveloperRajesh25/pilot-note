@@ -35,8 +35,8 @@ export const Footer = () => {
               />
             </Link>
             <p className="text-neutral-600 max-w-md leading-relaxed text-sm sm:text-[15px] mb-6 sm:mb-8">
-              The complete companion for CPL ground exams, aptitude tests, and pilot career guidance —
-              built by pilots, for the ones who&apos;ll fly next.
+              India&apos;s DGCA CPL &amp; ATPL Mock Examination Platform.<br />
+              Train. Compete. Rank. Succeed.
             </p>
 
             {/* Social links */}
@@ -106,6 +106,15 @@ export const Footer = () => {
               <span>Crafted for </span>
               <span className="text-neutral-900 font-medium italic-serif">India&apos;s sky.</span>
             </span>
+            <a
+              href="https://webcros.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-neutral-900 transition-colors"
+            >
+              <span>Developed by </span>
+              <span className="text-neutral-900 font-medium">Webcros</span>
+            </a>
           </div>
         </div>
       </div>

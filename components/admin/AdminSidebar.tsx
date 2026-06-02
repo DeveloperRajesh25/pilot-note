@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/admin/leaderboard', label: 'Pariksha Toppers', icon: '🏆' },
   { href: '/admin/violations', label: 'Proctoring Flags', icon: '🚨' },
   { href: '/admin/purchases', label: 'Purchases', icon: '💳' },
+  { href: '/admin/settings', label: 'Site Settings', icon: '⚙️' },
 ];
 
 export function AdminSidebar() {

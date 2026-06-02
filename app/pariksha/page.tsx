@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
-import { Users, Calendar, Clock, FileText, ArrowRight, Trophy } from 'lucide-react';
+import { Calendar, Clock, FileText, ArrowRight, Trophy } from 'lucide-react';
 import { computeExamStatus } from '@/lib/exam-status';
 import type { ParikshaTopper } from '@/lib/types';
 
@@ -101,16 +101,11 @@ export default function ParikshaPage() {
             </div>
             <div className="lg:col-span-4">
               <p className="text-neutral-600 text-base sm:text-lg leading-relaxed mb-5 sm:mb-6">
-                All-India mock examinations for CPL subjects. Compete with students nationwide — like
-                JEE, but for pilots.
+                Live All-India DGCA CPL & ATPL Mock Examinations.
+Experience exam-level difficulty designed to simulate the real DGCA examination.
+Compare your performance with aspirants across India and discover your true level of preparation before exam day.
+
               </p>
-              <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot" /> Next mock
-                </span>
-                <span className="w-1 h-1 rounded-full bg-neutral-300" />
-                <span className="text-neutral-900 font-medium">Apr 15, 2026</span>
-              </div>
             </div>
           </div>
         </section>
@@ -188,10 +183,6 @@ export default function ParikshaPage() {
                           <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
                             <span className="text-neutral-900 font-medium">{exam.total_questions} Qs · {exam.duration} min</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />
-                            <span className="text-neutral-900 font-medium">{exam.registrations} registered</span>
                           </div>
                         </div>
                       </div>

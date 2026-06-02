@@ -2,10 +2,37 @@ import React from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
-import { SketchCanvas } from '@/components/ui/SketchCanvas';
 import { HERO_CONTENT, FEATURES, WHY_US } from '@/app/constants/data';
 import Link from 'next/link';
 import { ArrowUpRight, Plane, Compass, BookOpen, Award } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+
+const DEFAULT_MARQUEE = [
+  'DGCA CPL & ATPL',
+  'Air Navigation',
+  'Meteorology',
+  'Aviation Met',
+  'Air Regulations',
+  'Technical General',
+  'COMPASS Aptitude',
+  'Class 1 Medical',
+  'Pariksha National Mocks',
+  'Phraseology',
+];
+
+async function getMarqueeItems(): Promise<string[]> {
+  try {
+    const db = await createClient();
+    const { data } = await db
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'marquee_items')
+      .single();
+    return Array.isArray(data?.value) && data.value.length ? data.value : DEFAULT_MARQUEE;
+  } catch {
+    return DEFAULT_MARQUEE;
+  }
+}
 
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
   f1: <Plane className="w-5 h-5" strokeWidth={1.5} />,
@@ -14,7 +41,8 @@ const FEATURE_ICONS: Record<string, React.ReactNode> = {
   f4: <Compass className="w-5 h-5" strokeWidth={1.5} />,
 };
 
-export default function Home() {
+export default async function Home() {
+  const marqueeItems = await getMarqueeItems();
   return (
     <>
       <Header />
@@ -62,20 +90,27 @@ export default function Home() {
               <div className="lg:col-span-5 relative">
                 <div className="relative">
                   <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.5rem] sm:rounded-[1.75rem] p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
-                    <div className="aspect-[5/4] relative bg-white rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
-                      <SketchCanvas />
+                    <div className="aspect-[5/4] relative bg-black rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
+                      <video
+                        src="/assets/hero-right-video.mp4"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
                     </div>
                   </div>
 
                   {/* Floating callouts */}
-                  <div className="hidden sm:flex absolute -left-4 -bottom-4 bg-white border border-neutral-200 rounded-2xl px-3.5 py-2.5 shadow-lg animate-float">
+                  <div className="hidden sm:flex absolute -left-4 -bottom-4 bg-white border border-neutral-200 rounded-2xl px-3.5 py-3 shadow-lg animate-float">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
-                        <Plane size={14} />
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                        <Award size={14} />
                       </div>
                       <div>
-                        <p className="text-[9px] uppercase tracking-[0.18em] text-neutral-500">Success</p>
-                        <p className="text-xs font-medium text-neutral-900">95% clear CPL</p>
+                        <p className="text-xs font-semibold text-neutral-900">All Questions are Unique</p>
+                        <p className="text-[9px] text-neutral-500 leading-tight">Curated by expert aviators<br />Not from any book or source</p>
                       </div>
                     </div>
                   </div>
@@ -86,11 +121,14 @@ export default function Home() {
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-white text-neutral-900 flex items-center justify-center">
-                        <Award size={14} />
+                        <Plane size={14} />
                       </div>
                       <div>
-                        <p className="text-[9px] uppercase tracking-[0.18em] text-white/60">Live</p>
-                        <p className="text-xs font-medium">Pariksha Apr 15</p>
+                        <p className="text-[9px] uppercase tracking-[0.18em] text-white/60 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live
+                        </p>
+                        <p className="text-xs font-medium">Live All India Exam</p>
+                        <p className="text-[9px] text-white/50">As per DGCA exam dates</p>
                       </div>
                     </div>
                   </div>
@@ -108,18 +146,7 @@ export default function Home() {
           >
             {[...Array(2)].map((_, dup) => (
               <div key={dup} className="flex items-center gap-8 sm:gap-12 px-4 sm:px-6 shrink-0">
-                {[
-                  'DGCA CPL & ATPL',
-                  'Air Navigation',
-                  'Meteorology',
-                  'Aviation Met',
-                  'Air Regulations',
-                  'Technical General',
-                  'COMPASS Aptitude',
-                  'Class 1 Medical',
-                  'Pariksha National Mocks',
-                  'Phraseology',
-                ].map((label, i) => (
+                {marqueeItems.map((label, i) => (
                   <span
                     key={i}
                     className="flex items-center gap-8 sm:gap-12 text-xl sm:text-2xl md:text-3xl font-display text-neutral-900 whitespace-nowrap"
