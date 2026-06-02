@@ -17,11 +17,12 @@ interface QForm {
   question: string;
   options: string[];
   correct: number;
+  marks: number;
   explanation: string | null;
   image_url: string | null;
 }
 
-const EMPTY_Q: QForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '', image_url: null };
+const EMPTY_Q: QForm = { question: '', options: ['', '', '', ''], correct: 0, marks: 1, explanation: '', image_url: null };
 
 export default function AdminDGCAChapterQuestionsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -50,7 +51,7 @@ export default function AdminDGCAChapterQuestionsPage({ params }: { params: Prom
 
   const openAdd = () => { setEditItem({ ...EMPTY_Q }); setShowModal(true); };
   const openEdit = (q: DgcaQuestion) => {
-    setEditItem({ id: q.id, question: q.question, options: [...q.options], correct: q.correct, explanation: q.explanation ?? '', image_url: q.image_url ?? null });
+    setEditItem({ id: q.id, question: q.question, options: [...q.options], correct: q.correct, marks: q.marks ?? 1, explanation: q.explanation ?? '', image_url: q.image_url ?? null });
     setShowModal(true);
   };
 
@@ -81,6 +82,7 @@ export default function AdminDGCAChapterQuestionsPage({ params }: { params: Prom
   const save = async () => {
     if (!editItem.question.trim()) { alert('Question is required'); return; }
     if (editItem.options.some((o) => !o.trim())) { alert('All options must be filled'); return; }
+    if (!Number.isInteger(editItem.marks) || editItem.marks < 1) { alert('Marks must be a positive whole number'); return; }
     if (imageUploading) { alert('Image is still uploading, please wait.'); return; }
     setSaving(true);
     try {
@@ -135,7 +137,10 @@ export default function AdminDGCAChapterQuestionsPage({ params }: { params: Prom
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={q.image_url} alt="diagram" className="h-16 w-auto mb-2 rounded-lg border border-neutral-200 object-contain" />
               )}
-              <p className="text-sm text-neutral-900 font-medium mb-2">{q.question}</p>
+              <p className="text-sm text-neutral-900 font-medium mb-2">
+                {q.question}
+                <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 border border-violet-200 font-bold align-middle">{q.marks ?? 1} mark{(q.marks ?? 1) === 1 ? '' : 's'}</span>
+              </p>
               <div className="flex flex-wrap gap-2">
                 {q.options.map((opt, i) => (
                   <span key={i} className={`text-xs px-2 py-0.5 rounded border ${i === q.correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
@@ -192,6 +197,17 @@ export default function AdminDGCAChapterQuestionsPage({ params }: { params: Prom
                     </div>
                   ))}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Marks</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={editItem.marks}
+                  onChange={(e) => setEditItem((p) => ({ ...p, marks: Math.max(1, Math.floor(Number(e.target.value) || 1)) }))}
+                  className="w-32 bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400"
+                />
+                <p className="text-xs text-neutral-400 mt-1">Awarded when answered correctly. Defaults to 1.</p>
               </div>
               <div>
                 <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Explanation</label>

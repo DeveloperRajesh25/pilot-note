@@ -295,6 +295,7 @@ export interface DgcaQuestion {
   question: string;
   options: string[];
   correct: number;
+  marks: number;                 // weight of this question; defaults to 1
   explanation: string | null;
   image_url?: string | null;
   created_at?: string;

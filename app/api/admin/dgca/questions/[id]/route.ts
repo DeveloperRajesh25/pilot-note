@@ -24,6 +24,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
     patch.correct = correct;
   }
+  if (body.marks !== undefined) {
+    const marks = Number(body.marks);
+    if (!Number.isInteger(marks) || marks < 1) {
+      return NextResponse.json({ error: 'marks must be a positive whole number' }, { status: 400 });
+    }
+    patch.marks = marks;
+  }
   if (body.explanation !== undefined) {
     patch.explanation = typeof body.explanation === 'string' ? body.explanation.trim() || null : null;
   }

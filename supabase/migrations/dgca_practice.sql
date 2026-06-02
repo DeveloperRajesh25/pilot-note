@@ -63,6 +63,7 @@ create table if not exists public.dgca_questions (
   question    text not null,
   options     jsonb not null,
   correct     int  not null,
+  marks       int  not null default 1,
   explanation text,
   image_url   text,
   created_at  timestamptz default now()

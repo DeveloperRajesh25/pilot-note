@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   const { data: questions, error } = await db
     .from('dgca_questions')
-    .select('id, chapter_id, question, options, correct, explanation, image_url')
+    .select('id, chapter_id, question, options, correct, marks, explanation, image_url')
     .eq('chapter_id', chapterId)
     .order('created_at', { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

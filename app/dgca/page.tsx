@@ -329,14 +329,17 @@ function CoursesView({ courses, loading, onPick }: { courses: DgcaCourse[]; load
             <span className="w-6 h-px bg-neutral-900" />
             DGCA Ground Subjects
           </span>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl leading-[1] tracking-[-0.03em] text-neutral-900">
-            Practice every <span className="italic-serif">subject.</span>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.02] tracking-[-0.03em] text-neutral-900">
+            Chapter-Wise DGCA CPL &amp; ATPL <span className="italic-serif">Practice.</span>
           </h1>
         </div>
         <div className="lg:col-span-4">
-          <p className="text-neutral-600 text-base sm:text-lg leading-relaxed">
-            Pick your licence track, choose a subject, then drill chapter-wise MCQs with instant
-            explanations.
+          <p className="text-neutral-600 text-sm sm:text-base leading-relaxed">
+            Master every chapter with our extensive collection of highly unique MCQs designed to cover
+            the complete syllabus. Each chapter contains 150+ carefully crafted questions that test
+            concepts from every angle, making it a powerful revision tool before your exams. Unlike
+            traditional question banks, our questions are original and not copied from any book-back
+            questions, helping you build genuine understanding and exam readiness.
           </p>
         </div>
       </div>
@@ -524,7 +527,12 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
 
       <div className="mb-6 sm:mb-10">
         <div className="flex justify-between text-xs font-medium text-neutral-500 mb-3 tracking-wide">
-          <span>Question {currentIndex + 1} of {questions.length}</span>
+          <span className="flex items-center gap-2">
+            Question {currentIndex + 1} of {questions.length}
+            <span className="text-violet-700 bg-violet-50 border border-violet-200/60 px-2 py-0.5 rounded-full font-bold">
+              {q?.marks ?? 1} mark{(q?.marks ?? 1) === 1 ? '' : 's'}
+            </span>
+          </span>
           <span>{answeredCount} answered</span>
         </div>
         <div className="h-px bg-neutral-200 overflow-hidden">
@@ -598,9 +606,10 @@ function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
 }) {
   const correctCount = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
   const attempted = answers.filter((a) => a !== null).length;
-  const percentage = questions.length ? Math.round((correctCount / questions.length) * 100) : 0;
-  const passed = percentage >= 70;
-  const pctColor = passed ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-rose-500';
+  const totalMarks = questions.reduce((acc, q) => acc + (q.marks ?? 1), 0);
+  const obtainedMarks = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? (q.marks ?? 1) : 0), 0);
+  const percentage = totalMarks ? Math.round((obtainedMarks / totalMarks) * 100) : 0;
+  const pctColor = percentage >= 70 ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-rose-500';
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -623,8 +632,8 @@ function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
                 strokeLinecap="round" className={`transition-all duration-1000 ${pctColor}`} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none">{percentage}%</span>
-              <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-400 mt-2">{correctCount}/{questions.length}</span>
+              <span className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none">{obtainedMarks}</span>
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 mt-1.5">of {totalMarks} marks</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-mono">
@@ -632,12 +641,13 @@ function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
           </div>
         </div>
         <div className="bg-white p-8 sm:p-10 flex flex-col justify-center text-center md:text-left items-center md:items-start">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium mb-3">Outcome</span>
-          <p className={`font-display text-4xl sm:text-5xl leading-none mb-2 ${passed ? 'text-emerald-600' : 'text-rose-500'}`}>
-            {passed ? 'Strong' : 'Keep going'}
+          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium mb-3">Marks scored</span>
+          <p className="font-display text-5xl sm:text-6xl leading-none mb-3 text-neutral-900">
+            {obtainedMarks}<span className="text-neutral-300">/{totalMarks}</span>
           </p>
           <p className="text-neutral-500 text-sm">
-            {passed ? 'Great chapter command. Move to the next chapter or revise weak spots.' : 'Review the explanations and practise this chapter again to lock it in.'}
+            {correctCount} of {questions.length} questions correct. This is chapter-wise practice — review the
+            explanations below and practise again to sharpen weak spots.
           </p>
         </div>
       </div>
@@ -647,11 +657,17 @@ function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
         <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
           {questions.map((q, i) => {
             const ok = answers[i] === q.correct;
+            const m = q.marks ?? 1;
             return (
               <div key={q.id} className="px-4 sm:px-5 py-4 flex items-start gap-3 sm:gap-4">
                 {ok ? <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" /> : <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-neutral-900 mb-1">Q{i + 1}. {q.question}</p>
+                  <div className="flex items-start justify-between gap-3 mb-1">
+                    <p className="text-sm font-medium text-neutral-900">Q{i + 1}. {q.question}</p>
+                    <span className={`shrink-0 text-[11px] font-bold font-mono px-2 py-0.5 rounded-full border ${ok ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
+                      {ok ? m : 0}/{m}
+                    </span>
+                  </div>
                   {q.explanation && <p className="text-xs text-neutral-500 line-clamp-2">{q.explanation}</p>}
                 </div>
               </div>

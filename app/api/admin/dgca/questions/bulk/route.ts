@@ -7,6 +7,7 @@ interface BulkQuestionInput {
   question: unknown;
   options: unknown;
   correct: unknown;
+  marks?: unknown;
   explanation?: unknown;
 }
 
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
   if (!chapter) return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
 
   const rows: {
-    id: string; chapter_id: string; question: string; options: string[]; correct: number; explanation: string | null;
+    id: string; chapter_id: string; question: string; options: string[]; correct: number; marks: number; explanation: string | null;
   }[] = [];
   const errors: string[] = [];
 
@@ -52,6 +53,12 @@ export async function POST(request: NextRequest) {
       errors.push(`Row ${num}: correct index out of range`); continue;
     }
 
+    // marks: positive integer, defaults to 1 when omitted/blank.
+    const marks = q.marks === undefined || q.marks === null || q.marks === '' ? 1 : Number(q.marks);
+    if (!Number.isInteger(marks) || marks < 1) {
+      errors.push(`Row ${num}: marks must be a positive whole number`); continue;
+    }
+
     const explanation = typeof q.explanation === 'string' ? q.explanation.trim() : null;
 
     rows.push({
@@ -60,6 +67,7 @@ export async function POST(request: NextRequest) {
       question: trimmedQ,
       options: trimmedOpts,
       correct,
+      marks,
       explanation: explanation || null,
     });
   }

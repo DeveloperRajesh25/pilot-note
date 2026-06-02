@@ -39,12 +39,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'correct index out of range' }, { status: 400 });
   }
 
+  // marks: positive integer, defaults to 1 when omitted.
+  const marks = body.marks === undefined || body.marks === null || body.marks === '' ? 1 : Number(body.marks);
+  if (!Number.isInteger(marks) || marks < 1) {
+    return NextResponse.json({ error: 'marks must be a positive whole number' }, { status: 400 });
+  }
+
   const record = {
     id: opaqueId('dq'),
     chapter_id,
     question,
     options,
     correct,
+    marks,
     explanation: typeof body.explanation === 'string' ? body.explanation.trim() || null : null,
     image_url: typeof body.image_url === 'string' ? body.image_url.trim() || null : null,
   };

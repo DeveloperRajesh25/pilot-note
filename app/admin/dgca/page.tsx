@@ -5,11 +5,11 @@ import Link from 'next/link';
 import type { DgcaCourse, DgcaSubject, DgcaChapter } from '@/lib/types';
 
 // ── CSV helpers (shared shape with the RTR bulk uploader) ──
-interface BulkRow { question: string; options: string[]; correct: number; explanation: string }
+interface BulkRow { question: string; options: string[]; correct: number; marks: number; explanation: string }
 
-const CSV_TEMPLATE = `question,option_a,option_b,option_c,option_d,correct_answer,explanation
-"What is the standard ISA pressure at sea level?","1003 hPa","1013.25 hPa","1023 hPa","1000 hPa","B","Standard ISA sea-level pressure is 1013.25 hPa."
-"VFR minimum visibility in controlled airspace is generally?","1 km","3 km","5 km","8 km","C","Most controlled airspace requires 5 km visibility for VFR."`;
+const CSV_TEMPLATE = `question,option_a,option_b,option_c,option_d,correct_answer,marks,explanation
+"What is the standard ISA pressure at sea level?","1003 hPa","1013.25 hPa","1023 hPa","1000 hPa","B","1","Standard ISA sea-level pressure is 1013.25 hPa."
+"VFR minimum visibility in controlled airspace is generally?","1 km","3 km","5 km","8 km","C","2","Most controlled airspace requires 5 km visibility for VFR."`;
 
 function parseCSVLine(line: string): string[] {
   const cols: string[] = [];
@@ -38,13 +38,21 @@ function parseCSV(text: string): { rows: BulkRow[]; errors: string[] } {
     if (!line) continue;
     const cols = parseCSVLine(line);
     if (cols.length < 6) { errors.push(`Row ${i + 1}: expected 6+ columns`); continue; }
-    const [question, a, b, c, d, correct_letter, explanation = ''] = cols.map((x) => x.trim());
+    const trimmed = cols.map((x) => x.trim());
+    const [question, a, b, c, d, correct_letter] = trimmed;
     if (!question) { errors.push(`Row ${i + 1}: question is empty`); continue; }
     const options = [a, b, c, d];
     if (options.some((o) => !o)) { errors.push(`Row ${i + 1}: all four options must be filled`); continue; }
     const correct = letterIdx[correct_letter.toUpperCase()];
     if (correct === undefined) { errors.push(`Row ${i + 1}: correct_answer must be A, B, C, or D`); continue; }
-    rows.push({ question, options, correct, explanation });
+    // Column 7 is `marks` in the current template. Stay tolerant of older files
+    // where column 7 held the explanation: if it isn't numeric, treat marks as 1.
+    const col7 = trimmed[6] ?? '';
+    const looksNumeric = col7 !== '' && /^\d+$/.test(col7);
+    const marks = looksNumeric ? Number(col7) : 1;
+    if (looksNumeric && marks < 1) { errors.push(`Row ${i + 1}: marks must be a positive whole number`); continue; }
+    const explanation = (looksNumeric ? trimmed[7] : trimmed[6]) ?? '';
+    rows.push({ question, options, correct, marks, explanation });
   }
   return { rows, errors };
 }
@@ -251,9 +259,9 @@ export default function AdminDGCAPage() {
             <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-3">Bulk Upload MCQs</h3>
             <div className="mb-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
               <p className="text-xs text-neutral-500 mb-1">
-                Columns: <code className="bg-neutral-200 px-1.5 py-0.5 rounded font-mono">question, option_a, option_b, option_c, option_d, correct_answer, explanation</code>
+                Columns: <code className="bg-neutral-200 px-1.5 py-0.5 rounded font-mono">question, option_a, option_b, option_c, option_d, correct_answer, marks, explanation</code>
               </p>
-              <p className="text-xs text-neutral-500 mb-3"><strong>correct_answer</strong> must be A, B, C, or D. Wrap text containing commas in double quotes.</p>
+              <p className="text-xs text-neutral-500 mb-3"><strong>correct_answer</strong> must be A, B, C, or D. <strong>marks</strong> is a whole number (defaults to 1 if left blank). Wrap text containing commas in double quotes.</p>
               <button onClick={downloadTemplate} className="text-xs px-3 py-2 bg-neutral-900 text-white font-bold rounded-lg hover:bg-neutral-800">↓ Download Template CSV</button>
             </div>
 
@@ -278,7 +286,10 @@ export default function AdminDGCAPage() {
                 <div className="max-h-56 overflow-y-auto border border-neutral-200 rounded-xl divide-y divide-neutral-100">
                   {bulkParsed.map((q, i) => (
                     <div key={i} className="p-3 text-xs">
-                      <p className="font-medium text-neutral-900 mb-1">{i + 1}. {q.question}</p>
+                      <p className="font-medium text-neutral-900 mb-1">
+                        {i + 1}. {q.question}
+                        <span className="ml-2 px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 border border-violet-200 font-bold">{q.marks} mark{q.marks === 1 ? '' : 's'}</span>
+                      </p>
                       <div className="flex flex-wrap gap-1">
                         {q.options.map((opt, j) => (
                           <span key={j} className={`px-2 py-0.5 rounded border ${j === q.correct ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
