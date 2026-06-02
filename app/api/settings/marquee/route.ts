@@ -16,7 +16,7 @@ const DEFAULT_ITEMS = [
 
 export async function GET() {
   try {
-    const db = createClient();
+    const db = await createClient();
     const { data } = await db
       .from('site_settings')
       .select('value')
