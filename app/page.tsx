@@ -66,9 +66,8 @@ export default async function Home() {
                 </span>
 
                 <h1 className="font-display text-[clamp(2.25rem,9vw,5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-5 sm:mb-6">
-                  One stop for the <span className="italic-serif">future</span>
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 align-middle mx-2" />
-                  captains <span className="text-neutral-400">of India.</span>
+                  Experience the exam,before the <span className="italic-serif">actual</span>
+                  <span className="text-neutral-400"> exam.</span>
                 </h1>
 
                 <p className="text-neutral-600 text-[15px] sm:text-base md:text-lg max-w-xl leading-relaxed mb-7 sm:mb-8 font-normal">
@@ -76,12 +75,12 @@ export default async function Home() {
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3">
+                  <Button variant="secondary" size="lg" href="/pariksha">
+                    Take an exam
+                  </Button>
                   <Button variant="primary" size="lg" href="/dgca">
                     Start learning
                     <ArrowUpRight size={16} />
-                  </Button>
-                  <Button variant="secondary" size="lg" href="/pariksha">
-                    Take an exam
                   </Button>
                 </div>
               </div>
@@ -90,7 +89,7 @@ export default async function Home() {
               <div className="lg:col-span-5 relative">
                 <div className="relative">
                   <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.5rem] sm:rounded-[1.75rem] p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
-                    <div className="aspect-[5/4] relative bg-black rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
+                    <div className="aspect-[6/4] relative bg-black rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
                       <video
                         src="/assets/hero-right-video.mp4"
                         autoPlay
@@ -274,7 +273,7 @@ export default async function Home() {
           <div className="container mx-auto px-4 sm:px-6 relative text-center">
             <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-400 font-medium flex items-center justify-center gap-2 mb-6 sm:mb-8">
               <span className="w-6 h-px bg-emerald-400" />
-              Join Pilot Note
+              India's Most Realistic DGCA CPL & ATPL Mock Exam Platform
               <span className="w-6 h-px bg-emerald-400" />
             </span>
 
@@ -283,7 +282,7 @@ export default async function Home() {
             </h2>
 
             <p className="text-neutral-400 text-base sm:text-lg md:text-xl mb-10 sm:mb-14 max-w-2xl mx-auto leading-relaxed">
-              Trusted by 12,500+ student pilots across India. Your complete CPL preparation
+              Trusted by 2,500+ student pilots across India. Your complete CPL preparation
               companion — from first MCQ to that final &ldquo;line-up and wait.&rdquo;
             </p>
 

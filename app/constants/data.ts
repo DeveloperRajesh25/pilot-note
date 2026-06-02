@@ -1,7 +1,7 @@
 export const HERO_CONTENT = {
-  badge: "India's #1 CPL Study Platform",
-  title: "One stop solution for CPL Pilots",
-  subtitle: "DGCA CPL & ATPL Practice, Study Guides, All India Mock Exams, and Pilot Aptitude Tests. Everything you need. Every subject. Every step of the way.",
+  badge: "Real exam-level difficulty. Real time pressure. Real competition.",
+  title: "Experience the exam before the actual exam.",
+  subtitle: "Prepare for DGCA exams through full-scale mock tests designed to replicate the actual examination environment.",
 };
 
 export const FEATURES = [
