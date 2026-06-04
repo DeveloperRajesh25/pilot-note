@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SITE_STATS } from '@/app/constants/data';
 
 export default function AuthLayout({
   children,
@@ -73,14 +74,10 @@ export default function AuthLayout({
 
           {/* Bottom stats */}
           <div className="grid grid-cols-3 gap-6 pt-10 border-t border-white/10">
-            {[
-              ['12,500+', 'Student pilots'],
-              ['95%', 'Success rate'],
-              ['500+', 'Practice Qs'],
-            ].map(([num, label]) => (
-              <div key={label}>
-                <p className="font-display text-3xl text-white tracking-tight">{num}</p>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-white/50 mt-1.5">{label}</p>
+            {SITE_STATS.slice(0, 3).map((s) => (
+              <div key={s.label}>
+                <p className="font-display text-3xl text-white tracking-tight">{s.value}</p>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-white/50 mt-1.5">{s.label}</p>
               </div>
             ))}
           </div>

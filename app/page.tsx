@@ -58,7 +58,7 @@ export default async function Home() {
             <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left — copy */}
               <div className="lg:col-span-7 relative">
-                <span className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white text-neutral-600 text-[10px] font-medium tracking-[0.18em] uppercase mb-5 sm:mb-6">
+                <span className="inline-flex items-center gap-2.5 py-1.5 rounded-full bg-white text-neutral-600 text-[10px] font-medium tracking-[0.18em] -ml-2 uppercase mb-2 sm:mb-3">
                   <span className="relative flex h-1.5 w-1.5">
 
                   </span>
@@ -66,7 +66,7 @@ export default async function Home() {
                 </span>
 
                 <h1 className="font-display text-[clamp(2.25rem,9vw,5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-5 sm:mb-6">
-                  Experience the exam,before the <span className="italic-serif">actual</span>
+                  Experience the <br/> exam, before the <span className="italic-serif">actual</span>
                   <span className="text-neutral-400"> exam.</span>
                 </h1>
 
@@ -282,7 +282,7 @@ export default async function Home() {
             </h2>
 
             <p className="text-neutral-400 text-base sm:text-lg md:text-xl mb-10 sm:mb-14 max-w-2xl mx-auto leading-relaxed">
-              Trusted by 2,500+ student pilots across India. Your complete CPL preparation
+              Trusted by 12,500+ student pilots across India. Your complete CPL preparation
               companion — from first MCQ to that final &ldquo;line-up and wait.&rdquo;
             </p>
 

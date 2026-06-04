@@ -15,6 +15,7 @@ import {
   Sparkles,
   ArrowUpRight,
 } from 'lucide-react';
+import { SITE_STATS } from '@/app/constants/data';
 
 export const metadata: Metadata = {
   title: 'About — Pilot Note',
@@ -68,12 +69,6 @@ const VALUES = [
   },
 ];
 
-const STATS = [
-  { value: '12,500+', label: 'Student pilots' },
-  { value: '500+',    label: 'Practice questions' },
-  { value: '50+',     label: 'Mock exams' },
-  { value: '95%',     label: 'Pass rate' },
-];
 
 export default function AboutPage() {
   return (
@@ -170,7 +165,7 @@ export default function AboutPage() {
         <section className="py-14 sm:py-20 border-t border-neutral-200">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden">
-              {STATS.map((s) => (
+              {SITE_STATS.map((s) => (
                 <div key={s.label} className="bg-white p-5 sm:p-8 lg:p-10 flex flex-col gap-2">
                   <p className="font-display text-3xl sm:text-4xl md:text-5xl text-neutral-900 tracking-tight">
                     {s.value}

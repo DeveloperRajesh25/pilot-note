@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { SOCIAL_ICON_MAP } from '@/components/ui/SocialIcons';
+import { ContactForm } from '@/components/contact/ContactForm';
 
 export const metadata: Metadata = {
   title: 'Contact — Pilot Note',
@@ -72,9 +73,39 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* Channels */}
+        {/* Contact Form */}
+        <section className="py-14 sm:py-20 border-b border-neutral-200">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+              <div className="lg:col-span-4">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
+                  <span className="w-6 h-px bg-neutral-900" /> Send a message
+                </span>
+                <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-4">
+                  We read <span className="italic-serif">everything.</span>
+                </h2>
+                <p className="text-neutral-600 text-sm leading-relaxed">
+                  Fill in the form and we&apos;ll route your message to the right person. Typical reply time is under 24 hours.
+                </p>
+              </div>
+              <div className="lg:col-span-7 lg:col-start-6">
+                <ContactForm />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Channels — email fallback */}
         <section className="py-14 sm:py-20">
           <div className="container mx-auto px-4 sm:px-6">
+            <div className="mb-8 sm:mb-10">
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-3">
+                <span className="w-6 h-px bg-neutral-900" /> Or email us directly
+              </span>
+              <p className="text-neutral-600 text-sm max-w-lg">
+                Prefer to write directly? Pick the address that fits your topic.
+              </p>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
               {CHANNELS.map((c) => (
                 <a

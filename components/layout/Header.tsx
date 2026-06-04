@@ -81,7 +81,14 @@ export const Header = () => {
                   {active && (
                     <span className="absolute inset-0 rounded-full bg-neutral-100" aria-hidden />
                   )}
-                  <span className="relative">{link.label}</span>
+                  <span className="relative flex items-center gap-1.5">
+                    {link.label}
+                    {link.comingSoon && (
+                      <span className="text-[8px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-400 px-1.5 py-0.5 rounded-full leading-none">
+                        Soon
+                      </span>
+                    )}
+                  </span>
                   {active && (
                     <span className="absolute left-1/2 -translate-x-1/2 -bottom-0.5 w-1 h-1 rounded-full bg-emerald-500" />
                   )}
@@ -143,7 +150,14 @@ export const Header = () => {
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span>{link.label}</span>
+                    <span className="flex items-center gap-2">
+                      {link.label}
+                      {link.comingSoon && (
+                        <span className="text-[8px] font-bold uppercase tracking-wider bg-neutral-700 text-neutral-300 px-1.5 py-0.5 rounded-full leading-none">
+                          Soon
+                        </span>
+                      )}
+                    </span>
                     {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
                   </Link>
                 );

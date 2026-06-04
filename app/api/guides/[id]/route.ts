@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { GUIDES as STATIC_GUIDES } from '@/app/constants/data';
 
 export async function GET(
   _request: NextRequest,
@@ -19,9 +20,21 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  if (!data) {
-    return NextResponse.json({ error: 'Guide not found' }, { status: 404 });
+  if (data) {
+    return NextResponse.json({ guide: data });
   }
 
-  return NextResponse.json({ guide: data });
+  // Fall back to the static guide if not found in the DB.
+  const staticGuide = STATIC_GUIDES.find((g) => g.id === id);
+  if (staticGuide) {
+    return NextResponse.json({
+      guide: {
+        ...staticGuide,
+        read_time: staticGuide.readTime,
+        published: true,
+      },
+    });
+  }
+
+  return NextResponse.json({ error: 'Guide not found' }, { status: 404 });
 }

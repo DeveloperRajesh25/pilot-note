@@ -160,6 +160,7 @@ export function SignupForm() {
             required
             autoComplete="bday"
             max={maxDob || undefined}
+            hint="Used to verify age eligibility for DGCA-regulated exams."
           />
           <Input
             label="City"

@@ -1,3 +1,10 @@
+export const SITE_STATS = [
+  { value: '12,500+', label: 'Student pilots' },
+  { value: '500+',    label: 'Practice questions' },
+  { value: '50+',     label: 'Mock exams' },
+  { value: '95%',     label: 'Pass rate' },
+];
+
 export const HERO_CONTENT = {
   badge: "Real exam-level difficulty. Real time pressure. Real competition.",
   title: "Experience the exam before the actual exam.",
@@ -74,11 +81,11 @@ export const WHY_US = [
 ];
 
 export const NAV_LINKS = [
-  { id: 'n1', label: 'Home', url: '/' },
-  { id: 'n2', label: 'Pariksha', url: '/pariksha' },
-  { id: 'n4', label: 'Guides', url: '/guides' },
-  { id: 'n3', label: 'DGCA', url: '/dgca' },
-  { id: 'n5', label: 'Pilot Aptitude', url: '/pilot-aptitude' }
+  { id: 'n1', label: 'Home',          url: '/',              comingSoon: false },
+  { id: 'n2', label: 'Pariksha',      url: '/pariksha',      comingSoon: false },
+  { id: 'n4', label: 'Guides',        url: '/guides',        comingSoon: false },
+  { id: 'n3', label: 'DGCA',          url: '/dgca',          comingSoon: false },
+  { id: 'n5', label: 'Pilot Aptitude', url: '/pilot-aptitude', comingSoon: true },
 ];
 
 export const FOOTER_LINKS = [
