@@ -54,7 +54,6 @@ export default function PrivacyPolicyPage() {
         <p>We collect the following categories of information:</p>
         <ul>
           <li><strong>Account information:</strong> name, email address, password (encrypted), and optional details such as date of birth, phone number, and city.</li>
-          <li><strong>Profile information:</strong> flying school, training stage, target CPL date, and other onboarding fields you choose to provide.</li>
           <li><strong>Usage data:</strong> exam attempts, scores, time spent, questions answered, study patterns, and feature interactions.</li>
           <li><strong>Payment information:</strong> we use third-party payment processors (such as Razorpay) and do <strong>not</strong> store full card numbers on our servers. We retain transaction IDs, amounts, and order references.</li>
           <li><strong>Device & log data:</strong> IP address, browser type, operating system, device identifiers, and referring URLs.</li>

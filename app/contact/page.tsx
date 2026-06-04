@@ -133,59 +133,33 @@ export default function ContactPage() {
           </div>
         </section>
 
-        {/* Office / social */}
+        {/* Built in India — social */}
         <section className="py-14 sm:py-20 border-t border-neutral-200 bg-neutral-50">
           <div className="container mx-auto px-4 sm:px-6">
-            <div className="grid lg:grid-cols-12 gap-8 sm:gap-12">
-              <div className="lg:col-span-5">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
-                  <span className="w-6 h-px bg-neutral-900" /> Where we are
-                </span>
-                <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-4 sm:mb-5">
-                  Built in <span className="italic-serif">India</span>, for Indian skies.
-                </h2>
-                <p className="text-neutral-600 text-[15px] leading-relaxed mb-6">
-                  Pilot Note operates fully online. For postal or legal correspondence, please use
-                  the address below.
-                </p>
-                <div className="text-neutral-700 text-sm leading-relaxed">
-                  <p className="font-medium text-neutral-900 mb-1">Pilot Note</p>
-                  <p>Bengaluru, Karnataka</p>
-                  <p>India</p>
-                </div>
-              </div>
-
-              <div className="lg:col-span-6 lg:col-start-7">
-                <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
-                  <span className="w-6 h-px bg-neutral-900" /> Follow along
-                </span>
-                <h2 className="font-display text-3xl sm:text-4xl text-neutral-900 leading-[1.05] tracking-tight mb-4 sm:mb-5">
-                  Daily tips, real <span className="italic-serif">RT</span> calls, and aviation deep-dives.
-                </h2>
-                <p className="text-neutral-600 text-[15px] leading-relaxed mb-6">
-                  We share study clips, RT phraseology drills, and pilot interviews across our
-                  channels. Pick your favourite platform.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {SOCIAL_LINKS.map((s) => {
-                    const Icon = SOCIAL_ICON_MAP[s.icon];
-                    return (
-                      <a
-                        key={s.id}
-                        href={s.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group inline-flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-full bg-white border border-neutral-200 text-sm font-medium text-neutral-700 hover:text-white hover:bg-neutral-900 hover:border-neutral-900 transition-all duration-300"
-                      >
-                        <span className="w-7 h-7 rounded-full bg-neutral-100 group-hover:bg-emerald-500 flex items-center justify-center text-neutral-700 group-hover:text-white transition-colors">
-                          {Icon && <Icon size={13} />}
-                        </span>
-                        {s.label}
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
+            <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4 sm:mb-5">
+              <span className="w-6 h-px bg-neutral-900" /> Follow along
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-neutral-900 leading-[1.05] tracking-tight mb-6 sm:mb-8 max-w-2xl">
+              Built in <span className="italic-serif">India</span>, for Indian skies.
+            </h2>
+            <div className="flex flex-wrap gap-3">
+              {SOCIAL_LINKS.map((s) => {
+                const Icon = SOCIAL_ICON_MAP[s.icon];
+                return (
+                  <a
+                    key={s.id}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-full bg-white border border-neutral-200 text-sm font-medium text-neutral-700 hover:text-white hover:bg-neutral-900 hover:border-neutral-900 transition-all duration-300"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-neutral-100 group-hover:bg-emerald-500 flex items-center justify-center text-neutral-700 group-hover:text-white transition-colors">
+                      {Icon && <Icon size={13} />}
+                    </span>
+                    {s.label}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -193,7 +167,7 @@ export default function ContactPage() {
         {/* Footer help */}
         <section className="py-12 sm:py-16 border-t border-neutral-200">
           <div className="container mx-auto px-4 sm:px-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-5 text-sm">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-5 text-sm">
               <p className="text-neutral-500">
                 Looking for legal info? See{' '}
                 <Link href="/privacy" className="text-neutral-900 underline underline-offset-4 hover:text-emerald-600">
@@ -208,10 +182,6 @@ export default function ContactPage() {
                   Refunds
                 </Link>
                 .
-              </p>
-              <p className="text-neutral-500">
-                Typical reply time:{' '}
-                <span className="text-neutral-900 font-medium">under 24 hours.</span>
               </p>
             </div>
           </div>

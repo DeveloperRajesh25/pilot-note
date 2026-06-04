@@ -42,15 +42,6 @@ interface Profile {
   avatar_url: string | null;
   created_at: string;
 }
-interface RTRResult {
-  id: string;
-  test_id: string;
-  part: 'part1' | 'part2' | string;
-  score: number;
-  total: number;
-  created_at: string;
-  rtr_tests?: { title: string } | null;
-}
 interface AptitudeResult {
   id: string;
   category: string;
@@ -59,12 +50,12 @@ interface AptitudeResult {
   time_taken: number;
   created_at: string;
 }
-interface Purchase {
+interface DgcaPurchase {
   id: string;
-  test_id: string;
+  chapter_id: string;
   amount: number;
   purchased_at: string;
-  rtr_tests?: { title: string; description: string; price: number; status: string } | null;
+  dgca_chapters?: { title: string; dgca_subjects?: { name: string } | null } | null;
 }
 interface ExamAttempt {
   id: string;
@@ -85,8 +76,7 @@ interface ExamRegistration {
 interface Props {
   user: UserSummary;
   profile: Profile | null;
-  purchases: Purchase[];
-  rtrResults: RTRResult[];
+  dgcaPurchases: DgcaPurchase[];
   aptitudeResults: AptitudeResult[];
   examAttempts: ExamAttempt[];
   examRegistrations: ExamRegistration[];
@@ -109,8 +99,7 @@ const initialsFrom = (name: string, email: string) => {
 export default function ProfileClient({
   user,
   profile,
-  purchases,
-  rtrResults,
+  dgcaPurchases,
   aptitudeResults,
   examAttempts,
   examRegistrations,
@@ -123,10 +112,9 @@ export default function ProfileClient({
   const initials = initialsFrom(profile?.full_name ?? '', user.email);
 
   const stats = useMemo(() => {
-    const totalRtr = rtrResults.length;
     const totalAptitude = aptitudeResults.length;
     const totalExams = examAttempts.filter((a) => a.submitted_at).length;
-    const totalTestsTaken = totalRtr + totalAptitude + totalExams;
+    const totalTestsTaken = totalAptitude + totalExams;
 
     const avgPct = (rows: { score: number; total: number }[]) => {
       if (rows.length === 0) return null;
@@ -134,7 +122,6 @@ export default function ProfileClient({
       return Math.round((sum / rows.length) * 100);
     };
 
-    const avgRtr = avgPct(rtrResults);
     const avgAptitude = avgPct(aptitudeResults);
     const avgExam = avgPct(
       examAttempts
@@ -145,17 +132,15 @@ export default function ProfileClient({
     const totalSeconds = aptitudeResults.reduce((acc, r) => acc + (r.time_taken || 0), 0);
 
     return {
-      totalRtr,
       totalAptitude,
       totalExams,
       totalTestsTaken,
-      totalPurchases: purchases.length,
-      avgRtr,
+      totalChapters: dgcaPurchases.length,
       avgAptitude,
       avgExam,
       totalMinutes: Math.round(totalSeconds / 60),
     };
-  }, [rtrResults, aptitudeResults, examAttempts, purchases.length]);
+  }, [aptitudeResults, examAttempts, dgcaPurchases.length]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-4 h-4" strokeWidth={1.5} /> },
@@ -223,8 +208,8 @@ export default function ProfileClient({
 
       {/* ───── Stats row ───── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
-        <StatCard label="Tests Purchased" value={String(stats.totalPurchases)} icon={<BookOpen className="w-4 h-4" strokeWidth={1.5} />} />
-        <StatCard label="Avg. RTR" value={stats.avgRtr === null ? '—' : `${stats.avgRtr}%`} icon={<Target className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard label="DGCA Chapters" value={String(stats.totalChapters)} icon={<BookOpen className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard label="Avg. Pariksha" value={stats.avgExam === null ? '—' : `${stats.avgExam}%`} icon={<Target className="w-4 h-4" strokeWidth={1.5} />} />
         <StatCard label="Avg. Aptitude" value={stats.avgAptitude === null ? '—' : `${stats.avgAptitude}%`} icon={<Trophy className="w-4 h-4" strokeWidth={1.5} />} />
         <StatCard label="Practice Time" value={stats.totalMinutes > 0 ? `${stats.totalMinutes}m` : '—'} icon={<Clock className="w-4 h-4" strokeWidth={1.5} />} />
       </div>
@@ -254,21 +239,19 @@ export default function ProfileClient({
         {tab === 'overview' && (
           <OverviewTab
             displayName={displayName}
-            rtrResults={rtrResults}
             aptitudeResults={aptitudeResults}
             examAttempts={examAttempts}
-            purchases={purchases}
+            dgcaPurchases={dgcaPurchases}
             examRegistrations={examRegistrations}
             avgExam={stats.avgExam}
             onJump={(t) => setTab(t)}
           />
         )}
         {tab === 'tests' && (
-          <TestsTab purchases={purchases} examRegistrations={examRegistrations} />
+          <TestsTab dgcaPurchases={dgcaPurchases} examRegistrations={examRegistrations} />
         )}
         {tab === 'results' && (
           <ResultsTab
-            rtrResults={rtrResults}
             aptitudeResults={aptitudeResults}
             examAttempts={examAttempts}
           />
@@ -299,19 +282,17 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 
 function OverviewTab({
   displayName,
-  rtrResults,
   aptitudeResults,
   examAttempts,
-  purchases,
+  dgcaPurchases,
   examRegistrations,
   avgExam,
   onJump,
 }: {
   displayName: string;
-  rtrResults: RTRResult[];
   aptitudeResults: AptitudeResult[];
   examAttempts: ExamAttempt[];
-  purchases: Purchase[];
+  dgcaPurchases: DgcaPurchase[];
   examRegistrations: ExamRegistration[];
   avgExam: number | null;
   onJump: (t: Tab) => void;
@@ -328,18 +309,6 @@ function OverviewTab({
 
   const activity: ActivityItem[] = useMemo(() => {
     const items: ActivityItem[] = [];
-    rtrResults.forEach((r) => {
-      const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
-      items.push({
-        id: `rtr-${r.id}`,
-        title: r.rtr_tests?.title ?? 'RTR Test',
-        subtitle: r.part === 'part1' ? 'DGCA RTR · Part 1' : 'DGCA RTR · Part 2',
-        date: formatDate(r.created_at),
-        iso: r.created_at,
-        pct,
-        score: `${r.score}/${r.total}`,
-      });
-    });
     aptitudeResults.forEach((r) => {
       const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
       items.push({
@@ -370,7 +339,7 @@ function OverviewTab({
       });
     items.sort((a, b) => +new Date(b.iso) - +new Date(a.iso));
     return items.slice(0, 8);
-  }, [rtrResults, aptitudeResults, examAttempts]);
+  }, [aptitudeResults, examAttempts]);
 
   const upcoming = examRegistrations.filter((r) => {
     if (!r.exams?.exam_date) return false;
@@ -379,10 +348,9 @@ function OverviewTab({
   });
 
   const isEmpty =
-    rtrResults.length === 0 &&
     aptitudeResults.length === 0 &&
     examAttempts.length === 0 &&
-    purchases.length === 0 &&
+    dgcaPurchases.length === 0 &&
     examRegistrations.length === 0;
 
   if (isEmpty) {
@@ -392,12 +360,12 @@ function OverviewTab({
           Welcome aboard, <span className="italic-serif">{displayName}.</span>
         </h3>
         <p className="text-neutral-500 mb-8 sm:mb-10 max-w-md mx-auto text-sm sm:text-base">
-          Your training journey starts here. Take a free aptitude test, study from our guides, or unlock the DGCA RTR mock tests.
+          Your training journey starts here. Practice DGCA chapter MCQs, sit an all-India Pariksha mock, or take a free aptitude test.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-          <Button href="/pilot-aptitude" className="justify-center">Take aptitude test</Button>
-          <Button variant="secondary" href="/dgca-rtr" className="justify-center">Browse RTR</Button>
-          <Button variant="secondary" href="/guides" className="justify-center">Read guides</Button>
+          <Button href="/dgca" className="justify-center">Practice DGCA</Button>
+          <Button variant="secondary" href="/pariksha" className="justify-center">View Pariksha</Button>
+          <Button variant="secondary" href="/pilot-aptitude" className="justify-center">Take aptitude test</Button>
         </div>
       </div>
     );
@@ -478,9 +446,9 @@ function OverviewTab({
           </h3>
           <div className="space-y-1">
             {[
-              ['/pilot-aptitude', 'Take aptitude test'],
-              ['/dgca-rtr', 'Browse RTR tests'],
+              ['/dgca', 'Practice DGCA chapters'],
               ['/pariksha', 'View Pariksha exams'],
+              ['/pilot-aptitude', 'Take aptitude test'],
               ['/guides', 'Read study guides'],
             ].map(([href, label]) => (
               <Link
@@ -515,55 +483,45 @@ function OverviewTab({
 
 /* ────────── My Tests ────────── */
 
-function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; examRegistrations: ExamRegistration[] }) {
+function TestsTab({ dgcaPurchases, examRegistrations }: { dgcaPurchases: DgcaPurchase[]; examRegistrations: ExamRegistration[] }) {
   return (
     <div className="space-y-12">
-      {/* RTR */}
+      {/* DGCA chapters */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2">
-            <span className="w-6 h-px bg-neutral-900" /> Purchased RTR tests
+            <span className="w-6 h-px bg-neutral-900" /> Unlocked DGCA chapters
           </h2>
-          <span className="text-xs text-neutral-400 font-mono">{purchases.length}</span>
+          <span className="text-xs text-neutral-400 font-mono">{dgcaPurchases.length}</span>
         </div>
 
-        {purchases.length === 0 ? (
+        {dgcaPurchases.length === 0 ? (
           <div className="border border-dashed border-neutral-200 rounded-2xl py-12 text-center">
             <Receipt className="w-8 h-8 text-neutral-300 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-neutral-500 mb-5 text-sm">You haven&apos;t purchased any RTR tests yet.</p>
-            <Button size="sm" href="/dgca-rtr">Browse RTR tests</Button>
+            <p className="text-neutral-500 mb-5 text-sm">You haven&apos;t unlocked any paid DGCA chapters yet.</p>
+            <Button size="sm" href="/dgca">Practice DGCA</Button>
           </div>
         ) : (
           <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
-            {purchases.map((p) => (
-              <div key={p.id} className="p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4 mb-5 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <p className="font-medium text-neutral-900">{p.rtr_tests?.title ?? p.test_id}</p>
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-medium uppercase tracking-[0.14em] rounded-full border border-emerald-200/60">
-                        Owned
-                      </span>
-                    </div>
-                    {p.rtr_tests?.description && (
-                      <p className="text-xs text-neutral-500 mt-1">{p.rtr_tests.description}</p>
-                    )}
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 mt-2 font-mono">
-                      Purchased {formatDate(p.purchased_at)} · ₹{p.amount}
-                    </p>
+            {dgcaPurchases.map((p) => (
+              <div key={p.id} className="flex items-center justify-between gap-4 p-5 sm:p-6 flex-wrap">
+                <div className="flex-1 min-w-[200px]">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-medium text-neutral-900">{p.dgca_chapters?.title ?? p.chapter_id}</p>
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-medium uppercase tracking-[0.14em] rounded-full border border-emerald-200/60">
+                      Unlocked
+                    </span>
                   </div>
+                  {p.dgca_chapters?.dgca_subjects?.name && (
+                    <p className="text-xs text-neutral-500 mt-1">{p.dgca_chapters.dgca_subjects.name}</p>
+                  )}
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-neutral-400 mt-2 font-mono">
+                    Unlocked {formatDate(p.purchased_at)} · ₹{p.amount}
+                  </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="primary" href={`/rtr-exam?testId=${p.test_id}&part=part1`}>
-                    <PlayCircle className="w-3.5 h-3.5" /> Part 1
-                  </Button>
-                  <Button size="sm" variant="secondary" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=practice`}>
-                    Practice
-                  </Button>
-                  <Button size="sm" variant="violet" href={`/rtr-exam?testId=${p.test_id}&part=part2&mode=simulate`}>
-                    Simulate
-                  </Button>
-                </div>
+                <Button size="sm" variant="violet" href="/dgca">
+                  <PlayCircle className="w-3.5 h-3.5" /> Practice
+                </Button>
               </div>
             ))}
           </div>
@@ -630,22 +588,19 @@ function TestsTab({ purchases, examRegistrations }: { purchases: Purchase[]; exa
 /* ────────── Results ────────── */
 
 function ResultsTab({
-  rtrResults,
   aptitudeResults,
   examAttempts,
 }: {
-  rtrResults: RTRResult[];
   aptitudeResults: AptitudeResult[];
   examAttempts: ExamAttempt[];
 }) {
-  const [filter, setFilter] = useState<'all' | 'rtr' | 'aptitude' | 'pariksha'>('all');
+  const [filter, setFilter] = useState<'all' | 'pariksha' | 'aptitude'>('all');
   const submittedExams = examAttempts.filter((a) => a.submitted_at && a.total && a.score !== null);
 
   const filters = [
-    { id: 'all' as const, label: 'All', count: rtrResults.length + aptitudeResults.length + submittedExams.length },
-    { id: 'rtr' as const, label: 'DGCA RTR', count: rtrResults.length },
-    { id: 'aptitude' as const, label: 'Aptitude', count: aptitudeResults.length },
+    { id: 'all' as const, label: 'All', count: submittedExams.length + aptitudeResults.length },
     { id: 'pariksha' as const, label: 'Pariksha', count: submittedExams.length },
+    { id: 'aptitude' as const, label: 'Aptitude', count: aptitudeResults.length },
   ];
 
   return (
@@ -674,17 +629,20 @@ function ResultsTab({
         ))}
       </div>
 
-      {(filter === 'all' || filter === 'rtr') && rtrResults.length > 0 && (
-        <ResultGroup title="DGCA RTR" count={rtrResults.length}>
-          {rtrResults.map((r) => {
-            const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+      {(filter === 'all' || filter === 'pariksha') && submittedExams.length > 0 && (
+        <ResultGroup title="Pariksha" count={submittedExams.length}>
+          {submittedExams.map((a) => {
+            const total = a.total ?? 1;
+            const score = a.score ?? 0;
+            const pct = Math.round((score / total) * 100);
             return (
               <ResultRow
-                key={r.id}
-                title={r.rtr_tests?.title ?? r.test_id}
-                subtitle={`${r.part === 'part1' ? 'Part 1 — MCQ' : 'Part 2 — RT'} · ${formatDate(r.created_at)}`}
+                key={a.id}
+                title={a.exams?.title ?? a.exam_id}
+                subtitle={`${a.exams?.subject ?? 'Pariksha'} · ${formatDate(a.submitted_at!)}`}
                 pct={pct}
-                score={`${r.score}/${r.total}`}
+                score={`${score}/${total}`}
+                href={`/pariksha/${a.exam_id}/results`}
               />
             );
           })}
@@ -710,38 +668,17 @@ function ResultsTab({
         </ResultGroup>
       )}
 
-      {(filter === 'all' || filter === 'pariksha') && submittedExams.length > 0 && (
-        <ResultGroup title="Pariksha" count={submittedExams.length}>
-          {submittedExams.map((a) => {
-            const total = a.total ?? 1;
-            const score = a.score ?? 0;
-            const pct = Math.round((score / total) * 100);
-            return (
-              <ResultRow
-                key={a.id}
-                title={a.exams?.title ?? a.exam_id}
-                subtitle={`${a.exams?.subject ?? 'Pariksha'} · ${formatDate(a.submitted_at!)}`}
-                pct={pct}
-                score={`${score}/${total}`}
-              />
-            );
-          })}
-        </ResultGroup>
-      )}
-
-      {((filter === 'rtr' && rtrResults.length === 0) ||
-        (filter === 'aptitude' && aptitudeResults.length === 0) ||
+      {((filter === 'aptitude' && aptitudeResults.length === 0) ||
         (filter === 'pariksha' && submittedExams.length === 0) ||
         (filter === 'all' &&
-          rtrResults.length === 0 &&
           aptitudeResults.length === 0 &&
           submittedExams.length === 0)) && (
         <div className="border border-neutral-200 rounded-2xl py-16 text-center">
           <Award className="w-10 h-10 text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-neutral-500 mb-6 text-sm">No results to show for this category yet.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button size="sm" href="/pilot-aptitude">Take aptitude</Button>
-            <Button size="sm" variant="secondary" href="/dgca-rtr">RTR tests</Button>
+            <Button size="sm" href="/pariksha">Take a Pariksha mock</Button>
+            <Button size="sm" variant="secondary" href="/pilot-aptitude">Aptitude test</Button>
           </div>
         </div>
       )}
@@ -765,9 +702,9 @@ function ResultGroup({ title, count, children }: { title: string; count: number;
   );
 }
 
-function ResultRow({ title, subtitle, pct, score }: { title: string; subtitle: string; pct: number; score: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 p-5 hover:bg-neutral-50 transition-colors">
+function ResultRow({ title, subtitle, pct, score, href }: { title: string; subtitle: string; pct: number; score: string; href?: string }) {
+  const inner = (
+    <>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-neutral-900 truncate">{title}</p>
         <p className="text-xs text-neutral-500 mt-0.5 truncate">{subtitle}</p>
@@ -785,7 +722,22 @@ function ResultRow({ title, subtitle, pct, score }: { title: string; subtitle: s
         <span className="hidden md:inline text-[10px] text-neutral-400 font-mono tabular-nums w-12 text-right">
           {score}
         </span>
+        {href && <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />}
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="group flex items-center justify-between gap-4 p-5 hover:bg-neutral-50 transition-colors">
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-4 p-5 hover:bg-neutral-50 transition-colors">
+      {inner}
     </div>
   );
 }

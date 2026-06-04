@@ -13,6 +13,14 @@ export const HERO_CONTENT = {
 
 export const FEATURES = [
   {
+    id: 'f3',
+    title: 'Pariksha',
+    desc: 'Live All India real mock examination for all DGCA CPL & ATPL subjects. Exact DGCA like exam environment. Know where you stand.',
+    icon: 'blue',
+    linkText: 'View Exams →',
+    linkUrl: '/pariksha'
+  },
+  {
     id: 'f1',
     title: 'DGCA',
     desc: 'Chapter-wise MCQ practice for every CPL & ATPL ground subject. Exam-pattern questions with detailed explanations.',
@@ -27,14 +35,6 @@ export const FEATURES = [
     icon: 'violet',
     linkText: 'Read Guides →',
     linkUrl: '/guides'
-  },
-  {
-    id: 'f3',
-    title: 'Pariksha',
-    desc: 'All India real mock examinations for CPL subjects. Compete with students nationwide — like JEE for pilots.',
-    icon: 'blue',
-    linkText: 'View Exams →',
-    linkUrl: '/pariksha'
   },
   {
     id: 'f4',
@@ -55,15 +55,15 @@ export const STATS = [
 
 export const WHY_US = [
   {
-    id: 'w1',
-    title: 'DGCA Exam Pattern Questions',
-    desc: 'Our MCQs are curated from actual DGCA exam patterns, previous year papers, and expert analysis to give you the most relevant practice.',
-    number: '01'
-  },
-  {
     id: 'w2',
     title: 'All India Real Exam Experience',
     desc: 'Pariksha gives you the real exam pressure. Compete with students nationwide, get your rank, and measure your readiness.',
+    number: '01'
+  },
+  {
+    id: 'w1',
+    title: 'DGCA Exam Pattern Questions',
+    desc: 'Our MCQs are curated from actual DGCA exam patterns, previous year papers, and expert analysis to give you the most relevant practice.',
     number: '02'
   },
   {
@@ -83,8 +83,8 @@ export const WHY_US = [
 export const NAV_LINKS = [
   { id: 'n1', label: 'Home',          url: '/',              comingSoon: false },
   { id: 'n2', label: 'Pariksha',      url: '/pariksha',      comingSoon: false },
-  { id: 'n4', label: 'Guides',        url: '/guides',        comingSoon: false },
   { id: 'n3', label: 'DGCA',          url: '/dgca',          comingSoon: false },
+  { id: 'n4', label: 'Guides',        url: '/guides',        comingSoon: false },
   { id: 'n5', label: 'Pilot Aptitude', url: '/pilot-aptitude', comingSoon: true },
 ];
 
@@ -103,17 +103,17 @@ export const FOOTER_LINKS = [
     id: 'fg2',
     title: 'Navigate',
     links: [
-      { label: 'About Pilot Note', url: '/about' },
-      { label: 'Contact Us', url: '/contact' },
+      { label: 'Privacy Policy', url: '/privacy' },
+      { label: 'Terms of Use', url: '/terms' },
+      { label: 'Refund Policy', url: '/refund-policy' }
     ]
   },
   {
     id: 'fg3',
     title: 'Communicate',
     links: [
-      { label: 'Privacy Policy', url: '/privacy' },
-      { label: 'Terms of Use', url: '/terms' },
-      { label: 'Refund Policy', url: '/refund-policy' }
+      { label: 'About Pilot Note', url: '/about' },
+      { label: 'Contact Us', url: '/contact' },
     ]
   }
 ];

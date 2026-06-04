@@ -16,23 +16,17 @@ export default async function ProfilePage() {
 
   const [
     profileRes,
-    purchasesRes,
-    rtrResultsRes,
+    dgcaPurchasesRes,
     aptitudeResultsRes,
     examAttemptsRes,
     examRegistrationsRes,
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
     supabase
-      .from('user_purchases')
-      .select('*, rtr_tests(title, description, price, status)')
+      .from('dgca_chapter_purchases')
+      .select('*, dgca_chapters(title, dgca_subjects(name))')
       .eq('user_id', user.id)
       .order('purchased_at', { ascending: false }),
-    supabase
-      .from('rtr_results')
-      .select('*, rtr_tests(title)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false }),
     supabase
       .from('aptitude_results')
       .select('*')
@@ -61,8 +55,7 @@ export default async function ProfilePage() {
             created_at: user.created_at,
           }}
           profile={profileRes.data}
-          purchases={purchasesRes.data ?? []}
-          rtrResults={rtrResultsRes.data ?? []}
+          dgcaPurchases={dgcaPurchasesRes.data ?? []}
           aptitudeResults={aptitudeResultsRes.data ?? []}
           examAttempts={examAttemptsRes.data ?? []}
           examRegistrations={examRegistrationsRes.data ?? []}

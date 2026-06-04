@@ -15,7 +15,6 @@ import {
   Sparkles,
   ArrowUpRight,
 } from 'lucide-react';
-import { SITE_STATS } from '@/app/constants/data';
 
 export const metadata: Metadata = {
   title: 'About — Pilot Note',
@@ -25,19 +24,19 @@ export const metadata: Metadata = {
 
 const PILLARS = [
   {
+    icon: <Award className="w-5 h-5" strokeWidth={1.5} />,
+    title: 'Pariksha — All India Mocks',
+    desc: 'Nationwide real-time mock exams. Sit alongside thousands of student pilots, get a true rank, and measure your readiness — designed to mirror the real DGCA paper.',
+  },
+  {
     icon: <Plane className="w-5 h-5" strokeWidth={1.5} />,
-    title: 'DGCA RTR Practice',
-    desc: 'Exam-pattern MCQs across all five CPL ground subjects with detailed explanations — designed to mirror the real DGCA paper.',
+    title: 'DGCA CPL/ATPL Practice',
+    desc: 'DGCA style exam-pattern MCQs across all CPL & ATPL subjects with detailed explanations — designed to revise the full chapter.',
   },
   {
     icon: <BookOpen className="w-5 h-5" strokeWidth={1.5} />,
     title: 'In-depth Guides',
     desc: 'Step-by-step articles on becoming a pilot, choosing a flying school, medicals, exam strategy, and life after the CPL.',
-  },
-  {
-    icon: <Award className="w-5 h-5" strokeWidth={1.5} />,
-    title: 'Pariksha — All India Mocks',
-    desc: 'Nationwide real-time mock exams. Sit alongside thousands of student pilots, get a true rank, and measure your readiness.',
   },
   {
     icon: <Compass className="w-5 h-5" strokeWidth={1.5} />,
@@ -155,24 +154,6 @@ export default function AboutPage() {
                   </div>
                   <h3 className="font-display text-lg sm:text-xl text-neutral-900 mb-2.5">{p.title}</h3>
                   <p className="text-neutral-600 text-sm leading-relaxed">{p.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ───── STATS ───── */}
-        <section className="py-14 sm:py-20 border-t border-neutral-200">
-          <div className="container mx-auto px-4 sm:px-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden">
-              {SITE_STATS.map((s) => (
-                <div key={s.label} className="bg-white p-5 sm:p-8 lg:p-10 flex flex-col gap-2">
-                  <p className="font-display text-3xl sm:text-4xl md:text-5xl text-neutral-900 tracking-tight">
-                    {s.value}
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium">
-                    {s.label}
-                  </p>
                 </div>
               ))}
             </div>
