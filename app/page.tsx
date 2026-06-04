@@ -66,7 +66,7 @@ export default async function Home() {
                 </span>
 
                 <h1 className="font-display text-[clamp(2.25rem,9vw,5rem)] leading-[1.05] tracking-[-0.03em] text-neutral-900 mb-5 sm:mb-6">
-                  Experience the <br/> exam, before the <span className="italic-serif">actual</span>
+                  Experience the <br/> exam, before the <br/><span className="italic-serif">actual</span>
                   <span className="text-neutral-400"> exam.</span>
                 </h1>
 
@@ -74,7 +74,7 @@ export default async function Home() {
                   {HERO_CONTENT.subtitle}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-3">
                   <Button variant="secondary" size="lg" href="/pariksha">
                     Take an exam
                   </Button>
@@ -102,7 +102,7 @@ export default async function Home() {
                   </div>
 
                   {/* Floating callouts */}
-                  <div className="hidden sm:flex absolute -left-4 -bottom-4 bg-white border border-neutral-200 rounded-2xl px-3.5 py-3 shadow-lg animate-float">
+                  <div className="flex absolute -left-2 -bottom-3 sm:-left-4 sm:-bottom-4 bg-white border border-neutral-200 rounded-2xl px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-lg animate-float">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
                         <Award size={14} />
@@ -115,7 +115,7 @@ export default async function Home() {
                   </div>
 
                   <div
-                    className="hidden sm:flex absolute -right-3 -top-3 bg-neutral-900 text-white rounded-2xl px-3.5 py-2.5 shadow-xl animate-float"
+                    className="flex absolute -right-2 -top-3 sm:-right-3 sm:-top-3 bg-neutral-900 text-white rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-xl animate-float"
                     style={{ animationDelay: '1.5s' }}
                   >
                     <div className="flex items-center gap-2.5">
@@ -273,7 +273,7 @@ export default async function Home() {
           <div className="container mx-auto px-4 sm:px-6 relative text-center">
             <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-400 font-medium flex items-center justify-center gap-2 mb-6 sm:mb-8">
               <span className="w-6 h-px bg-emerald-400" />
-              India's Most Realistic DGCA CPL & ATPL Mock Exam Platform
+              India&apos;s Most Realistic DGCA CPL &amp; ATPL Mock Exam Platform
               <span className="w-6 h-px bg-emerald-400" />
             </span>
 

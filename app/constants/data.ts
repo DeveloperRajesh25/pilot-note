@@ -95,7 +95,7 @@ export const FOOTER_LINKS = [
     links: [
       { label: 'Pariksha Exams', url: '/pariksha' },
       { label: 'Guides', url: '/guides' },
-      { label: 'DGCA Practice', url: '/dgca' },
+      { label: 'DGCA', url: '/dgca' },
       { label: 'Pilot Aptitude', url: '/pilot-aptitude' }
     ]
   },

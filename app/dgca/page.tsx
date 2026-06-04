@@ -98,6 +98,31 @@ export default function DGCAPage() {
 
   useEffect(() => { void loadCourses(); }, [loadCourses]);
 
+  // ── Content protection ──
+  // These questions are exclusive to Pilot Note and not available anywhere else.
+  // While practising/reviewing, block copy, cut, paste, right-click, drag, text
+  // selection and the common save/print/devtools shortcuts. Selection + image
+  // drag are also disabled via the `.exam-lockdown` CSS class on <main>.
+  useEffect(() => {
+    if (view !== 'practice' && view !== 'results') return;
+    const block = (e: Event) => e.preventDefault();
+    const onKeyDown = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      const k = e.key.toLowerCase();
+      if (e.key === 'F12') { e.preventDefault(); return; }
+      if (ctrl && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) { e.preventDefault(); return; }
+      if (ctrl && (k === 'c' || k === 'x' || k === 'a' || k === 's' || k === 'p' || k === 'u')) {
+        e.preventDefault();
+      }
+    };
+    const events: [string, EventListener][] = [
+      ['contextmenu', block], ['copy', block], ['cut', block], ['paste', block],
+      ['dragstart', block], ['selectstart', block], ['keydown', onKeyDown as EventListener],
+    ];
+    events.forEach(([type, fn]) => document.addEventListener(type, fn));
+    return () => events.forEach(([type, fn]) => document.removeEventListener(type, fn));
+  }, [view]);
+
   const goCourses = () => { setView('courses'); setCourse(null); setSubject(null); setChapter(null); scrollTop(); };
 
   const pickCourse = async (c: DgcaCourse) => {
@@ -241,7 +266,7 @@ export default function DGCAPage() {
   return (
     <>
       <Header />
-      <main className="grow pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 lg:pb-32 bg-white min-h-screen">
+      <main className={`grow pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 lg:pb-32 bg-white min-h-screen${view === 'practice' || view === 'results' ? ' exam-lockdown' : ''}`}>
         <div className="container mx-auto px-4 sm:px-6">
           {/* Breadcrumb */}
           {view !== 'courses' && (
@@ -295,6 +320,7 @@ export default function DGCAPage() {
               }}
               onPrev={() => { setCurrentIndex((p) => Math.max(0, p - 1)); scrollTop(); }}
               onNext={() => { setCurrentIndex((p) => Math.min(questions.length - 1, p + 1)); scrollTop(); }}
+              onJump={(i) => { setCurrentIndex(i); scrollTop(); }}
               onFinish={() => { setView('results'); scrollTop(); }}
               onExit={() => subject && pickSubject(subject)}
             />
@@ -500,7 +526,7 @@ function ChaptersView({ subject, chapters, loading, paying, onBack, onPractice, 
 }
 
 // ─────────────────────────── Practice ───────────────────────────
-function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onPrev, onNext, onFinish, onExit }: {
+function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onPrev, onNext, onJump, onFinish, onExit }: {
   chapter: DgcaChapter;
   questions: DgcaQuestion[];
   currentIndex: number;
@@ -508,6 +534,7 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
   onAnswer: (i: number) => void;
   onPrev: () => void;
   onNext: () => void;
+  onJump: (i: number) => void;
   onFinish: () => void;
   onExit: () => void;
 }) {
@@ -592,6 +619,44 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
           <Button variant="primary" onClick={onNext} className="w-full sm:w-auto">Next <ArrowRight className="w-4 h-4" /></Button>
         )}
       </div>
+
+      {/* Question palette — jump between questions */}
+      <div className="mt-6 sm:mt-8 pt-6 border-t border-neutral-200">
+        <div className="flex items-center justify-between mb-3.5">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium">Question palette</p>
+          <span className="text-[11px] text-neutral-400 font-mono">{answeredCount}/{questions.length}</span>
+        </div>
+        <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5 sm:gap-2">
+          {questions.map((qq, i) => {
+            const ans = answers[i];
+            const done = ans !== null;
+            const correct = done && ans === qq.correct;
+            const isCurrent = i === currentIndex;
+            let cls = 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-900';
+            if (done) {
+              cls = correct
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'bg-rose-500 border-rose-500 text-white';
+            }
+            return (
+              <button
+                key={qq.id}
+                onClick={() => onJump(i)}
+                aria-label={`Go to question ${i + 1}`}
+                aria-current={isCurrent ? 'true' : undefined}
+                className={`aspect-square flex items-center justify-center text-xs font-medium rounded-lg border transition-all ${cls} ${isCurrent ? 'ring-2 ring-offset-1 ring-neutral-900' : ''}`}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] text-neutral-500">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Correct</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500 inline-block" /> Incorrect</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-neutral-300 bg-white inline-block" /> Unanswered</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -632,8 +697,8 @@ function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
                 strokeLinecap="round" className={`transition-all duration-1000 ${pctColor}`} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl sm:text-5xl text-neutral-900 leading-none">{obtainedMarks}</span>
-              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 mt-1.5">of {totalMarks} marks</span>
+              <span className={`font-display text-4xl sm:text-5xl leading-none ${pctColor}`}>{percentage}%</span>
+              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 mt-1.5">Overall score</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-mono">
