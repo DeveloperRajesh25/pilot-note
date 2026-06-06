@@ -282,7 +282,7 @@ export default async function Home() {
             </h2>
 
             <p className="text-neutral-400 text-base sm:text-lg md:text-xl mb-10 sm:mb-14 max-w-2xl mx-auto leading-relaxed">
-              Trusted by 12,500+ student pilots across India. Your complete CPL preparation
+              Trusted by 2,500+ student pilots across India. Your complete CPL preparation
               companion — from first MCQ to that final &ldquo;line-up and wait.&rdquo;
             </p>
 
