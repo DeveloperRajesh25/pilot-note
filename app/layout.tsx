@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
+import { AuthProvider } from "@/components/layout/AuthProvider";
+import { createClient } from "@/lib/supabase/server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -70,18 +72,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let initialUser = null;
+
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    initialUser = user ?? null;
+  } catch {
+    initialUser = null;
+  }
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${outfit.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-white text-neutral-900 antialiased">
-        <ToastProvider>{children}</ToastProvider>
+        <AuthProvider initialUser={initialUser}>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

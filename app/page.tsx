@@ -6,6 +6,7 @@ import { HERO_CONTENT, FEATURES, WHY_US } from '@/app/constants/data';
 import Link from 'next/link';
 import { ArrowUpRight, Plane, Compass, BookOpen, Award } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { HeroActions } from '@/components/home/HeroActions';
 
 const DEFAULT_MARQUEE = [
   'DGCA CPL & ATPL',
@@ -74,22 +75,14 @@ export default async function Home() {
                   {HERO_CONTENT.subtitle}
                 </p>
 
-                <div className="flex items-center gap-3">
-                  <Button variant="secondary" size="lg" href="/pariksha">
-                    Take an exam
-                  </Button>
-                  <Button variant="primary" size="lg" href="/dgca">
-                    Start learning
-                    <ArrowUpRight size={16} />
-                  </Button>
-                </div>
+                <HeroActions />
               </div>
 
               {/* Right — visual */}
-              <div className="lg:col-span-5 relative">
-                <div className="relative">
-                  <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.5rem] sm:rounded-[1.75rem] p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
-                    <div className="aspect-[6/4] relative bg-black rounded-[1.1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
+              <div className="lg:col-span-5 relative mt-2 sm:mt-4 lg:mt-0">
+                <div className="relative mx-auto w-full max-w-[28rem] lg:max-w-none">
+                  <div className="relative bg-neutral-50 border border-neutral-200/70 rounded-[1.35rem] sm:rounded-[1.75rem] p-2.5 sm:p-3 shadow-[0_30px_80px_-20px_rgba(10,10,10,0.18)] transform lg:rotate-1 hover:rotate-0 transition-transform duration-700">
+                    <div className="aspect-[4/3] sm:aspect-[6/4] relative bg-black rounded-[1rem] sm:rounded-[1.25rem] overflow-hidden border border-neutral-200/60">
                       <video
                         src="/assets/hero-right-video.mp4"
                         autoPlay
@@ -102,7 +95,35 @@ export default async function Home() {
                   </div>
 
                   {/* Floating callouts */}
-                  <div className="flex absolute -left-2 -bottom-3 sm:-left-4 sm:-bottom-4 bg-white border border-neutral-200 rounded-2xl px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-lg animate-float">
+                  <div className="mt-4 grid gap-3 sm:hidden">
+                    <div className="bg-white border border-neutral-200 rounded-2xl px-3 py-2.5 shadow-lg">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                          <Award size={14} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-neutral-900">All Questions are Unique</p>
+                          <p className="text-[9px] text-neutral-500 leading-tight">Curated by expert aviators<br />Not from any book or source</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-neutral-900 text-white rounded-2xl px-3 py-2.5 shadow-xl">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-white text-neutral-900 flex items-center justify-center">
+                          <Plane size={14} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-[0.18em] text-white/60 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Live
+                          </p>
+                          <p className="text-xs font-medium">Live All India Exam</p>
+                          <p className="text-[9px] text-white/50">As per DGCA exam dates</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="hidden sm:flex absolute -left-2 -bottom-3 sm:-left-4 sm:-bottom-4 bg-white border border-neutral-200 rounded-2xl px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-lg animate-float">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
                         <Award size={14} />
@@ -115,7 +136,7 @@ export default async function Home() {
                   </div>
 
                   <div
-                    className="flex absolute -right-2 -top-3 sm:-right-3 sm:-top-3 bg-neutral-900 text-white rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-xl animate-float"
+                    className="hidden sm:flex absolute -right-2 -top-3 sm:-right-3 sm:-top-3 bg-neutral-900 text-white rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-xl animate-float"
                     style={{ animationDelay: '1.5s' }}
                   >
                     <div className="flex items-center gap-2.5">

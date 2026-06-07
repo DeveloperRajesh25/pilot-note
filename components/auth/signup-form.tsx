@@ -129,9 +129,7 @@ export function SignupForm() {
       <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
         Create <span className="italic-serif">account.</span>
       </h1>
-      <p className="text-neutral-500 mb-8 sm:mb-10 text-sm sm:text-[15px]">
-        Free forever. No credit card. India&apos;s #1 CPL platform.
-      </p>
+     
 
       <form action={handleSubmit} className="space-y-4 sm:space-y-5">
         <Input
@@ -213,9 +211,9 @@ export function SignupForm() {
       {/* Feature checklist */}
       <ul className="mt-10 pt-8 border-t border-neutral-200 space-y-2.5">
         {[
-          'DGCA RTR(A) mock exam suite',
-          'COMPASS aptitude tests',
-          'All-India Pariksha mock exams',
+          'All-India Mock Exam for all DGCA CPL/ATPL Subjects',
+          'Chapter-Wise Question Practice (All Unique Questions)',
+          'Pilot Aptitude',
         ].map((item) => (
           <li key={item} className="flex items-center gap-2.5 text-sm text-neutral-600">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

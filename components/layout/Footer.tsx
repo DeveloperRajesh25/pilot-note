@@ -11,10 +11,10 @@ export const Footer = () => {
   return (
     <footer className="relative bg-white border-t border-neutral-200/70 overflow-hidden">
       {/* Big editorial wordmark backdrop */}
-      <div className="absolute left-0 right-0 -bottom-4 sm:-bottom-16 pointer-events-none select-none overflow-hidden">
+      <div className="absolute left-0 right-0 -bottom-2 sm:-bottom-12 pointer-events-none select-none overflow-hidden">
         <p
-          className="font-display text-neutral-900/[0.05] leading-[0.85] whitespace-nowrap text-center"
-          style={{ fontSize: 'clamp(5.5rem, 34vw, 22rem)' }}
+          className="font-display text-neutral-900/9 leading-[0.85] whitespace-nowrap text-center w-full"
+          style={{ fontSize: 'clamp(3.5rem, 13vw, 26rem)', letterSpacing: '-0.02em' }}
         >
           Pilot Note
         </p>

@@ -543,120 +543,143 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
   const isLast = currentIndex === questions.length - 1;
   const answeredCount = answers.filter((a) => a !== null).length;
 
+  const paletteCells = questions.map((qq, i) => {
+    const ans = answers[i];
+    const done = ans !== null;
+    const correct = done && ans === qq.correct;
+    const isCurrent = i === currentIndex;
+    let cls = 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-900';
+    if (done) {
+      cls = correct
+        ? 'bg-emerald-500 border-emerald-500 text-white'
+        : 'bg-rose-500 border-rose-500 text-white';
+    }
+    return (
+      <button
+        key={qq.id}
+        onClick={() => onJump(i)}
+        aria-label={`Go to question ${i + 1}`}
+        aria-current={isCurrent ? 'true' : undefined}
+        className={`aspect-square flex items-center justify-center text-xs font-medium rounded-lg border transition-all ${cls} ${isCurrent ? 'ring-2 ring-offset-1 ring-neutral-900' : ''}`}
+      >
+        {i + 1}
+      </button>
+    );
+  });
+
+  const paletteLegend = (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] text-neutral-500">
+      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Correct</span>
+      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500 inline-block" /> Incorrect</span>
+      <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-neutral-300 bg-white inline-block" /> Unanswered</span>
+    </div>
+  );
+
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-6 sm:mb-10 gap-3">
-        <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 sm:px-3 rounded-full font-medium truncate">
-          {chapter.title}
-        </span>
-        <button onClick={onExit} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors shrink-0">Exit</button>
-      </div>
-
-      <div className="mb-6 sm:mb-10">
-        <div className="flex justify-between text-xs font-medium text-neutral-500 mb-3 tracking-wide">
-          <span className="flex items-center gap-2">
-            Question {currentIndex + 1} of {questions.length}
-            <span className="text-violet-700 bg-violet-50 border border-violet-200/60 px-2 py-0.5 rounded-full font-bold">
-              {q?.marks ?? 1} mark{(q?.marks ?? 1) === 1 ? '' : 's'}
-            </span>
+    <div className="flex gap-8 items-start">
+      {/* Main question panel */}
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center mb-6 sm:mb-10 gap-3">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 sm:px-3 rounded-full font-medium truncate">
+            {chapter.title}
           </span>
-          <span>{answeredCount} answered</span>
+          <button onClick={onExit} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors shrink-0">Exit</button>
         </div>
-        <div className="h-px bg-neutral-200 overflow-hidden">
-          <div className="h-full bg-neutral-900 transition-all duration-500" style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} />
-        </div>
-      </div>
 
-      {q?.image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={q.image_url} alt="diagram" className="max-h-64 w-auto mb-6 rounded-2xl border border-neutral-200 object-contain" />
-      )}
-
-      <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 leading-tight tracking-tight mb-6 sm:mb-10">
-        {q?.question}
-      </h2>
-
-      <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-        {q?.options.map((opt, i) => {
-          const isSelected = answers[currentIndex] === i;
-          const isCorrect = q.correct === i;
-          let cls = 'border-neutral-200 hover:border-neutral-900 bg-white';
-          let letterCls = 'bg-neutral-100 text-neutral-500';
-          if (answered) {
-            if (isCorrect) { cls = 'border-emerald-500 bg-emerald-50/50'; letterCls = 'bg-emerald-500 text-white'; }
-            else if (isSelected) { cls = 'border-rose-400 bg-rose-50/50'; letterCls = 'bg-rose-500 text-white'; }
-          } else if (isSelected) { cls = 'border-neutral-900 bg-neutral-50'; letterCls = 'bg-neutral-900 text-white'; }
-          return (
-            <button
-              key={i}
-              onClick={() => onAnswer(i)}
-              disabled={answered}
-              className={`group w-full flex items-start sm:items-center gap-3 sm:gap-5 p-3.5 sm:p-5 rounded-2xl border transition-all text-left ${cls}`}
-            >
-              <span className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-xs sm:text-sm transition-colors ${letterCls}`}>
-                {String.fromCharCode(65 + i)}
+        <div className="mb-6 sm:mb-10">
+          <div className="flex justify-between text-xs font-medium text-neutral-500 mb-3 tracking-wide">
+            <span className="flex items-center gap-2">
+              Question {currentIndex + 1} of {questions.length}
+              <span className="text-violet-700 bg-violet-50 border border-violet-200/60 px-2 py-0.5 rounded-full font-bold">
+                {q?.marks ?? 1} mark{(q?.marks ?? 1) === 1 ? '' : 's'}
               </span>
-              <span className="text-sm sm:text-[15px] font-medium leading-relaxed text-neutral-800">{opt}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {answered && q?.explanation && (
-        <div className="mb-6 sm:mb-8 p-4 sm:p-5 border-l-2 border-emerald-500 bg-emerald-50/40 rounded-r-xl">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 font-medium mb-2">Explanation</p>
-          <p className="text-neutral-700 text-sm sm:text-[15px] leading-relaxed">{q.explanation}</p>
+            </span>
+            <span>{answeredCount} answered</span>
+          </div>
+          <div className="h-px bg-neutral-200 overflow-hidden">
+            <div className="h-full bg-neutral-900 transition-all duration-500" style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} />
+          </div>
         </div>
-      )}
 
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 pt-6 sm:pt-8 border-t border-neutral-200">
-        <Button variant="secondary" onClick={onPrev} disabled={currentIndex === 0} className="w-full sm:w-auto">
-          <ArrowLeft className="w-4 h-4" /> Previous
-        </Button>
-        {isLast ? (
-          <Button variant="violet" onClick={onFinish} className="w-full sm:w-auto">Finish</Button>
-        ) : (
-          <Button variant="primary" onClick={onNext} className="w-full sm:w-auto">Next <ArrowRight className="w-4 h-4" /></Button>
+        {q?.image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={q.image_url} alt="diagram" className="max-h-64 w-auto mb-6 rounded-2xl border border-neutral-200 object-contain" />
         )}
-      </div>
 
-      {/* Question palette — jump between questions */}
-      <div className="mt-6 sm:mt-8 pt-6 border-t border-neutral-200">
-        <div className="flex items-center justify-between mb-3.5">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium">Question palette</p>
-          <span className="text-[11px] text-neutral-400 font-mono">{answeredCount}/{questions.length}</span>
-        </div>
-        <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5 sm:gap-2">
-          {questions.map((qq, i) => {
-            const ans = answers[i];
-            const done = ans !== null;
-            const correct = done && ans === qq.correct;
-            const isCurrent = i === currentIndex;
-            let cls = 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-900';
-            if (done) {
-              cls = correct
-                ? 'bg-emerald-500 border-emerald-500 text-white'
-                : 'bg-rose-500 border-rose-500 text-white';
-            }
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 leading-tight tracking-tight mb-6 sm:mb-10">
+          {q?.question}
+        </h2>
+
+        <div className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
+          {q?.options.map((opt, i) => {
+            const isSelected = answers[currentIndex] === i;
+            const isCorrect = q.correct === i;
+            let cls = 'border-neutral-200 hover:border-neutral-900 bg-white';
+            let letterCls = 'bg-neutral-100 text-neutral-500';
+            if (answered) {
+              if (isCorrect) { cls = 'border-emerald-500 bg-emerald-50/50'; letterCls = 'bg-emerald-500 text-white'; }
+              else if (isSelected) { cls = 'border-rose-400 bg-rose-50/50'; letterCls = 'bg-rose-500 text-white'; }
+            } else if (isSelected) { cls = 'border-neutral-900 bg-neutral-50'; letterCls = 'bg-neutral-900 text-white'; }
             return (
               <button
-                key={qq.id}
-                onClick={() => onJump(i)}
-                aria-label={`Go to question ${i + 1}`}
-                aria-current={isCurrent ? 'true' : undefined}
-                className={`aspect-square flex items-center justify-center text-xs font-medium rounded-lg border transition-all ${cls} ${isCurrent ? 'ring-2 ring-offset-1 ring-neutral-900' : ''}`}
+                key={i}
+                onClick={() => onAnswer(i)}
+                disabled={answered}
+                className={`group w-full flex items-start sm:items-center gap-3 sm:gap-5 p-3.5 sm:p-5 rounded-2xl border transition-all text-left ${cls}`}
               >
-                {i + 1}
+                <span className={`w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center rounded-lg font-medium text-xs sm:text-sm transition-colors ${letterCls}`}>
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="text-sm sm:text-[15px] font-medium leading-relaxed text-neutral-800">{opt}</span>
               </button>
             );
           })}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-[11px] text-neutral-500">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Correct</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500 inline-block" /> Incorrect</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-neutral-300 bg-white inline-block" /> Unanswered</span>
+
+        {answered && q?.explanation && (
+          <div className="mb-6 sm:mb-8 p-4 sm:p-5 border-l-2 border-emerald-500 bg-emerald-50/40 rounded-r-xl">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-emerald-700 font-medium mb-2">Explanation</p>
+            <p className="text-neutral-700 text-sm sm:text-[15px] leading-relaxed">{q.explanation}</p>
+          </div>
+        )}
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 pt-6 sm:pt-8 border-t border-neutral-200">
+          <Button variant="secondary" onClick={onPrev} disabled={currentIndex === 0} className="w-full sm:w-auto">
+            <ArrowLeft className="w-4 h-4" /> Previous
+          </Button>
+          {isLast ? (
+            <Button variant="violet" onClick={onFinish} className="w-full sm:w-auto">Finish</Button>
+          ) : (
+            <Button variant="primary" onClick={onNext} className="w-full sm:w-auto">Next <ArrowRight className="w-4 h-4" /></Button>
+          )}
+        </div>
+
+        {/* Question palette — mobile only (below nav buttons) */}
+        <div className="lg:hidden mt-6 sm:mt-8 pt-6 border-t border-neutral-200">
+          <div className="flex items-center justify-between mb-3.5">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium">Question palette</p>
+            <span className="text-[11px] text-neutral-400 font-mono">{answeredCount}/{questions.length}</span>
+          </div>
+          <div className="grid grid-cols-8 sm:grid-cols-10 gap-1.5 sm:gap-2">
+            {paletteCells}
+          </div>
+          {paletteLegend}
         </div>
       </div>
+
+      {/* Question palette — desktop sidebar */}
+      <aside className="hidden lg:block w-64 shrink-0 sticky top-32">
+        <div className="border border-neutral-200 rounded-3xl p-5 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium">Question palette</p>
+            <span className="text-[11px] text-neutral-400 font-mono">{answeredCount}/{questions.length}</span>
+          </div>
+          <div className="grid grid-cols-5 gap-1.5">
+            {paletteCells}
+          </div>
+          {paletteLegend}
+        </div>
+      </aside>
     </div>
   );
 }

@@ -401,7 +401,7 @@ export function LiveExam({
           Tab switches, fullscreen exits, copy attempts, and developer-tool shortcuts are logged and visible to administrators.
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-5 lg:gap-8">
+        <div className="flex flex-col md:flex-row gap-5 lg:gap-8">
           {/* Question panel */}
           <div className="grow min-w-0">
             <div className="border border-neutral-200 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 bg-white">
@@ -539,7 +539,7 @@ export function LiveExam({
           </div>
 
           {/* Sidebar palette — desktop only */}
-          <aside className="hidden lg:block w-72 shrink-0">
+          <aside className="hidden md:block w-72 shrink-0">
             <div className="border border-neutral-200 rounded-3xl p-6 lg:sticky lg:top-44 bg-white">
               <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-4">
                 <span className="w-6 h-px bg-neutral-900" /> Palette
@@ -596,7 +596,7 @@ export function LiveExam({
       {/* Mobile palette — bottom sheet */}
       {paletteOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
           onClick={() => setPaletteOpen(false)}
         >
           <div
