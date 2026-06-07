@@ -13,13 +13,13 @@ export function HeroActions() {
   const user = useAuthUser();
   const isAuthenticated = !!user;
 
-  const primaryHref = isAuthenticated ? '/profile' : '/signup';
+  const primaryHref = isAuthenticated ? '/pariksha' : '/signup';
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       {isAuthenticated ? (
         <Button variant="violet" size="lg" href={primaryHref}>
-          Open profile
+          Browse exams
           <ArrowUpRight size={16} />
         </Button>
       ) : (
@@ -40,8 +40,8 @@ export function HeroActions() {
         </Button>
       )}
 
-      <Button variant="secondary" size="lg" href={isAuthenticated ? '/pariksha' : '/guides'}>
-        {isAuthenticated ? 'Browse exams' : 'Read guides'}
+      <Button variant="secondary" size="lg" href={isAuthenticated ? '/profile' : '/guides'}>
+        {isAuthenticated ? 'Open profile' : 'Read guides'}
       </Button>
     </div>
   );

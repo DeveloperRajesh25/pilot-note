@@ -1,12 +1,12 @@
 import React from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { Button } from '@/components/ui/Button';
 import { HERO_CONTENT, FEATURES, WHY_US } from '@/app/constants/data';
 import Link from 'next/link';
 import { ArrowUpRight, Plane, Compass, BookOpen, Award } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { HeroActions } from '@/components/home/HeroActions';
+import { CtaActions } from '@/components/home/CtaActions';
 
 const DEFAULT_MARQUEE = [
   'DGCA CPL & ATPL',
@@ -307,14 +307,7 @@ export default async function Home() {
               companion — from first MCQ to that final &ldquo;line-up and wait.&rdquo;
             </p>
 
-            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-sm sm:max-w-none mx-auto">
-              <Button size="lg" variant="violet" href="/signup" className="px-8 sm:px-10 h-14 justify-center">
-                Start free <ArrowUpRight size={18} />
-              </Button>
-              <Button size="lg" variant="outline" href="/guides" className="text-white border-white/30 hover:bg-white hover:text-neutral-900 hover:border-white px-8 sm:px-10 h-14 justify-center">
-                Read guides
-              </Button>
-            </div>
+            <CtaActions />
           </div>
         </section>
       </main>
