@@ -1,7 +1,7 @@
 export const SITE_STATS = [
-  { value: '2,500+', label: 'Student pilots' },
-  { value: '500+',    label: 'Practice questions' },
-  { value: '50+',     label: 'Mock exams' },
+  { value: '15,000+', label: 'Unique Questions' },
+  { value: '100+',    label: 'Mock Exams' },
+  { value: 'CPL & ATPL',     label: 'notes' },
   { value: '95%',     label: 'Pass rate' },
 ];
 
