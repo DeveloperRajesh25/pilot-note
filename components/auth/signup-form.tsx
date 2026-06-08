@@ -129,7 +129,10 @@ export function SignupForm() {
       <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1] sm:leading-[0.95] tracking-[-0.03em] text-neutral-900 mb-3">
         Create <span className="italic-serif">account.</span>
       </h1>
-     
+
+      <h3 className="text-xs sm:text-sm text-zinc-100 mb-6">
+        <span className="font-medium">Built so you can focus on practicing, not searching for notes.</span>
+      </h3>
 
       <form action={handleSubmit} className="space-y-4 sm:space-y-5">
         <Input

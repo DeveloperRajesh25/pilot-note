@@ -53,22 +53,20 @@ export default function AuthLayout({
           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.22em] text-white/60 font-medium">
             <span className="flex items-center gap-2">
               <span className="w-6 h-px bg-white/40" />
-              For aspiring captains
+              Crafted for India's Skies
             </span>
-            <span className="font-mono text-white/40">CPL · 2026</span>
           </div>
 
           <div>
-            <p className="font-display text-[clamp(3.2rem,6vw,5.5rem)] leading-[0.95] tracking-[-0.03em] text-white mb-8">
-              The home for
+            <p className="font-display text-[clamp(3.2rem,5vw,5.5rem)] leading-[0.95] tracking-[-0.03em] text-white mb-8">
+              From Classroom 
               <br />
-              <span className="italic-serif text-emerald-400">future pilots</span>
-              <br />
-              of India.
+              to
+              <span className="italic-serif text-emerald-400">Cockpit</span>
             </p>
             <p className="text-white/60 text-lg max-w-md leading-relaxed">
-              DGCA RTR practice, study guides, all-India mock exams, and pilot aptitude assessments —
-              every step from your first MCQ to your final checkride.
+             All-India DGCA CPL/ATPL Mock Exams, Pilot Guides, and Aptitude Assessments 
+             - every step from your first MCQ to your final checkride.
             </p>
           </div>
 

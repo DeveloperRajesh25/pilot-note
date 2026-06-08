@@ -31,8 +31,7 @@ export function LoginForm() {
         Sign <span className="italic-serif">in.</span>
       </h1>
       <p className="text-neutral-500 mb-8 sm:mb-10 text-sm sm:text-[15px]">
-        Continue your CPL journey with Pilot Note.
-      </p>
+One less thing to worry about on your path to the cockpit.      </p>
 
       <form action={handleSubmit} className="space-y-5">
         <Input
