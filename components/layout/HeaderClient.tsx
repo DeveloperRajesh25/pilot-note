@@ -72,7 +72,7 @@ export const HeaderClient = ({ initialUser }: HeaderClientProps) => {
                   {active && (
                     <span className="absolute inset-0 rounded-full bg-neutral-100" aria-hidden />
                   )}
-                  <span className="relative flex items-center gap-1.5">
+                  <span className="relative flex items-center gap-1.5 whitespace-nowrap">
                     {link.label}
                     {link.comingSoon && (
                       <span className="text-[8px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-400 px-1.5 py-0.5 rounded-full leading-none">

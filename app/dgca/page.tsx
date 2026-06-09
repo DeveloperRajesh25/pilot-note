@@ -682,13 +682,13 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
       </div>
 
       {/* Question palette — desktop sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 sticky top-32">
+      <aside className="hidden lg:block w-80 shrink-0 sticky top-32">
         <div className="border border-neutral-200 rounded-3xl p-5 bg-white">
           <div className="flex items-center justify-between mb-4">
             <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium">Question palette</p>
             <span className="text-[11px] text-neutral-400 font-mono">{answeredCount}/{questions.length}</span>
           </div>
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="grid grid-cols-10 gap-1.5">
             {paletteCells}
           </div>
           {paletteLegend}

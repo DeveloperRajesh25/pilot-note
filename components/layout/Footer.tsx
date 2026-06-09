@@ -14,7 +14,7 @@ export const Footer = () => {
       <div className="absolute left-0 right-0 -bottom-2 sm:-bottom-12 pointer-events-none select-none overflow-hidden">
         <p
           className="font-display text-neutral-900/9 leading-[0.85] whitespace-nowrap text-center w-full"
-          style={{ fontSize: 'clamp(3.5rem, 13vw, 26rem)', letterSpacing: '-0.02em' }}
+          style={{ fontSize: 'clamp(5rem, 24vw, 600rem)', letterSpacing: '-0.02em' }}
         >
           Pilot Note
         </p>
