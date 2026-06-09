@@ -164,7 +164,7 @@ export default function DGCAPage() {
     try {
       const res = await fetch(`/api/dgca/chapters/${ch.id}/questions`);
       if (res.status === 401) {
-        window.location.href = '/login?redirect=/dgca';
+        window.location.href = `/login?redirect=${encodeURIComponent('/dgca')}`;
         return;
       }
       const data = await res.json();
@@ -191,6 +191,20 @@ export default function DGCAPage() {
       setLoading(false);
     }
   }, [toast]);
+
+  const handleFinish = useCallback(() => {
+    if (chapter) {
+      const score = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? (q.marks ?? 1) : 0), 0);
+      const total = questions.reduce((acc, q) => acc + (q.marks ?? 1), 0);
+      fetch(`/api/dgca/chapters/${chapter.id}/results`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score, total, answers }),
+      }).catch(() => {});
+    }
+    setView('results');
+    scrollTop();
+  }, [chapter, questions, answers]);
 
   const startCheckout = useCallback(async (ch: DgcaChapter) => {
     if (paying) return;
@@ -321,7 +335,7 @@ export default function DGCAPage() {
               onPrev={() => { setCurrentIndex((p) => Math.max(0, p - 1)); scrollTop(); }}
               onNext={() => { setCurrentIndex((p) => Math.min(questions.length - 1, p + 1)); scrollTop(); }}
               onJump={(i) => { setCurrentIndex(i); scrollTop(); }}
-              onFinish={() => { setView('results'); scrollTop(); }}
+              onFinish={handleFinish}
               onExit={() => subject && pickSubject(subject)}
             />
           )}

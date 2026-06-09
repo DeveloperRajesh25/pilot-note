@@ -311,6 +311,20 @@ export interface DgcaChapterPurchase {
   dgca_chapters?: { title: string } | null;
 }
 
+export interface DgcaPracticeResult {
+  id: string;
+  user_id: string;
+  chapter_id: string;
+  score: number;
+  total: number;
+  answers: (number | null)[];
+  completed_at: string;
+  dgca_chapters?: {
+    title: string;
+    dgca_subjects?: { name: string } | null;
+  } | null;
+}
+
 export interface ParikshaTopper {
   id: string;
   rank: number;

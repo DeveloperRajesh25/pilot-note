@@ -104,7 +104,7 @@ export const Footer = () => {
             </Link>
             <span className="flex items-center gap-1.5">
               <span>Crafted for </span>
-              <span className="text-neutral-900 font-medium italic-serif">India&apos;s sky.</span>
+              <span className="text-neutral-900 font-medium italic-serif">India&apos;s skies.</span>
             </span>
             <a
               href="https://webcros.in"

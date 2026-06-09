@@ -17,6 +17,7 @@ export default async function ProfilePage() {
   const [
     profileRes,
     dgcaPurchasesRes,
+    dgcaPracticeResultsRes,
     aptitudeResultsRes,
     examAttemptsRes,
     examRegistrationsRes,
@@ -27,6 +28,12 @@ export default async function ProfilePage() {
       .select('*, dgca_chapters(title, dgca_subjects(name))')
       .eq('user_id', user.id)
       .order('purchased_at', { ascending: false }),
+    supabase
+      .from('dgca_practice_results')
+      .select('*, dgca_chapters(title, dgca_subjects(name))')
+      .eq('user_id', user.id)
+      .order('completed_at', { ascending: false })
+      .limit(50),
     supabase
       .from('aptitude_results')
       .select('*')
@@ -56,6 +63,7 @@ export default async function ProfilePage() {
           }}
           profile={profileRes.data}
           dgcaPurchases={dgcaPurchasesRes.data ?? []}
+          dgcaPracticeResults={dgcaPracticeResultsRes.data ?? []}
           aptitudeResults={aptitudeResultsRes.data ?? []}
           examAttempts={examAttemptsRes.data ?? []}
           examRegistrations={examRegistrationsRes.data ?? []}

@@ -57,6 +57,14 @@ interface DgcaPurchase {
   purchased_at: string;
   dgca_chapters?: { title: string; dgca_subjects?: { name: string } | null } | null;
 }
+interface DgcaPracticeResult {
+  id: string;
+  chapter_id: string;
+  score: number;
+  total: number;
+  completed_at: string;
+  dgca_chapters?: { title: string; dgca_subjects?: { name: string } | null } | null;
+}
 interface ExamAttempt {
   id: string;
   exam_id: string;
@@ -77,6 +85,7 @@ interface Props {
   user: UserSummary;
   profile: Profile | null;
   dgcaPurchases: DgcaPurchase[];
+  dgcaPracticeResults: DgcaPracticeResult[];
   aptitudeResults: AptitudeResult[];
   examAttempts: ExamAttempt[];
   examRegistrations: ExamRegistration[];
@@ -100,6 +109,7 @@ export default function ProfileClient({
   user,
   profile,
   dgcaPurchases,
+  dgcaPracticeResults,
   aptitudeResults,
   examAttempts,
   examRegistrations,
@@ -114,7 +124,8 @@ export default function ProfileClient({
   const stats = useMemo(() => {
     const totalAptitude = aptitudeResults.length;
     const totalExams = examAttempts.filter((a) => a.submitted_at).length;
-    const totalTestsTaken = totalAptitude + totalExams;
+    const totalDgcaSessions = dgcaPracticeResults.length;
+    const totalTestsTaken = totalAptitude + totalExams + totalDgcaSessions;
 
     const avgPct = (rows: { score: number; total: number }[]) => {
       if (rows.length === 0) return null;
@@ -128,19 +139,22 @@ export default function ProfileClient({
         .filter((a) => a.submitted_at && a.total && a.score !== null)
         .map((a) => ({ score: a.score ?? 0, total: a.total ?? 1 }))
     );
+    const avgDgca = avgPct(dgcaPracticeResults);
 
     const totalSeconds = aptitudeResults.reduce((acc, r) => acc + (r.time_taken || 0), 0);
 
     return {
       totalAptitude,
       totalExams,
+      totalDgcaSessions,
       totalTestsTaken,
       totalChapters: dgcaPurchases.length,
       avgAptitude,
       avgExam,
+      avgDgca,
       totalMinutes: Math.round(totalSeconds / 60),
     };
-  }, [aptitudeResults, examAttempts, dgcaPurchases.length]);
+  }, [aptitudeResults, examAttempts, dgcaPracticeResults, dgcaPurchases.length]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-4 h-4" strokeWidth={1.5} /> },
@@ -185,7 +199,7 @@ export default function ProfileClient({
             </span>
             {stats.totalTestsTaken > 0 && (
               <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
-                {stats.totalTestsTaken} tests taken
+                {stats.totalTestsTaken} session{stats.totalTestsTaken === 1 ? '' : 's'}
               </span>
             )}
             <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-900 text-white font-medium flex items-center gap-1.5">
@@ -240,6 +254,7 @@ export default function ProfileClient({
           <OverviewTab
             displayName={displayName}
             aptitudeResults={aptitudeResults}
+            dgcaPracticeResults={dgcaPracticeResults}
             examAttempts={examAttempts}
             dgcaPurchases={dgcaPurchases}
             examRegistrations={examRegistrations}
@@ -253,6 +268,7 @@ export default function ProfileClient({
         {tab === 'results' && (
           <ResultsTab
             aptitudeResults={aptitudeResults}
+            dgcaPracticeResults={dgcaPracticeResults}
             examAttempts={examAttempts}
           />
         )}
@@ -283,6 +299,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 function OverviewTab({
   displayName,
   aptitudeResults,
+  dgcaPracticeResults,
   examAttempts,
   dgcaPurchases,
   examRegistrations,
@@ -291,6 +308,7 @@ function OverviewTab({
 }: {
   displayName: string;
   aptitudeResults: AptitudeResult[];
+  dgcaPracticeResults: DgcaPracticeResult[];
   examAttempts: ExamAttempt[];
   dgcaPurchases: DgcaPurchase[];
   examRegistrations: ExamRegistration[];
@@ -337,9 +355,22 @@ function OverviewTab({
           score: `${score}/${total}`,
         });
       });
+    dgcaPracticeResults.forEach((r) => {
+      const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+      const subject = r.dgca_chapters?.dgca_subjects?.name;
+      items.push({
+        id: `dgca-${r.id}`,
+        title: r.dgca_chapters?.title ?? r.chapter_id,
+        subtitle: subject ? `DGCA · ${subject}` : 'DGCA Practice',
+        date: formatDate(r.completed_at),
+        iso: r.completed_at,
+        pct,
+        score: `${r.score}/${r.total}`,
+      });
+    });
     items.sort((a, b) => +new Date(b.iso) - +new Date(a.iso));
     return items.slice(0, 8);
-  }, [aptitudeResults, examAttempts]);
+  }, [aptitudeResults, examAttempts, dgcaPracticeResults]);
 
   const upcoming = examRegistrations.filter((r) => {
     if (!r.exams?.exam_date) return false;
@@ -350,6 +381,7 @@ function OverviewTab({
   const isEmpty =
     aptitudeResults.length === 0 &&
     examAttempts.length === 0 &&
+    dgcaPracticeResults.length === 0 &&
     dgcaPurchases.length === 0 &&
     examRegistrations.length === 0;
 
@@ -589,19 +621,28 @@ function TestsTab({ dgcaPurchases, examRegistrations }: { dgcaPurchases: DgcaPur
 
 function ResultsTab({
   aptitudeResults,
+  dgcaPracticeResults,
   examAttempts,
 }: {
   aptitudeResults: AptitudeResult[];
+  dgcaPracticeResults: DgcaPracticeResult[];
   examAttempts: ExamAttempt[];
 }) {
-  const [filter, setFilter] = useState<'all' | 'pariksha' | 'aptitude'>('all');
+  const [filter, setFilter] = useState<'all' | 'dgca' | 'pariksha' | 'aptitude'>('all');
   const submittedExams = examAttempts.filter((a) => a.submitted_at && a.total && a.score !== null);
 
   const filters = [
-    { id: 'all' as const, label: 'All', count: submittedExams.length + aptitudeResults.length },
+    { id: 'all' as const, label: 'All', count: submittedExams.length + aptitudeResults.length + dgcaPracticeResults.length },
+    { id: 'dgca' as const, label: 'DGCA', count: dgcaPracticeResults.length },
     { id: 'pariksha' as const, label: 'Pariksha', count: submittedExams.length },
     { id: 'aptitude' as const, label: 'Aptitude', count: aptitudeResults.length },
   ];
+
+  const isEmpty =
+    (filter === 'all' && submittedExams.length === 0 && aptitudeResults.length === 0 && dgcaPracticeResults.length === 0) ||
+    (filter === 'dgca' && dgcaPracticeResults.length === 0) ||
+    (filter === 'pariksha' && submittedExams.length === 0) ||
+    (filter === 'aptitude' && aptitudeResults.length === 0);
 
   return (
     <div className="space-y-10">
@@ -628,6 +669,24 @@ function ResultsTab({
           </button>
         ))}
       </div>
+
+      {(filter === 'all' || filter === 'dgca') && dgcaPracticeResults.length > 0 && (
+        <ResultGroup title="DGCA Practice" count={dgcaPracticeResults.length}>
+          {dgcaPracticeResults.map((r) => {
+            const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+            const subject = r.dgca_chapters?.dgca_subjects?.name;
+            return (
+              <ResultRow
+                key={r.id}
+                title={r.dgca_chapters?.title ?? r.chapter_id}
+                subtitle={`${subject ? `${subject} · ` : ''}${formatDate(r.completed_at)}`}
+                pct={pct}
+                score={`${r.score}/${r.total}`}
+              />
+            );
+          })}
+        </ResultGroup>
+      )}
 
       {(filter === 'all' || filter === 'pariksha') && submittedExams.length > 0 && (
         <ResultGroup title="Pariksha" count={submittedExams.length}>
@@ -668,16 +727,13 @@ function ResultsTab({
         </ResultGroup>
       )}
 
-      {((filter === 'aptitude' && aptitudeResults.length === 0) ||
-        (filter === 'pariksha' && submittedExams.length === 0) ||
-        (filter === 'all' &&
-          aptitudeResults.length === 0 &&
-          submittedExams.length === 0)) && (
+      {isEmpty && (
         <div className="border border-neutral-200 rounded-2xl py-16 text-center">
           <Award className="w-10 h-10 text-neutral-300 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-neutral-500 mb-6 text-sm">No results to show for this category yet.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button size="sm" href="/pariksha">Take a Pariksha mock</Button>
+            <Button size="sm" href="/dgca">Practice DGCA</Button>
+            <Button size="sm" variant="secondary" href="/pariksha">Take a Pariksha mock</Button>
             <Button size="sm" variant="secondary" href="/pilot-aptitude">Aptitude test</Button>
           </div>
         </div>

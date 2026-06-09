@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-// Public practice content — gated by chapter price + purchase.
-//   free chapter  → anyone (even logged-out) may practice
+// Practice content — always requires login so results can be saved to the user's profile.
+//   free chapter  → must be logged in (results saved; no purchase needed)
 //   paid chapter  → must be logged in AND own the chapter
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ chapterId: string }> }) {
   const { chapterId } = await params;
@@ -19,11 +19,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
   }
 
-  if (chapter.price > 0) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Login required', locked: true }, { status: 401 });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Login required', locked: true }, { status: 401 });
 
+  if (chapter.price > 0) {
     const { data: purchase } = await db
       .from('dgca_chapter_purchases')
       .select('id')
