@@ -18,9 +18,11 @@ export function SignupForm() {
     error: string | null
   }>({ loading: false, message: null, error: null })
 
-  // Set max DOB to today client-side to avoid SSR/CSR hydration mismatch.
+  // Set max DOB to 16 years ago client-side to avoid SSR/CSR hydration mismatch.
   useEffect(() => {
-    setMaxDob(new Date().toISOString().slice(0, 10))
+    const d = new Date()
+    d.setFullYear(d.getFullYear() - 16)
+    setMaxDob(d.toISOString().slice(0, 10))
   }, [])
 
   async function handleSubmit(formData: FormData) {
@@ -161,7 +163,7 @@ export function SignupForm() {
             required
             autoComplete="bday"
             max={maxDob || undefined}
-            hint="Used to verify age eligibility for DGCA-regulated exams."
+            hint="Must be at least 16 years old. Used to verify eligibility for DGCA-regulated exams."
           />
           <Input
             label="City"

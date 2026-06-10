@@ -23,6 +23,7 @@ export const Input = ({
           className="text-[11px] font-medium text-neutral-500 uppercase tracking-[0.14em]"
         >
           {label}
+          {props.required && <span className="text-rose-500 ml-0.5">*</span>}
         </label>
       )}
       <input

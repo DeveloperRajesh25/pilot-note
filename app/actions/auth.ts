@@ -56,6 +56,17 @@ export async function signup(formData: FormData) {
   if (Number.isNaN(dob.getTime()) || dob.getTime() > Date.now()) {
     return { error: 'Please enter a valid date of birth.' }
   }
+  const today = new Date()
+  const age =
+    today.getUTCFullYear() -
+    dob.getUTCFullYear() -
+    (today.getUTCMonth() < dob.getUTCMonth() ||
+    (today.getUTCMonth() === dob.getUTCMonth() && today.getUTCDate() < dob.getUTCDate())
+      ? 1
+      : 0)
+  if (age < 16) {
+    return { error: 'You must be at least 16 years old to register.' }
+  }
 
   const metadata: Record<string, string> = {
     phone: phoneRaw,
