@@ -6,7 +6,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
-import { Calendar, Clock, FileText, Loader2, ShieldCheck, KeyRound } from 'lucide-react';
+import { Calendar, Clock, FileText, Loader2, ShieldCheck } from 'lucide-react';
+import { isRegistrationOpen } from '@/lib/exam-status';
 
 interface ExamSummary {
   id: string;
@@ -55,10 +56,6 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
-  const [dob, setDob] = useState('');
-  const [dobError, setDobError] = useState<string | null>(null);
-
-  const todayIso = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     const RAZORPAY_URL = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -94,6 +91,13 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
         router.replace(`/pariksha/${examId}`);
         return;
       }
+      // Registration window has closed (exam is live/completed, or an admin
+      // closed it early) — don't let new candidates register.
+      if (!isRegistrationOpen(found)) {
+        toast.info('Registration for this exam is closed.');
+        router.replace('/pariksha');
+        return;
+      }
       setExam(found);
       setLoading(false);
     })();
@@ -104,16 +108,6 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
 
   const startCheckout = useCallback(async () => {
     if (!exam || paying) return;
-    setDobError(null);
-    if (!dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-      setDobError('Enter your date of birth — this becomes your exam password.');
-      return;
-    }
-    const dobDate = new Date(`${dob}T00:00:00Z`);
-    if (Number.isNaN(dobDate.getTime()) || dobDate > new Date()) {
-      setDobError('Enter a valid past date.');
-      return;
-    }
     // Razorpay SDK is only required for paid exams.
     if (exam.fee > 0 && (!sdkReady || !window.Razorpay)) {
       toast.warn('Payment SDK is still loading — try again in a moment.');
@@ -124,7 +118,7 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
       const orderRes = await fetch(`/api/exams/${examId}/payment/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dob }),
+        body: JSON.stringify({}),
       });
       if (orderRes.status === 401) {
         router.push(`/login?redirect=/pariksha/${examId}/register`);
@@ -202,7 +196,7 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
       toast.error(msg);
       setPaying(false);
     }
-  }, [exam, examId, paying, router, sdkReady, toast, dob]);
+  }, [exam, examId, paying, router, sdkReady, toast]);
 
   if (loading || !exam) {
     return (
@@ -247,30 +241,6 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
               <Row icon={<Clock className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />} label="Duration" value={`${exam.duration} min`} />
               <Row icon={<FileText className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />} label="Questions" value={`${exam.total_questions} multiple choice`} />
               <Row icon={<ShieldCheck className="w-4 h-4 text-neutral-400" strokeWidth={1.5} />} label="Proctoring" value="Soft — flagged to admin" />
-            </div>
-
-            {/* DOB field — becomes the exam password on credential release. */}
-            <div className="pt-6 border-t border-neutral-200">
-              <div className="flex items-start gap-3 mb-4">
-                <KeyRound className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" strokeWidth={1.5} />
-                <div>
-                  <p className="text-sm font-semibold text-neutral-900">Date of birth</p>
-                  <p className="text-[12.5px] text-neutral-500 leading-relaxed">
-                    Used as your exam password when credentials are released. Format on
-                    exam login is <code className="font-mono text-neutral-700">DDMMYYYY</code>
-                    {' '}— e.g. <code className="font-mono text-neutral-700">14032002</code> for 14 March 2002.
-                  </p>
-                </div>
-              </div>
-              <input
-                type="date"
-                value={dob}
-                onChange={(e) => { setDob(e.target.value); setDobError(null); }}
-                max={todayIso}
-                className={`w-full sm:w-auto bg-white border rounded-2xl px-4 py-3 text-neutral-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/30 ${dobError ? 'border-rose-400' : 'border-neutral-300 focus:border-neutral-400'}`}
-                aria-invalid={!!dobError}
-              />
-              {dobError && <p className="mt-2 text-xs text-rose-600">{dobError}</p>}
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 pt-6 mt-6 border-t border-neutral-200">
@@ -320,17 +290,17 @@ export default function ParikshaRegisterPage({ params }: { params: Promise<{ exa
 
           <div className="mt-8 sm:mt-10 grid sm:grid-cols-2 gap-4">
             <div className="border border-neutral-200 rounded-2xl p-5 bg-neutral-50">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 font-semibold mb-2">After payment</p>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 font-semibold mb-2">{isFree ? 'After registering' : 'After payment'}</p>
               <p className="text-[13px] text-neutral-700 leading-relaxed">
-                Your seat is locked. Closer to the exam date, you&apos;ll receive an email with your
-                unique <strong>roll number</strong> and your DOB-based password.
+                Your seat is locked. The exam opens for everyone at the scheduled start time —
+                just stay signed in to your Pilot Note account.
               </p>
             </div>
             <div className="border border-neutral-200 rounded-2xl p-5 bg-neutral-50">
               <p className="text-[10px] uppercase tracking-[0.22em] text-neutral-500 font-semibold mb-2">On exam day</p>
               <p className="text-[13px] text-neutral-700 leading-relaxed">
-                Log in at <code className="font-mono text-neutral-900">pilotnote.in/pariksha/login</code> with
-                your roll number + DOB. Results &amp; answer key are emailed once released.
+                Open this exam from the <strong>Pariksha</strong> page while logged in and click
+                <strong> Enter exam</strong>. Results &amp; answer key are released once the admin publishes them.
               </p>
             </div>
           </div>

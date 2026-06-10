@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import type { Exam } from '@/lib/types';
-import { computeExamStatus } from '@/lib/exam-status';
+import { computeExamStatus, isRegistrationOpen, REGISTRATION_CLOSED } from '@/lib/exam-status';
 
 interface ExamForm extends Partial<Exam> {
   registrations?: number;
@@ -15,7 +15,6 @@ interface ExamForm extends Partial<Exam> {
 }
 
 const SUBJECTS = ['Air Navigation', 'Meteorology', 'Air Regulations', 'Technical General', 'Technical Specific'];
-const STATUSES = ['Upcoming', 'Active', 'Completed', 'Cancelled'];
 
 const EMPTY_EXAM: ExamForm = {
   title: '', subject: SUBJECTS[0], description: '', exam_date: '',
@@ -128,8 +127,16 @@ export default function AdminExamsPage() {
     await fetchExams();
   };
 
-  const changeStatus = async (id: string, status: string) => {
-    await fetch(`/api/admin/exams/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+  // The Upcoming → Live → Completed lifecycle is computed automatically from the
+  // exam window, so there's no manual status control. The only thing an admin
+  // toggles is whether registrations are open — closing them early flips the
+  // public button to "Registration closed".
+  const setRegistration = async (id: string, closed: boolean) => {
+    await fetch(`/api/admin/exams/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: closed ? REGISTRATION_CLOSED : 'Upcoming' }),
+    });
     await fetchExams();
   };
 
@@ -153,6 +160,11 @@ export default function AdminExamsPage() {
           {exams.map((ex) => {
             const live = computeExamStatus(ex);
             const liveLabel = live === 'Active' ? 'Live' : live;
+            // Registration state. Manual = admin closed early; auto = the window
+            // has opened (or the exam is over) so registration can't reopen.
+            const manuallyClosed = ex.status === REGISTRATION_CLOSED;
+            const autoClosed = live !== 'Upcoming';
+            const regOpen = isRegistrationOpen(ex);
             const qCount = ex.question_count ?? 0;
             const noQuestions = qCount === 0;
             const shortOnQuestions = !noQuestions && ex.total_questions ? qCount < ex.total_questions : false;
@@ -163,6 +175,11 @@ export default function AdminExamsPage() {
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                       <h3 className="text-lg font-black text-neutral-900">{ex.title}</h3>
                       <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${STATUS_BADGE[liveLabel] ?? STATUS_BADGE.Upcoming}`}>{liveLabel}</span>
+                      {!regOpen && (
+                        <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-rose-50 text-rose-700 border-rose-200">
+                          Reg. closed
+                        </span>
+                      )}
                       {noQuestions && (
                         <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
                           <span>⚠</span> No questions
@@ -202,9 +219,19 @@ export default function AdminExamsPage() {
                     >
                       {noQuestions ? '+ Add Questions' : 'Questions →'}
                     </Link>
-                    <select value={ex.status} onChange={e => ex.id && changeStatus(ex.id, e.target.value)} className="bg-white border border-neutral-200 text-neutral-900 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-neutral-400">
-                      {STATUSES.map(s => <option key={s}>{s}</option>)}
-                    </select>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <select
+                        value={manuallyClosed ? 'closed' : 'open'}
+                        disabled={autoClosed}
+                        onChange={e => ex.id && setRegistration(ex.id, e.target.value === 'closed')}
+                        title={autoClosed ? 'Registration closes automatically once the exam window opens' : 'Control whether new candidates can register'}
+                        className="bg-white border border-neutral-200 text-neutral-900 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-neutral-400 disabled:bg-neutral-100 disabled:text-neutral-400"
+                      >
+                        <option value="open">Registrations open</option>
+                        <option value="closed">Registrations closed</option>
+                      </select>
+                      {autoClosed && <span className="text-[10px] text-neutral-400">Auto-closed · {liveLabel}</span>}
+                    </div>
                     <button onClick={() => openEdit(ex)} className="text-xs text-neutral-500 hover:text-neutral-900 font-semibold">Edit</button>
                     <button onClick={() => ex.id && handleDelete(ex.id)} className="text-xs text-rose-600 hover:text-rose-700 font-semibold">Delete</button>
                   </div>
@@ -238,17 +265,12 @@ export default function AdminExamsPage() {
             </div>
             <div className="space-y-4">
               <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Title *</label><input value={editExam.title || ''} onChange={e => setEditExam(p => ({ ...p, title: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400" /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Subject</label>
-                  <select value={editExam.subject} onChange={e => setEditExam(p => ({ ...p, subject: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400">
-                    {SUBJECTS.map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Status</label>
-                  <select value={editExam.status} onChange={e => setEditExam(p => ({ ...p, status: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400">
-                    {STATUSES.map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
+              <div>
+                <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Subject</label>
+                <select value={editExam.subject} onChange={e => setEditExam(p => ({ ...p, subject: e.target.value }))} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400">
+                  {SUBJECTS.map(s => <option key={s}>{s}</option>)}
+                </select>
+                <p className="text-[11px] text-neutral-500 mt-1">Status (Upcoming → Live → Completed) is set automatically from the exam window. Manage registrations from the list once saved.</p>
               </div>
               <div><label className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2 block">Description</label><textarea value={editExam.description || ''} onChange={e => setEditExam(p => ({ ...p, description: e.target.value }))} rows={2} className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-xl px-4 py-3 focus:outline-none focus:border-neutral-400 resize-none" /></div>
 

@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Calendar, Clock, FileText, ArrowRight, Trophy } from 'lucide-react';
-import { computeExamStatus } from '@/lib/exam-status';
+import { computeExamStatus, isRegistrationOpen } from '@/lib/exam-status';
 import type { ParikshaTopper } from '@/lib/types';
 
 interface Exam {
@@ -235,6 +235,10 @@ Compare your performance with aspirants across India and discover your true leve
                           ) : liveStatus === 'Cancelled' ? (
                             <Button size="md" disabled className="w-full lg:w-auto">
                               Cancelled
+                            </Button>
+                          ) : !isRegistrationOpen(exam) ? (
+                            <Button size="md" disabled className="w-full lg:w-auto">
+                              Registration closed
                             </Button>
                           ) : (
                             <Button size="md" href={`/pariksha/${exam.id}/register`} className="w-full lg:w-auto">

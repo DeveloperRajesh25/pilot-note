@@ -3,6 +3,7 @@
 import { use, useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { Exam, ExamQuestion, ExamRegistration } from '@/lib/types';
+import { computeExamStatus, isRegistrationOpen } from '@/lib/exam-status';
 
 const EMPTY_Q: QuestionForm = { question: '', options: ['', '', '', ''], correct: 0, explanation: '', image_url: null };
 
@@ -322,6 +323,24 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
   const { exam, questions, registrations, attempts } = data;
   const paidCount = registrations.filter(r => r.payment_id).length;
 
+  // Live ranking so the admin always sees who placed where — even before
+  // results are released. Standard competition ranking: ties share a rank
+  // ("1, 2, 2, 4"), earlier submission breaks ties only for ordering.
+  const rankedAttempts = (() => {
+    const sorted = [...attempts].sort((a, b) => {
+      const sa = a.score ?? 0, sb = b.score ?? 0;
+      if (sb !== sa) return sb - sa;
+      return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime();
+    });
+    let currentRank = 0;
+    let prevScore = Number.NaN;
+    return sorted.map((a, idx) => {
+      const score = a.score ?? 0;
+      if (score !== prevScore) { currentRank = idx + 1; prevScore = score; }
+      return { ...a, rank: currentRank };
+    });
+  })();
+
   return (
     <div>
       {/* Header */}
@@ -330,7 +349,9 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
         <div>
           <h1 className="text-3xl font-black text-neutral-900">{exam.title}</h1>
           <p className="text-neutral-500 text-sm">
-            {exam.subject} · {exam.status} · ₹{exam.fee}
+            {exam.subject} · {(() => { const s = computeExamStatus(exam); return s === 'Active' ? 'Live' : s; })()}
+            {' · '}{isRegistrationOpen(exam) ? 'Registrations open' : 'Registrations closed'}
+            {' · '}₹{exam.fee}
             {exam.exam_date && ` · ${new Date(exam.exam_date).toLocaleDateString('en-IN')}`}
           </p>
         </div>
@@ -545,6 +566,7 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-neutral-200">
+                <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Rank</th>
                 <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">User</th>
                 <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">Score</th>
                 <th className="px-6 py-3 text-xs font-black text-neutral-500 uppercase">%</th>
@@ -555,7 +577,7 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
               </tr>
             </thead>
             <tbody>
-              {attempts.map((a) => {
+              {rankedAttempts.map((a) => {
                 const pct = a.total ? Math.round(((a.score ?? 0) / a.total) * 100) : 0;
                 const passThreshold = exam.pass_score ?? 40;
                 const passed = pct >= passThreshold;
@@ -567,6 +589,7 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
                 const summaryStr = Object.entries(violationSummary).map(([t, n]) => `${t} × ${n}`).join(', ');
                 return (
                   <tr key={a.user_id} className="border-b border-neutral-100">
+                    <td className="px-6 py-3 text-sm font-black text-neutral-900 tabular-nums">#{a.rank}</td>
                     <td className="px-6 py-3 text-sm text-neutral-500">{a.profiles?.email}</td>
                     <td className="px-6 py-3 text-sm text-neutral-900 font-bold">{a.score ?? 0}/{a.total ?? 0}</td>
                     <td className="px-6 py-3"><span className={`text-sm font-black ${passed ? 'text-emerald-600' : 'text-rose-600'}`}>{pct}%</span></td>
@@ -589,7 +612,7 @@ export default function AdminExamDetailPage({ params }: { params: Promise<{ exam
                   </tr>
                 );
               })}
-              {attempts.length === 0 && <tr><td colSpan={7} className="px-6 py-12 text-center text-neutral-500">No results yet</td></tr>}
+              {attempts.length === 0 && <tr><td colSpan={8} className="px-6 py-12 text-center text-neutral-500">No results yet</td></tr>}
             </tbody>
           </table>
         </div>

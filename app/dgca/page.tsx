@@ -6,18 +6,17 @@ import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import type { DgcaCourse, DgcaSubject, DgcaChapter, DgcaQuestion } from '@/lib/types';
+import { DgcaResultReview } from './_components/DgcaResultReview';
 import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Layers,
   Lock,
   Loader2,
   PlayCircle,
-  XCircle,
 } from 'lucide-react';
 
 // ── Razorpay checkout typings (matches the Pariksha register flow) ──────────
@@ -342,6 +341,7 @@ export default function DGCAPage() {
           {view === 'results' && chapter && (
             <ResultsView
               chapter={chapter}
+              subjectName={subject?.name ?? null}
               questions={questions}
               answers={answers}
               onRetry={() => { setAnswers(new Array(questions.length).fill(null)); setCurrentIndex(0); setView('practice'); scrollTop(); }}
@@ -699,86 +699,23 @@ function PracticeView({ chapter, questions, currentIndex, answers, onAnswer, onP
 }
 
 // ─────────────────────────── Results ───────────────────────────
-function ResultsView({ chapter, questions, answers, onRetry, onBack }: {
+function ResultsView({ chapter, subjectName, questions, answers, onRetry, onBack }: {
   chapter: DgcaChapter;
+  subjectName: string | null;
   questions: DgcaQuestion[];
   answers: (number | null)[];
   onRetry: () => void;
   onBack: () => void;
 }) {
-  const correctCount = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? 1 : 0), 0);
-  const attempted = answers.filter((a) => a !== null).length;
-  const totalMarks = questions.reduce((acc, q) => acc + (q.marks ?? 1), 0);
-  const obtainedMarks = questions.reduce((acc, q, i) => acc + (answers[i] === q.correct ? (q.marks ?? 1) : 0), 0);
-  const percentage = totalMarks ? Math.round((obtainedMarks / totalMarks) * 100) : 0;
-  const pctColor = percentage >= 70 ? 'text-emerald-500' : percentage >= 50 ? 'text-amber-500' : 'text-rose-500';
-
   return (
     <div className="max-w-3xl mx-auto">
-      <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
-        <span className="w-6 h-px bg-neutral-900" /> Practice complete
-      </span>
-      <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-neutral-900 mb-3 tracking-tight">
-        Your <span className="italic-serif">result.</span>
-      </h2>
-      <p className="text-neutral-500 mb-8 sm:mb-12">{chapter.title}</p>
-
-      <div className="grid md:grid-cols-2 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
-        <div className="bg-white p-8 sm:p-10 flex flex-col items-center justify-center">
-          <div className="relative w-36 h-36 sm:w-44 sm:h-44 mb-4">
-            <svg viewBox="0 0 176 176" className="w-full h-full transform -rotate-90">
-              <circle cx="88" cy="88" r="76" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-neutral-100" />
-              <circle cx="88" cy="88" r="76" stroke="currentColor" strokeWidth="6" fill="transparent"
-                strokeDasharray={2 * Math.PI * 76}
-                strokeDashoffset={2 * Math.PI * 76 * (1 - percentage / 100)}
-                strokeLinecap="round" className={`transition-all duration-1000 ${pctColor}`} />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`font-display text-4xl sm:text-5xl leading-none ${pctColor}`}>{percentage}%</span>
-              <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 mt-1.5">Overall score</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-mono">
-            <Clock className="w-3 h-3" /> {attempted}/{questions.length} attempted
-          </div>
-        </div>
-        <div className="bg-white p-8 sm:p-10 flex flex-col justify-center text-center md:text-left items-center md:items-start">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-400 font-medium mb-3">Marks scored</span>
-          <p className="font-display text-5xl sm:text-6xl leading-none mb-3 text-neutral-900">
-            {obtainedMarks}<span className="text-neutral-300">/{totalMarks}</span>
-          </p>
-          <p className="text-neutral-500 text-sm">
-            {correctCount} of {questions.length} questions correct. This is chapter-wise practice — review the
-            explanations below and practise again to sharpen weak spots.
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-10 sm:mb-12">
-        <h3 className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium mb-5">Question review</h3>
-        <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
-          {questions.map((q, i) => {
-            const ok = answers[i] === q.correct;
-            const m = q.marks ?? 1;
-            return (
-              <div key={q.id} className="px-4 sm:px-5 py-4 flex items-start gap-3 sm:gap-4">
-                {ok ? <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" /> : <XCircle className="w-5 h-5 text-rose-400 mt-0.5 shrink-0" />}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3 mb-1">
-                    <p className="text-sm font-medium text-neutral-900">Q{i + 1}. {q.question}</p>
-                    <span className={`shrink-0 text-[11px] font-bold font-mono px-2 py-0.5 rounded-full border ${ok ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
-                      {ok ? m : 0}/{m}
-                    </span>
-                  </div>
-                  {q.explanation && <p className="text-xs text-neutral-500 line-clamp-2">{q.explanation}</p>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+      <DgcaResultReview
+        chapterTitle={chapter.title}
+        subjectName={subjectName}
+        questions={questions}
+        answers={answers}
+      />
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mt-10 sm:mt-12">
         <Button variant="primary" size="lg" onClick={onRetry} className="justify-center">Practice again</Button>
         <Button variant="secondary" size="lg" onClick={onBack} className="justify-center">Back to chapters</Button>
       </div>

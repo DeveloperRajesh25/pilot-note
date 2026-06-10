@@ -56,3 +56,21 @@ export function computeExamStatus(
   if (now <= end) return 'Active';
   return 'Completed';
 }
+
+// Sentinel stored in `exams.status` when an admin closes registrations early
+// (before the exam window opens). The exam lifecycle (Upcoming → Active →
+// Completed) is still computed live from the timestamps; this value only gates
+// whether new candidates may register.
+export const REGISTRATION_CLOSED = 'RegistrationsClosed';
+
+// Registration is open ONLY while the exam is still upcoming AND an admin has
+// not manually closed it. The moment the window opens (Active) or the exam is
+// completed/cancelled, registration is closed automatically — so the public
+// "Register" button flips to "Registration closed" without any manual step.
+export function isRegistrationOpen(
+  exam: ExamTimingInput,
+  now: number = Date.now(),
+): boolean {
+  if (exam.status === REGISTRATION_CLOSED) return false;
+  return computeExamStatus(exam, now) === 'Upcoming';
+}

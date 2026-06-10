@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createOrder } from '@/lib/razorpay';
+import { isRegistrationOpen } from '@/lib/exam-status';
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
   const { examId } = await params;
@@ -15,21 +16,9 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // DOB is collected here so it's bound to the registration before payment.
-  // It becomes the candidate's exam password on credential release.
-  const body = await request.json().catch(() => ({}));
-  const dob: string | undefined = typeof body?.dob === 'string' ? body.dob : undefined;
-  if (!dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-    return NextResponse.json({ error: 'Valid date of birth required (YYYY-MM-DD)' }, { status: 400 });
-  }
-  const dobDate = new Date(`${dob}T00:00:00Z`);
-  if (Number.isNaN(dobDate.getTime()) || dobDate > new Date()) {
-    return NextResponse.json({ error: 'Date of birth must be a valid past date' }, { status: 400 });
-  }
-
   const { data: exam } = await supabase
     .from('exams')
-    .select('id, fee, status, end_at, title')
+    .select('id, fee, status, start_at, end_at, exam_date, exam_time, duration, title')
     .eq('id', examId)
     .maybeSingle();
 
@@ -41,19 +30,24 @@ export async function POST(
     return NextResponse.json({ error: 'Exam has already ended' }, { status: 410 });
   }
 
-  // Free exam — pre-bind DOB and tell the client to skip checkout. We still
-  // upsert the registration row here so `dob` is captured before the candidate
-  // finalises registration via /register.
+  // Registration window closed (exam is live/completed, or an admin closed it
+  // early). Block new registrations server-side too — not just in the UI.
+  if (!isRegistrationOpen(exam)) {
+    return NextResponse.json({ error: 'Registration for this exam is closed.' }, { status: 403 });
+  }
+
+  // Free exam — tell the client to skip checkout. The registration row itself
+  // is created when the candidate finalises via /register.
   if (!exam.fee || exam.fee <= 0) {
     const dbFree = createAdminClient();
     await dbFree.from('exam_registrations').upsert(
-      { user_id: user.id, exam_id: examId, dob },
+      { user_id: user.id, exam_id: examId },
       { onConflict: 'user_id,exam_id' }
     );
     return NextResponse.json({ free: true });
   }
 
-  // Already-paid short-circuit — let the client skip checkout but still update DOB.
+  // Already-paid short-circuit — let the client skip checkout.
   const db = createAdminClient();
   const { data: paid } = await db
     .from('payments')
@@ -63,10 +57,10 @@ export async function POST(
     .eq('status', 'paid')
     .maybeSingle();
 
-  // Pre-bind DOB to the registration (or create a pending row). On conflict
-  // only `dob` is updated — payment_id and registered_at are preserved.
+  // Ensure a (pending) registration row exists. On conflict this is a no-op —
+  // payment_id and registered_at are preserved.
   await db.from('exam_registrations').upsert(
-    { user_id: user.id, exam_id: examId, dob },
+    { user_id: user.id, exam_id: examId },
     { onConflict: 'user_id,exam_id' }
   );
 

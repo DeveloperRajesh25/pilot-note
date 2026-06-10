@@ -41,12 +41,12 @@ export default async function ProfilePage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('exam_attempts')
-      .select('*, exams(title, subject)')
+      .select('*, exams(title, subject, results_released_at)')
       .eq('user_id', user.id)
       .order('started_at', { ascending: false }),
     supabase
       .from('exam_registrations')
-      .select('*, exams(title, subject, exam_date, exam_time, fee, status)')
+      .select('*, exams(title, subject, exam_date, exam_time, fee, status, start_at, end_at)')
       .eq('user_id', user.id)
       .order('registered_at', { ascending: false }),
   ]);

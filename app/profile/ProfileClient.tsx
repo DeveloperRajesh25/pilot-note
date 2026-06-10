@@ -11,7 +11,6 @@ import {
   Target,
   Trophy,
   Calendar,
-  Clock,
   Award,
   CheckCircle2,
   GraduationCap,
@@ -31,6 +30,7 @@ import { Input } from '@/components/ui/Input';
 import { signOut } from '@/app/actions/auth';
 import { updateProfile } from '@/app/actions/profile';
 import { updatePassword } from '@/app/actions/auth';
+import { computeExamStatus } from '@/lib/exam-status';
 
 type Tab = 'overview' | 'tests' | 'results' | 'settings';
 
@@ -70,16 +70,32 @@ interface ExamAttempt {
   exam_id: string;
   score: number | null;
   total: number | null;
+  rank: number | null;
   started_at: string;
   submitted_at: string | null;
-  exams?: { title: string; subject: string } | null;
+  exams?: { title: string; subject: string; results_released_at: string | null } | null;
 }
 interface ExamRegistration {
   id: string;
   exam_id: string;
   registered_at: string;
-  exams?: { title: string; subject: string; exam_date: string | null; exam_time: string | null; fee: number; status: string } | null;
+  exams?: {
+    title: string;
+    subject: string;
+    exam_date: string | null;
+    exam_time: string | null;
+    fee: number;
+    status: string;
+    start_at: string | null;
+    end_at: string | null;
+  } | null;
 }
+
+// A submitted Pariksha attempt only counts as a viewable "result" once the
+// admin has released results for that exam. Until then we never surface the
+// score/percentage anywhere on the profile.
+const isResultReleased = (a: ExamAttempt) =>
+  !!a.submitted_at && !!a.exams?.results_released_at;
 
 interface Props {
   user: UserSummary;
@@ -118,15 +134,9 @@ export default function ProfileClient({
   const router = useRouter();
 
   const displayName = profile?.full_name?.trim() || user.email.split('@')[0] || 'Pilot';
-  const joinDate = formatDate(user.created_at, { month: 'long', year: 'numeric' });
   const initials = initialsFrom(profile?.full_name ?? '', user.email);
 
   const stats = useMemo(() => {
-    const totalAptitude = aptitudeResults.length;
-    const totalExams = examAttempts.filter((a) => a.submitted_at).length;
-    const totalDgcaSessions = dgcaPracticeResults.length;
-    const totalTestsTaken = totalAptitude + totalExams + totalDgcaSessions;
-
     const avgPct = (rows: { score: number; total: number }[]) => {
       if (rows.length === 0) return null;
       const sum = rows.reduce((acc, r) => acc + (r.total > 0 ? r.score / r.total : 0), 0);
@@ -134,27 +144,28 @@ export default function ProfileClient({
     };
 
     const avgAptitude = avgPct(aptitudeResults);
-    const avgExam = avgPct(
-      examAttempts
-        .filter((a) => a.submitted_at && a.total && a.score !== null)
-        .map((a) => ({ score: a.score ?? 0, total: a.total ?? 1 }))
-    );
-    const avgDgca = avgPct(dgcaPracticeResults);
 
-    const totalSeconds = aptitudeResults.reduce((acc, r) => acc + (r.time_taken || 0), 0);
+    // Latest *released* Pariksha result. examAttempts arrive ordered by
+    // started_at desc, so the first released+submitted one is the latest.
+    const latestReleased = examAttempts.find((a) => isResultReleased(a) && a.total && a.score !== null);
+    const latestPariksha = latestReleased
+      ? {
+          title: latestReleased.exams?.title ?? 'Pariksha',
+          subject: latestReleased.exams?.subject ?? null,
+          score: latestReleased.score ?? 0,
+          total: latestReleased.total ?? 0,
+          pct: Math.round(((latestReleased.score ?? 0) / (latestReleased.total || 1)) * 100),
+          rank: latestReleased.rank,
+          date: latestReleased.submitted_at ? formatDate(latestReleased.submitted_at) : '',
+        }
+      : null;
 
     return {
-      totalAptitude,
-      totalExams,
-      totalDgcaSessions,
-      totalTestsTaken,
       totalChapters: dgcaPurchases.length,
       avgAptitude,
-      avgExam,
-      avgDgca,
-      totalMinutes: Math.round(totalSeconds / 60),
+      latestPariksha,
     };
-  }, [aptitudeResults, examAttempts, dgcaPracticeResults, dgcaPurchases.length]);
+  }, [aptitudeResults, examAttempts, dgcaPurchases.length]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'overview', label: 'Overview', icon: <TrendingUp className="w-4 h-4" strokeWidth={1.5} /> },
@@ -194,14 +205,6 @@ export default function ProfileClient({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-medium">
-              CPL Aspirant
-            </span>
-            {stats.totalTestsTaken > 0 && (
-              <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-100 text-neutral-700 border border-neutral-200 font-medium">
-                {stats.totalTestsTaken} session{stats.totalTestsTaken === 1 ? '' : 's'}
-              </span>
-            )}
             <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-[0.18em] bg-neutral-900 text-white font-medium flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3" /> Verified
             </span>
@@ -221,11 +224,15 @@ export default function ProfileClient({
       </div>
 
       {/* ───── Stats row ───── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-neutral-200 border border-neutral-200 rounded-2xl sm:rounded-3xl overflow-hidden mb-10 sm:mb-12">
         <StatCard label="DGCA Chapters" value={String(stats.totalChapters)} icon={<BookOpen className="w-4 h-4" strokeWidth={1.5} />} />
-        <StatCard label="Avg. Pariksha" value={stats.avgExam === null ? '—' : `${stats.avgExam}%`} icon={<Target className="w-4 h-4" strokeWidth={1.5} />} />
+        <StatCard
+          label="Latest Pariksha"
+          value={stats.latestPariksha ? `${stats.latestPariksha.pct}%` : '—'}
+          hint={stats.latestPariksha ? `${stats.latestPariksha.score}/${stats.latestPariksha.total}` : undefined}
+          icon={<Target className="w-4 h-4" strokeWidth={1.5} />}
+        />
         <StatCard label="Avg. Aptitude" value={stats.avgAptitude === null ? '—' : `${stats.avgAptitude}%`} icon={<Trophy className="w-4 h-4" strokeWidth={1.5} />} />
-        <StatCard label="Practice Time" value={stats.totalMinutes > 0 ? `${stats.totalMinutes}m` : '—'} icon={<Clock className="w-4 h-4" strokeWidth={1.5} />} />
       </div>
 
       {/* ───── Tabs ───── */}
@@ -258,7 +265,7 @@ export default function ProfileClient({
             examAttempts={examAttempts}
             dgcaPurchases={dgcaPurchases}
             examRegistrations={examRegistrations}
-            avgExam={stats.avgExam}
+            latestPariksha={stats.latestPariksha}
             onJump={(t) => setTab(t)}
           />
         )}
@@ -278,7 +285,7 @@ export default function ProfileClient({
   );
 }
 
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function StatCard({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: string; hint?: string }) {
   return (
     <div className="bg-white p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 hover:bg-neutral-50 transition-colors">
       <div className="flex items-center justify-between">
@@ -288,6 +295,7 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
       </div>
       <p className="font-display text-2xl sm:text-3xl md:text-4xl text-neutral-900 leading-none tracking-tight">
         {value}
+        {hint && <span className="text-sm sm:text-base text-neutral-300 font-mono ml-1.5">{hint}</span>}
       </p>
       <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-medium">{label}</p>
     </div>
@@ -296,6 +304,16 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 
 /* ────────── Overview ────────── */
 
+interface LatestPariksha {
+  title: string;
+  subject: string | null;
+  score: number;
+  total: number;
+  pct: number;
+  rank: number | null;
+  date: string;
+}
+
 function OverviewTab({
   displayName,
   aptitudeResults,
@@ -303,7 +321,7 @@ function OverviewTab({
   examAttempts,
   dgcaPurchases,
   examRegistrations,
-  avgExam,
+  latestPariksha,
   onJump,
 }: {
   displayName: string;
@@ -312,7 +330,7 @@ function OverviewTab({
   examAttempts: ExamAttempt[];
   dgcaPurchases: DgcaPurchase[];
   examRegistrations: ExamRegistration[];
-  avgExam: number | null;
+  latestPariksha: LatestPariksha | null;
   onJump: (t: Tab) => void;
 }) {
   type ActivityItem = {
@@ -323,6 +341,8 @@ function OverviewTab({
     iso: string;
     pct?: number;
     score?: string;
+    pending?: boolean;
+    href?: string;
   };
 
   const activity: ActivityItem[] = useMemo(() => {
@@ -340,11 +360,13 @@ function OverviewTab({
       });
     });
     examAttempts
-      .filter((a) => a.submitted_at && a.total && a.score !== null)
+      .filter((a) => a.submitted_at)
       .forEach((a) => {
+        // Results stay hidden until the admin releases them for this exam.
+        const released = isResultReleased(a);
         const total = a.total ?? 1;
         const score = a.score ?? 0;
-        const pct = Math.round((score / total) * 100);
+        const pct = released ? Math.round((score / total) * 100) : undefined;
         items.push({
           id: `exam-${a.id}`,
           title: a.exams?.title ?? 'Pariksha Exam',
@@ -352,7 +374,9 @@ function OverviewTab({
           date: formatDate(a.submitted_at!),
           iso: a.submitted_at!,
           pct,
-          score: `${score}/${total}`,
+          score: released ? `${score}/${total}` : undefined,
+          pending: !released,
+          href: released ? `/pariksha/${a.exam_id}/results` : undefined,
         });
       });
     dgcaPracticeResults.forEach((r) => {
@@ -366,16 +390,25 @@ function OverviewTab({
         iso: r.completed_at,
         pct,
         score: `${r.score}/${r.total}`,
+        href: `/dgca/results/${r.id}`,
       });
     });
     items.sort((a, b) => +new Date(b.iso) - +new Date(a.iso));
     return items.slice(0, 8);
   }, [aptitudeResults, examAttempts, dgcaPracticeResults]);
 
+  // Exams the user has already sat — never show these under "Upcoming".
+  const submittedExamIds = useMemo(
+    () => new Set(examAttempts.filter((a) => a.submitted_at).map((a) => a.exam_id)),
+    [examAttempts]
+  );
+
+  // Upcoming = registered, not yet attempted, and the exam window hasn't opened
+  // yet (live status still "Upcoming"). Once it goes Live/Completed it drops off.
   const upcoming = examRegistrations.filter((r) => {
-    if (!r.exams?.exam_date) return false;
-    const examDate = new Date(r.exams.exam_date);
-    return examDate >= new Date(new Date().toDateString());
+    if (!r.exams) return false;
+    if (submittedExamIds.has(r.exam_id)) return false;
+    return computeExamStatus(r.exams) === 'Upcoming';
   });
 
   const isEmpty =
@@ -429,20 +462,40 @@ function OverviewTab({
           </div>
         ) : (
           <div className="border border-neutral-200 rounded-2xl divide-y divide-neutral-200 overflow-hidden">
-            {activity.map((a) => (
-              <div key={a.id} className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 hover:bg-neutral-50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-neutral-900 truncate text-sm sm:text-base">{a.title}</p>
-                  <p className="text-xs text-neutral-500 mt-0.5 truncate">{a.subtitle} · {a.date}</p>
-                </div>
-                {a.pct !== undefined && (
-                  <div className="text-right shrink-0">
-                    <p className={`font-display text-xl sm:text-2xl leading-none ${pctColor(a.pct)}`}>{a.pct}%</p>
-                    <p className="text-[10px] text-neutral-400 mt-1 font-mono">{a.score}</p>
+            {activity.map((a) => {
+              const inner = (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-neutral-900 truncate text-sm sm:text-base">{a.title}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5 truncate">{a.subtitle} · {a.date}</p>
                   </div>
-                )}
-              </div>
-            ))}
+                  {a.pct !== undefined ? (
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <p className={`font-display text-xl sm:text-2xl leading-none ${pctColor(a.pct)}`}>{a.pct}%</p>
+                        <p className="text-[10px] text-neutral-400 mt-1 font-mono">{a.score}</p>
+                      </div>
+                      {a.href && <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />}
+                    </div>
+                  ) : a.pending ? (
+                    <div className="text-right shrink-0">
+                      <span className="inline-block px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.14em] bg-amber-50 text-amber-700 border border-amber-200/60">
+                        Awaiting result
+                      </span>
+                    </div>
+                  ) : null}
+                </>
+              );
+              return a.href ? (
+                <Link key={a.id} href={a.href} className="group flex items-center gap-3 sm:gap-5 p-4 sm:p-5 hover:bg-neutral-50 transition-colors">
+                  {inner}
+                </Link>
+              ) : (
+                <div key={a.id} className="flex items-center gap-3 sm:gap-5 p-4 sm:p-5 hover:bg-neutral-50 transition-colors">
+                  {inner}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -497,15 +550,22 @@ function OverviewTab({
           </div>
         </div>
 
-        {/* Pariksha avg */}
-        {avgExam !== null && (
+        {/* Latest Pariksha result (only shown once the admin releases results) */}
+        {latestPariksha && (
           <div className="bg-neutral-950 text-white rounded-2xl p-5 sm:p-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_60%)]" />
             <p className="relative text-[10px] uppercase tracking-[0.22em] text-emerald-400 font-medium mb-3">
-              Pariksha avg.
+              Latest Pariksha
             </p>
-            <p className="relative font-display text-4xl sm:text-5xl text-white leading-none mb-2">{avgExam}%</p>
-            <p className="relative text-xs text-white/60">Across all submitted exams</p>
+            <p className="relative font-display text-4xl sm:text-5xl text-white leading-none mb-2">{latestPariksha.pct}%</p>
+            <p className="relative text-sm text-white/80 font-medium truncate">{latestPariksha.title}</p>
+            <div className="relative mt-3 flex items-center gap-4 text-xs text-white/60">
+              <span className="font-mono">{latestPariksha.score}/{latestPariksha.total}</span>
+              {latestPariksha.rank != null && (
+                <span className="flex items-center gap-1"><Award className="w-3.5 h-3.5" /> Rank {latestPariksha.rank}</span>
+              )}
+              {latestPariksha.date && <span>{latestPariksha.date}</span>}
+            </div>
           </div>
         )}
       </div>
@@ -629,7 +689,8 @@ function ResultsTab({
   examAttempts: ExamAttempt[];
 }) {
   const [filter, setFilter] = useState<'all' | 'dgca' | 'pariksha' | 'aptitude'>('all');
-  const submittedExams = examAttempts.filter((a) => a.submitted_at && a.total && a.score !== null);
+  // All submitted Pariksha attempts; results are only revealed once released.
+  const submittedExams = examAttempts.filter((a) => a.submitted_at);
 
   const filters = [
     { id: 'all' as const, label: 'All', count: submittedExams.length + aptitudeResults.length + dgcaPracticeResults.length },
@@ -682,6 +743,7 @@ function ResultsTab({
                 subtitle={`${subject ? `${subject} · ` : ''}${formatDate(r.completed_at)}`}
                 pct={pct}
                 score={`${r.score}/${r.total}`}
+                href={`/dgca/results/${r.id}`}
               />
             );
           })}
@@ -691,6 +753,19 @@ function ResultsTab({
       {(filter === 'all' || filter === 'pariksha') && submittedExams.length > 0 && (
         <ResultGroup title="Pariksha" count={submittedExams.length}>
           {submittedExams.map((a) => {
+            const released = isResultReleased(a);
+            const subtitle = `${a.exams?.subject ?? 'Pariksha'} · ${formatDate(a.submitted_at!)}`;
+            if (!released) {
+              // Submitted but the admin hasn't released results yet.
+              return (
+                <ResultRow
+                  key={a.id}
+                  title={a.exams?.title ?? a.exam_id}
+                  subtitle={subtitle}
+                  pending
+                />
+              );
+            }
             const total = a.total ?? 1;
             const score = a.score ?? 0;
             const pct = Math.round((score / total) * 100);
@@ -698,7 +773,7 @@ function ResultsTab({
               <ResultRow
                 key={a.id}
                 title={a.exams?.title ?? a.exam_id}
-                subtitle={`${a.exams?.subject ?? 'Pariksha'} · ${formatDate(a.submitted_at!)}`}
+                subtitle={subtitle}
                 pct={pct}
                 score={`${score}/${total}`}
                 href={`/pariksha/${a.exam_id}/results`}
@@ -758,28 +833,34 @@ function ResultGroup({ title, count, children }: { title: string; count: number;
   );
 }
 
-function ResultRow({ title, subtitle, pct, score, href }: { title: string; subtitle: string; pct: number; score: string; href?: string }) {
+function ResultRow({ title, subtitle, pct, score, href, pending = false }: { title: string; subtitle: string; pct?: number; score?: string; href?: string; pending?: boolean }) {
   const inner = (
     <>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-neutral-900 truncate">{title}</p>
         <p className="text-xs text-neutral-500 mt-0.5 truncate">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="hidden sm:block w-24 h-px bg-neutral-200 relative">
-          <div
-            className={`absolute inset-y-0 left-0 ${
-              pct >= 70 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500'
-            }`}
-            style={{ width: `${pct}%`, top: '-0.5px', bottom: '-0.5px' }}
-          />
-        </div>
-        <p className={`font-display text-2xl leading-none ${pctColor(pct)}`}>{pct}%</p>
-        <span className="hidden md:inline text-[10px] text-neutral-400 font-mono tabular-nums w-12 text-right">
-          {score}
+      {pending ? (
+        <span className="shrink-0 px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-[0.14em] bg-amber-50 text-amber-700 border border-amber-200/60">
+          Awaiting result
         </span>
-        {href && <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />}
-      </div>
+      ) : (
+        <div className="flex items-center gap-4 shrink-0">
+          <div className="hidden sm:block w-24 h-px bg-neutral-200 relative">
+            <div
+              className={`absolute inset-y-0 left-0 ${
+                (pct ?? 0) >= 70 ? 'bg-emerald-500' : (pct ?? 0) >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+              }`}
+              style={{ width: `${pct ?? 0}%`, top: '-0.5px', bottom: '-0.5px' }}
+            />
+          </div>
+          <p className={`font-display text-2xl leading-none ${pctColor(pct ?? 0)}`}>{pct ?? 0}%</p>
+          <span className="hidden md:inline text-[10px] text-neutral-400 font-mono tabular-nums w-12 text-right">
+            {score}
+          </span>
+          {href && <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />}
+        </div>
+      )}
     </>
   );
 
