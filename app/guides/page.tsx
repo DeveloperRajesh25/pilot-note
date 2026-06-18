@@ -186,18 +186,15 @@ export default function GuidesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                  {guides.map((guide, idx) => (
+                  {guides.map((guide) => (
                     <button
                       key={guide.id}
                       onClick={() => openGuide(guide.id)}
                       className="group bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col h-full"
                     >
-                      <div className="flex items-center justify-between mb-6 sm:mb-10">
+                      <div className="flex items-center mb-6 sm:mb-10">
                         <span className="text-[10px] uppercase tracking-[0.18em] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full font-medium">
                           {guide.category}
-                        </span>
-                        <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
-                          {String(idx + 1).padStart(2, '0')}
                         </span>
                       </div>
 

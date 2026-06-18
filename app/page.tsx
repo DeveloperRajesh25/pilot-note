@@ -203,17 +203,14 @@ export default async function Home() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-              {FEATURES.map((feature, idx) => (
+              {FEATURES.map((feature) => (
                 <Link
                   key={feature.id}
                   href={feature.linkUrl}
                   className="group relative bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
                 >
                   {/* Index */}
-                  <div className="flex items-center justify-between mb-8 sm:mb-12">
-                    <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
-                      {String(idx + 1).padStart(2, '0')} / 04
-                    </span>
+                  <div className="flex items-center justify-end mb-8 sm:mb-12">
                     <ArrowUpRight
                       size={18}
                       className="text-neutral-300 group-hover:text-emerald-500 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all"
@@ -266,9 +263,6 @@ export default async function Home() {
                 >
                   <div className="flex items-start gap-5 sm:gap-8">
                     <div className="shrink-0">
-                      <p className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono mb-2">
-                        Item {item.number}
-                      </p>
                       <p className="font-display text-4xl sm:text-5xl text-neutral-300 group-hover:text-emerald-500 transition-colors leading-none">
                         {String(idx + 1).padStart(2, '0')}
                       </p>

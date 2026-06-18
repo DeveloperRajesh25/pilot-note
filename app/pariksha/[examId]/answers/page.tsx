@@ -50,6 +50,29 @@ export default function AnswerKeyPage({ params }: { params: Promise<{ examId: st
     return () => { cancelled = true; };
   }, [examId, router]);
 
+  // Content protection — the question bank is exclusive to Pilot Note. Block
+  // copy, cut, paste, right-click, drag, text selection and the common
+  // save/print/devtools shortcuts while viewing the answer key. Selection and
+  // image drag are also disabled via the `.exam-lockdown` class on <main>.
+  useEffect(() => {
+    const block = (e: Event) => e.preventDefault();
+    const onKeyDown = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      const k = e.key.toLowerCase();
+      if (e.key === 'F12') { e.preventDefault(); return; }
+      if (ctrl && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) { e.preventDefault(); return; }
+      if (ctrl && (k === 'c' || k === 'x' || k === 'a' || k === 's' || k === 'p' || k === 'u')) {
+        e.preventDefault();
+      }
+    };
+    const events: [string, EventListener][] = [
+      ['contextmenu', block], ['copy', block], ['cut', block], ['paste', block],
+      ['dragstart', block], ['selectstart', block], ['keydown', onKeyDown as EventListener],
+    ];
+    events.forEach(([type, fn]) => document.addEventListener(type, fn));
+    return () => events.forEach(([type, fn]) => document.removeEventListener(type, fn));
+  }, []);
+
   if (error) {
     return (
       <>
@@ -109,7 +132,7 @@ export default function AnswerKeyPage({ params }: { params: Promise<{ examId: st
   return (
     <>
       <Header />
-      <main className="grow pt-28 sm:pt-32 pb-20 bg-white">
+      <main className="grow pt-28 sm:pt-32 pb-20 bg-white exam-lockdown">
         <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
           <span className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 font-medium flex items-center gap-2 mb-5">
             <span className="w-6 h-px bg-neutral-900" /> Answer key · {exam.subject}

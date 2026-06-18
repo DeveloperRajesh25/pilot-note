@@ -149,11 +149,14 @@ export function SignupForm() {
           label="Mobile number"
           name="phone"
           type="tel"
-          placeholder="+91 98XXXXXXXX"
+          inputMode="numeric"
+          placeholder="98XXXXXXXX"
           required
           autoComplete="tel"
-          pattern="^\+?[\d\s\-()]{8,20}$"
-          hint="We'll use this for exam updates."
+          maxLength={14}
+          pattern="^(\+?91[\s-]?|0)?[6-9]\d{9}$"
+          title="Enter a 10-digit Indian mobile number (optionally prefixed with +91)."
+          hint="10-digit Indian mobile. We'll use this for exam updates."
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input

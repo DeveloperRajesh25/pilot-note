@@ -136,7 +136,7 @@ Compare your performance with aspirants across India and discover your true leve
             </div>
           ) : (
             <div className="space-y-6 lg:space-y-8">
-              {exams.map((exam, idx) => {
+              {exams.map((exam) => {
                 const liveStatus = computeExamStatus(exam);
                 const statusLabel = liveStatus === 'Active' ? 'Live' : liveStatus;
                 const statusClass = STATUS_BADGE[statusLabel] || STATUS_BADGE.Upcoming;
@@ -146,15 +146,8 @@ Compare your performance with aspirants across India and discover your true leve
                     className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-8 lg:p-10 group hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] transition-all duration-300"
                   >
                     <div className="grid lg:grid-cols-12 gap-5 sm:gap-8 items-start">
-                      {/* Left — meta */}
-                      <div className="hidden lg:block lg:col-span-1">
-                        <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
-                          {String(idx + 1).padStart(2, '0')}
-                        </span>
-                      </div>
-
                       {/* Middle — content */}
-                      <div className="lg:col-span-7">
+                      <div className="lg:col-span-8">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-3 sm:mb-4">
                           <span className={`px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] font-medium uppercase tracking-[0.18em] rounded-full border ${statusClass}`}>
                             {statusLabel}

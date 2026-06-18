@@ -392,19 +392,16 @@ function CoursesView({ courses, loading, onPick }: { courses: DgcaCourse[]; load
         <EmptyState icon={<Layers className="w-10 h-10" strokeWidth={1.5} />} text="No courses published yet. Check back soon." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-          {courses.map((c, idx) => (
+          {courses.map((c) => (
             <button
               key={c.id}
               onClick={() => onPick(c)}
               className="group bg-white border border-neutral-200 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col min-h-56"
             >
-              <div className="flex items-center justify-between mb-10 sm:mb-14">
+              <div className="flex items-center mb-10 sm:mb-14">
                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-neutral-100 group-hover:bg-emerald-500 group-hover:text-white text-neutral-900 flex items-center justify-center transition-colors">
                   <BookOpen className="w-5 h-5" strokeWidth={1.5} />
                 </div>
-                <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono">
-                  Track {String(idx + 1).padStart(2, '0')}
-                </span>
               </div>
               <h3 className="font-display text-3xl sm:text-4xl text-neutral-900 mb-2 leading-tight">{c.name}</h3>
               <div className="mt-auto flex items-center justify-between pt-5 sm:pt-6 border-t border-neutral-100">
@@ -441,15 +438,12 @@ function SubjectsView({ course, subjects, loading, onBack, onPick }: {
         <EmptyState icon={<Layers className="w-10 h-10" strokeWidth={1.5} />} text="No subjects in this course yet." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {subjects.map((s, idx) => (
+          {subjects.map((s) => (
             <button
               key={s.id}
               onClick={() => onPick(s)}
               className="group bg-white border border-neutral-200 rounded-2xl p-6 text-left transition-all duration-300 hover:border-neutral-900 hover:shadow-[0_24px_48px_-24px_rgba(10,10,10,0.18)] flex flex-col"
             >
-              <span className="text-[11px] tracking-[0.22em] uppercase text-neutral-400 font-mono mb-6">
-                {String(idx + 1).padStart(2, '0')}
-              </span>
               <h3 className="font-display text-xl sm:text-2xl text-neutral-900 mb-4 leading-tight">{s.name}</h3>
               <div className="mt-auto flex items-center justify-between pt-4 border-t border-neutral-100">
                 <span className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-medium">

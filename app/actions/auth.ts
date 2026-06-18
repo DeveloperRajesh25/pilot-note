@@ -42,11 +42,18 @@ export async function signup(formData: FormData) {
     return { error: 'Email and password are required.' }
   }
 
-  // Mobile is mandatory. Accept digits with optional +, spaces, dashes, parens; 8–15 digits overall.
+  // Mobile is mandatory. We serve Indian pilots, so validate a 10-digit Indian
+  // mobile number (must start 6–9). Accept an optional +91/91 country code or a
+  // leading 0; strip any spaces, dashes or parens the user typed.
   const phoneDigits = phoneRaw.replace(/[^\d]/g, '')
-  if (!phoneRaw || !/^\+?[\d\s\-()]{8,20}$/.test(phoneRaw) || phoneDigits.length < 8 || phoneDigits.length > 15) {
-    return { error: 'Please enter a valid mobile number.' }
+  let phoneCore = phoneDigits
+  if (phoneCore.length === 12 && phoneCore.startsWith('91')) phoneCore = phoneCore.slice(2)
+  else if (phoneCore.length === 11 && phoneCore.startsWith('0')) phoneCore = phoneCore.slice(1)
+  if (!phoneRaw || !/^[6-9]\d{9}$/.test(phoneCore)) {
+    return { error: 'Please enter a valid 10-digit Indian mobile number.' }
   }
+  // Store in a normalised, consistent format.
+  const phone = `+91${phoneCore}`
 
   // DOB is mandatory. Expect YYYY-MM-DD from <input type="date">.
   if (!dobRaw || !/^\d{4}-\d{2}-\d{2}$/.test(dobRaw)) {
@@ -69,7 +76,7 @@ export async function signup(formData: FormData) {
   }
 
   const metadata: Record<string, string> = {
-    phone: phoneRaw,
+    phone,
     date_of_birth: dobRaw,
   }
   if (full_name) metadata.full_name = full_name
